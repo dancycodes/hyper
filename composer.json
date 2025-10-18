@@ -1,0 +1,88 @@
+{
+  "name": "dancycodes/hyper",
+  "description": "Laravel-native reactive frontends using Datastar. Build dynamic UIs with Blade templates.",
+  "keywords": [
+    "laravel",
+    "reactive",
+    "hypermedia",
+    "signals",
+    "datastar",
+    "spa",
+    "blade",
+    "real-time",
+    "validation",
+    "fragments",
+    "htmx-alternative",
+    "livewire-alternative"
+  ],
+  "homepage": "https://laravel-hyper.com",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "DancyCodes",
+      "email": "dancycodes@gmail.com",
+      "homepage": "https://laravel-hyper.com",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/dancycodes/hyper/issues",
+    "source": "https://github.com/dancycodes/hyper",
+    "docs": "https://laravel-hyper.com"
+  },
+  "require": {
+    "php": "^8.2",
+    "illuminate/support": "^11.0|^12.0",
+    "symfony/finder": "^5.4.2|^6.0|^7.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.0",
+    "orchestra/testbench": "^9.0",
+    "mockery/mockery": "^1.6",
+    "fakerphp/faker": "^1.23",
+    "larastan/larastan": "^3.0",
+    "laravel/pint": "^1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Dancycodes\\Hyper\\": "src/"
+    },
+    "files": [
+      "src/helpers.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Dancycodes\\Hyper\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit",
+    "test-coverage": "vendor/bin/phpunit --coverage-html coverage",
+    "test-unit": "vendor/bin/phpunit --testsuite Unit",
+    "test-feature": "vendor/bin/phpunit --testsuite Feature",
+    "analyse": "vendor/bin/phpstan analyse --memory-limit=2G",
+    "analyse:baseline": "vendor/bin/phpstan analyse --generate-baseline --memory-limit=2G",
+    "format": "vendor/bin/pint",
+    "format:test": "vendor/bin/pint --test",
+    "ci": [
+      "@format:test",
+      "@analyse",
+      "@test"
+    ],
+    "post-install-cmd": [
+      "@php -r \"if (file_exists('artisan')) { echo shell_exec('php artisan view:clear 2>&1') ?: 'View cache cleared'; }\""
+    ],
+    "post-update-cmd": [
+      "@php -r \"if (file_exists('artisan')) { echo shell_exec('php artisan view:clear 2>&1') ?: 'View cache cleared'; }\""
+    ]
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Dancycodes\\Hyper\\HyperServiceProvider"
+      ]
+    }
+  }
+}

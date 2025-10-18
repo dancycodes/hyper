@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or Discussion
+    url: https://github.com/dancycodes/hyper/discussions
+    about: Ask questions or start discussions about Laravel Hyper
+  - name: Security Vulnerability
+    url: https://github.com/dancycodes/hyper/security
+    about: Report security vulnerabilities privately
+  - name: Documentation
+    url: https://github.com/dancycodes/hyper#readme
+    about: View the documentation
