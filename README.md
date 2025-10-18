@@ -1,11 +1,5 @@
 # Laravel Hyper
 
-<p align="center">
-<a href="https://packagist.org/packages/dancycodes/hyper"><img src="https://img.shields.io/packagist/dt/dancycodes/hyper" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/dancycodes/hyper"><img src="https://img.shields.io/packagist/v/dancycodes/hyper" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/dancycodes/hyper"><img src="https://img.shields.io/packagist/l/dancycodes/hyper" alt="License"></a>
-</p>
-
 ## What is Laravel Hyper?
 
 Laravel Hyper integrates [Datastar](https://data-star.dev)—a reactive hypermedia framework—with Laravel's development patterns, enabling you to build reactive user interfaces using server-side rendering and Blade templates.
@@ -59,15 +53,18 @@ Laravel provides the server-side foundation—routing, controllers, Blade templa
 Hyper connects Datastar and Laravel with:
 
 **Server-Side Helpers:**
+
 - `hyper()` - Fluent response builder for reactive responses
 - `signals()` - Read signals sent from the frontend (similar to `request()`)
 
 **Blade Directives:**
+
 - `@hyper` - Include Datastar JavaScript and CSRF token
 - `@signals` - Initialize signals from PHP data
 - `@fragment` / `@endfragment` - Define reusable view sections
 
 **Laravel Integration:**
+
 - `@postx`, `@putx`, `@patchx`, `@deletex` - HTTP actions with automatic CSRF tokens
 - `data-error` - Display Laravel validation errors
 - `data-navigate` - Client-side navigation with Laravel routes
@@ -75,6 +72,7 @@ Hyper connects Datastar and Laravel with:
 - Base64 file upload handling with `signals()->store()`
 
 **Custom Attributes:**
+
 - `data-for` - Optimized loops for rendering collections
 - `data-if` - Conditional rendering based on signals
 
@@ -395,6 +393,7 @@ public function store()
 ```
 
 When validation fails, Hyper automatically:
+
 1. Creates an `errors` signal with Laravel's error messages
 2. Sends it to the frontend
 3. The `data-error` attribute displays field-specific errors
@@ -567,6 +566,7 @@ return hyper()->fragment('todos.index', 'todo-list', compact('todos'), [
 ```
 
 **Merge modes** (Datastar):
+
 - `outer` - Replace entire element (default)
 - `inner` - Replace inner HTML only
 - `prepend` - Add content at the beginning
@@ -750,6 +750,7 @@ Hyper applications use Datastar's reactive attributes. Here are the most commonl
 - `data-on-[event]="expression"` - Handle any DOM event
 
 Event modifiers:
+
 - `data-on-click__prevent` - Prevent default
 - `data-on-submit__prevent__stop` - Prevent default and stop propagation
 - `data-on-input__debounce.300ms` - Debounce input
@@ -785,6 +786,7 @@ composer test
 ```
 
 Hyper includes 746 tests covering:
+
 - Signals and state management
 - Validation integration
 - File upload handling
