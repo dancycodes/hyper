@@ -1960,7 +1960,6 @@ class HyperResponse implements Responsable
      * INTERNAL PROCESSING METHODS
      */
 
-
     /**
      * Build query string from associative array
      *
@@ -1995,7 +1994,6 @@ class HyperResponse implements Responsable
 
         return implode('&', $params);
     }
-
 
     /**
      * Generate enhanced navigation script using Datastar action

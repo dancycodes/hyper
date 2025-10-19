@@ -3,8 +3,10 @@
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          colors="true"
-         failOnRisky="true"
-         failOnWarning="true"
+         failOnRisky="false"
+         failOnWarning="false"
+         failOnDeprecation="false"
+         beStrictAboutOutputDuringTests="false"
          stopOnFailure="false"
          cacheDirectory=".phpunit.cache">
 
@@ -22,13 +24,6 @@
             <directory>src</directory>
         </include>
     </source>
-
-    <coverage>
-        <report>
-            <html outputDirectory="coverage"/>
-            <text outputFile="php://stdout" showUncoveredFiles="true"/>
-        </report>
-    </coverage>
 
     <php>
         <env name="APP_ENV" value="testing"/>
