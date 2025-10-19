@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Route;
  */
 class SignalFlowTest extends TestCase
 {
+    protected static $latestResponse;
+
     /** @test */
     public function test_signals_sent_from_frontend_to_backend()
     {

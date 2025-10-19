@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\View;
  */
 class ValidationIntegrationTest extends TestCase
 {
+    protected static $latestResponse;
+
     protected string $viewsPath;
 
     protected function setUp(): void
