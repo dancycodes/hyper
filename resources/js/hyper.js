@@ -1296,6 +1296,62 @@ const FileUrl = {
     return fallback;
   }
 };
+const Back = {
+  type: "action",
+  name: "back",
+  fn: async (ctx, fallback = "/", key = "back", options = {}) => {
+    let backUrl = fallback;
+    if (document.referrer && document.referrer !== window.location.href) {
+      try {
+        const referrerUrl = new URL(document.referrer);
+        const currentUrl = new URL(window.location.href);
+        if (referrerUrl.origin === currentUrl.origin) {
+          backUrl = document.referrer;
+        }
+      } catch (error) {
+        console.warn("Error parsing referrer URL:", error);
+      }
+    }
+    const navigateAction = ctx.actions.navigate;
+    if (navigateAction) {
+      await navigateAction.fn(ctx, backUrl, key, {
+        merge: true,
+        // Default to merge for back navigation
+        ...options
+      });
+    } else {
+      console.error("Navigate action not found. Falling back to location.href");
+      window.location.href = backUrl;
+    }
+  }
+};
+const Refresh = {
+  type: "action",
+  name: "refresh",
+  fn: async (ctx, key = "refresh", options = {}) => {
+    const currentUrl = window.location.href;
+    const navigateAction = ctx.actions.navigate;
+    if (navigateAction) {
+      await navigateAction.fn(ctx, currentUrl, key, {
+        merge: true,
+        // Default to merge for refresh
+        replace: true,
+        // Replace history entry (don't add new)
+        ...options
+      });
+    } else {
+      console.error("Navigate action not found. Falling back to location.reload");
+      window.location.reload();
+    }
+  }
+};
+const Reload = {
+  type: "action",
+  name: "reload",
+  fn: (_ctx) => {
+    window.location.reload();
+  }
+};
 const Attr = {
   type: "attribute",
   name: "attr",
@@ -3208,7 +3264,7 @@ const DELETEX = createHttpMethodWithCSRF("deletex", "DELETE");
 const NavigateAction = {
   type: "action",
   name: "navigate",
-  fn: (ctx, urlOrQueries, key = "true", options = {}) => {
+  fn: async (ctx, urlOrQueries, key = "true", options = {}) => {
     if (!urlOrQueries) {
       throw ctx.runtimeErr("NavigateUrlRequired", {
         received: String(urlOrQueries)
@@ -3221,22 +3277,29 @@ const NavigateAction = {
     }
     try {
       const finalUrl = processNavigationInput(urlOrQueries, options);
-      if (typeof window.hyperNavigate !== "function") {
+      const getAction = ctx.actions.get || ctx.actions.GET;
+      if (!getAction) {
         console.error(
-          "hyperNavigate is not available. Ensure GlobalNavigate watcher is loaded."
+          "GET action not available in Datastar actions registry. Navigation falling back to full page load."
         );
         window.location.href = finalUrl;
         return;
       }
-      window.hyperNavigate(finalUrl, key);
+      const fetchArgs = {
+        headers: {
+          "HYPER-NAVIGATE": "true",
+          "HYPER-NAVIGATE-KEY": key
+        }
+      };
+      await getAction.fn(ctx, finalUrl, fetchArgs);
       if (options.replace) {
-        setTimeout(() => {
-          history.replaceState(null, "", finalUrl);
-        }, 0);
+        history.replaceState(null, "", finalUrl);
+      } else {
+        history.pushState(null, "", finalUrl);
       }
     } catch (error) {
       console.error("Navigate action failed:", error);
-      const fallbackUrl = typeof urlOrQueries === "string" ? urlOrQueries : `${window.location.pathname}?${buildQueryString$1(
+      const fallbackUrl = typeof urlOrQueries === "string" ? urlOrQueries : `${window.location.pathname}?${buildQueryString(
         urlOrQueries
       )}`;
       window.location.href = fallbackUrl;
@@ -3261,7 +3324,7 @@ function processStringUrl(url2, options) {
 }
 function processJsonQueries(queries, options) {
   const currentPath = window.location.pathname;
-  const queryString = buildQueryString$1(queries);
+  const queryString = buildQueryString(queries);
   const baseUrl = queryString ? `${currentPath}?${queryString}` : currentPath;
   if (shouldApplyMerge(options)) {
     return mergeQueryParameters(baseUrl, options.only, options.except);
@@ -3277,7 +3340,7 @@ function shouldApplyMerge(options) {
   }
   return false;
 }
-function buildQueryString$1(queries) {
+function buildQueryString(queries) {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(queries)) {
     if (value === null || value === void 0) {
@@ -3746,32 +3809,6 @@ const PatchSignals = {
     })
   )
 };
-let popstateInitialized = false;
-const PopstateHandler = {
-  type: "watcher",
-  name: "popstateHandler",
-  onGlobalInit: () => {
-    if (!popstateInitialized) {
-      popstateInitialized = true;
-      window.addEventListener("popstate", function(event) {
-        const hasNavigateElements = document.querySelector("[data-navigate]");
-        if (!hasNavigateElements) {
-          window.location.reload();
-          return;
-        }
-        if (typeof window.hyperNavigate === "function") {
-          const navigationKey = event.state?.navigationKey || "popstate";
-          window.hyperNavigate(
-            window.location.href,
-            navigationKey
-          );
-        } else {
-          window.location.reload();
-        }
-      });
-    }
-  }
-};
 let globalNavigateSetup = false;
 const GlobalNavigate = {
   type: "watcher",
@@ -3779,155 +3816,53 @@ const GlobalNavigate = {
   onGlobalInit: (ctx) => {
     if (!globalNavigateSetup) {
       globalNavigateSetup = true;
-      setupEnhancedGlobalNavigation(ctx);
+      setupPopstateHandler(ctx);
+      setupBackendNavigateHandler(ctx);
     }
   }
 };
-function setupEnhancedGlobalNavigation(ctx) {
-  const { actions: actions2, startBatch: startBatch2, endBatch: endBatch2 } = ctx;
-  const navigateWithOptions = (url2, key = "true", options = {}) => {
-    try {
-      startBatch2();
-      const getAction = actions2.get || actions2.GET;
-      if (!getAction) {
-        throw new Error(
-          "GET action not found in Datastar actions registry"
-        );
-      }
-      const fetchArgs = {
-        headers: {
-          "HYPER-NAVIGATE": "true",
-          "HYPER-NAVIGATE-KEY": key
-        }
-      };
-      const runtimeCtx = {
+function setupPopstateHandler(ctx) {
+  window.addEventListener("popstate", function(event) {
+    if (!event.state) {
+      window.location.reload();
+      return;
+    }
+    const navigateAction = ctx.actions.navigate;
+    if (navigateAction) {
+      const navigateCtx = {
         ...ctx,
         el: document.body
       };
-      getAction.fn(runtimeCtx, url2, fetchArgs);
-      setTimeout(() => {
-        if (options.replace) {
-          history.replaceState(null, "", url2);
-        } else {
-          history.pushState(null, "", url2);
-        }
-      }, 0);
-    } catch (error) {
-      console.error("Enhanced navigate failed:", error);
-      window.location.href = url2;
-    } finally {
-      endBatch2();
-    }
-  };
-  window.hyperNavigate = (url2, key = "true") => {
-    navigateWithOptions(url2, key, {});
-  };
-  window.hyperNavigateWithOptions = navigateWithOptions;
-  window.hyperNavigateWith = (url2, key = "true", merge = false, options = {}) => {
-    navigateWithOptions(url2, key, { ...options, merge });
-  };
-  window.hyperNavigateMerge = (url2, key = "true", options = {}) => {
-    navigateWithOptions(url2, key, { ...options, merge: true });
-  };
-  window.hyperNavigateClean = (url2, key = "true", options = {}) => {
-    navigateWithOptions(url2, key, { ...options, merge: false });
-  };
-  window.hyperNavigateOnly = (url2, only, key = "true") => {
-    navigateWithOptions(url2, key, { merge: true, only });
-  };
-  window.hyperNavigateExcept = (url2, except, key = "true") => {
-    navigateWithOptions(url2, key, { merge: true, except });
-  };
-  window.hyperNavigateReplace = (url2, key = "true", options = {}) => {
-    navigateWithOptions(url2, key, { ...options, replace: true });
-  };
-  window.hyperBackWithOptions = (fallbackUrl = "/", key = "back", options = {}) => {
-    try {
-      let backUrl = fallbackUrl;
-      if (document.referrer && document.referrer !== window.location.href) {
-        const referrerUrl = new URL(document.referrer);
-        const currentUrl = new URL(window.location.href);
-        if (referrerUrl.origin === currentUrl.origin) {
-          backUrl = document.referrer;
-        }
-      }
-      navigateWithOptions(backUrl, key, options);
-    } catch (error) {
-      console.error("Enhanced hyperBack failed:", error);
-      if (history.length > 1) {
-        history.back();
-      } else {
-        window.location.href = fallbackUrl;
-      }
-    }
-  };
-  window.hyperRefreshWithOptions = (key = "refresh", options = {}) => {
-    try {
-      const currentUrl = window.location.href;
-      navigateWithOptions(currentUrl, key, options);
-    } catch (error) {
-      console.error("Enhanced hyperRefresh failed:", error);
+      navigateAction.fn(
+        navigateCtx,
+        window.location.href,
+        "popstate"
+      );
+    } else {
+      console.warn(
+        "Navigate action not found. Falling back to page reload."
+      );
       window.location.reload();
     }
-  };
-  window.hyperUpdateQueries = (queries, key = "update", merge = true) => {
-    const currentPath = window.location.pathname;
-    const queryString = buildQueryString(queries);
-    const url2 = queryString ? `${currentPath}?${queryString}` : currentPath;
-    navigateWithOptions(url2, key, { merge });
-  };
-  window.hyperClearQueries = (paramNames, key = "clear") => {
-    const clearQueries = paramNames.reduce((acc, name) => {
-      acc[name] = null;
-      return acc;
-    }, {});
-    window.hyperUpdateQueries(clearQueries, key, true);
-  };
-  window.hyperResetPagination = (key = "pagination") => {
-    window.hyperUpdateQueries({ page: 1 }, key, true);
-  };
-  window.hyperBack = (fallbackUrl = "/", key = "back") => {
-    window.hyperBackWithOptions(fallbackUrl, key, { merge: true });
-  };
-  window.hyperRefresh = (key = "refresh") => {
-    window.hyperRefreshWithOptions(key, { merge: true });
-  };
-  window.hyperReload = () => {
-    window.location.reload();
-  };
-  window.hyperDebugNavigation = () => {
-    console.group("🧭 Hyper Navigation Debug");
-    console.log("Current URL:", window.location.href);
-    console.log("Current Path:", window.location.pathname);
-    console.log("Current Query:", window.location.search);
-    console.log(
-      "Current Queries:",
-      Object.fromEntries(new URLSearchParams(window.location.search))
-    );
-    console.log("Referrer:", document.referrer);
-    console.log("History Length:", history.length);
-    console.groupEnd();
-  };
+  });
 }
-function buildQueryString(queries) {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(queries)) {
-    if (value === null || value === void 0) {
-      continue;
-    }
-    if (Array.isArray(value)) {
-      value.forEach((item) => {
-        if (item !== null && item !== void 0 && item !== "") {
-          params.append(key, String(item));
-        }
-      });
-    } else if (value === "" || String(value).trim() === "") {
-      continue;
+function setupBackendNavigateHandler(ctx) {
+  document.addEventListener("hyper:navigate", function(event) {
+    const { url: url2, key, options } = event.detail;
+    const navigateAction = ctx.actions.navigate;
+    if (navigateAction) {
+      const navigateCtx = {
+        ...ctx,
+        el: document.body
+      };
+      navigateAction.fn(navigateCtx, url2, key || "true", options || {});
     } else {
-      params.set(key, String(value));
+      console.warn(
+        "Navigate action not found. Falling back to window.location."
+      );
+      window.location.href = url2;
     }
-  }
-  return params.toString();
+  });
 }
 const Navigate = {
   type: "attribute",
@@ -3944,7 +3879,10 @@ const Navigate = {
         modifiers: Array.from(mods.keys())
       });
     }
-    const executeNavigation = navigateConfig.timing ? createTimingWrapper(handleNavigation, navigateConfig.timing) : handleNavigation;
+    const handleNavigationWithCtx = (url2, config) => {
+      handleNavigation(ctx, url2, config);
+    };
+    const executeNavigation = navigateConfig.timing ? createTimingWrapper(handleNavigationWithCtx, navigateConfig.timing) : handleNavigationWithCtx;
     const handleClick = (event) => {
       const target = event.target;
       const link2 = target.closest("a[href]");
@@ -4103,26 +4041,28 @@ function createDelay(fn, delay2) {
     setTimeout(() => fn(...args), delay2);
   };
 }
-function handleNavigation(url2, config) {
+function handleNavigation(ctx, url2, config) {
   try {
     const finalUrl = processUrlWithMergeConfig(url2, config);
-    if (typeof window.hyperNavigate !== "function") {
+    const navigateAction = ctx.actions.navigate;
+    if (!navigateAction) {
       console.error(
-        "hyperNavigate not available. Falling back to standard navigation."
+        "Navigate action not available in Datastar actions registry. Falling back to standard navigation."
       );
       window.location.href = finalUrl;
       return;
     }
-    window.hyperNavigate(finalUrl, config.key);
-    if (config.replace) {
-      history.replaceState(null, "", finalUrl);
-    } else {
-      setTimeout(() => {
-        if (window.location.href !== finalUrl) {
-          history.pushState(null, "", finalUrl);
-        }
-      }, 0);
+    const navigateOptions = {
+      merge: config.merge,
+      replace: config.replace
+    };
+    if (config.only) {
+      navigateOptions.only = config.only;
     }
+    if (config.except) {
+      navigateOptions.except = config.except;
+    }
+    navigateAction.fn(ctx, finalUrl, config.key, navigateOptions);
   } catch (error) {
     console.error("Navigation failed:", error);
     window.location.href = url2;
@@ -4214,7 +4154,6 @@ load(
   ResponseInterceptor,
   PatchElements,
   PatchSignals,
-  PopstateHandler,
   GlobalNavigate,
   // Attributes
   Attr,
@@ -4243,7 +4182,10 @@ load(
   Peek,
   SetAll,
   ToggleAll,
-  FileUrl
+  FileUrl,
+  Back,
+  Refresh,
+  Reload
 );
 apply();
 export {

@@ -1644,7 +1644,7 @@ class HyperResponse implements Responsable
     /**
      * Force immediate full-page reload breaking out of reactive mode
      *
-     * Executes window.hyperReload() JavaScript function to perform complete page refresh,
+     * Calls the @reload() Datastar action to perform a complete page refresh,
      * discarding all client-side state and re-initializing the application. Used for
      * scenarios requiring complete state reset or when reactive updates are insufficient.
      *
@@ -1657,13 +1657,14 @@ class HyperResponse implements Responsable
             return $this;
         }
 
-        $script = 'window.hyperReload();';
+        // Call @reload() Datastar action (proper integration)
+        $script = '@reload()';
 
         return $this->executeScript($script, ['autoRemove' => true]);
     }
 
     /**
-     * Generate navigation script with enhanced options and smart defaults
+     * Generate navigation script using Datastar action
      *
      * @param array<string, mixed> $options
      *
@@ -1675,12 +1676,12 @@ class HyperResponse implements Responsable
         $safeKey = json_encode($key ?: 'true', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
         $safeOptions = json_encode($this->normalizeNavigationOptions($options, $url), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 
-        // Use the enhanced @navigate action syntax with smart defaults
-        return "window.hyperNavigateWithOptions({$safeUrl}, {$safeKey}, {$safeOptions});";
+        // Call @navigate Datastar action (proper integration)
+        return "@navigate({$safeUrl}, {$safeKey}, {$safeOptions})";
     }
 
     /**
-     * Generate back navigation script with enhanced options and smart defaults
+     * Generate back navigation script using Datastar action
      *
      * @param array<string, mixed> $options
      *
@@ -1692,11 +1693,12 @@ class HyperResponse implements Responsable
         $safeKey = json_encode($key, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
         $safeOptions = json_encode($this->normalizeNavigationOptions($options, $fallbackUrl), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 
-        return "window.hyperBackWithOptions({$safeFallbackUrl}, {$safeKey}, {$safeOptions});";
+        // Call @back Datastar action (proper integration)
+        return "@back({$safeFallbackUrl}, {$safeKey}, {$safeOptions})";
     }
 
     /**
-     * Generate refresh script with enhanced options
+     * Generate refresh script using Datastar action
      *
      * @param array<string, mixed> $options
      *
@@ -1709,7 +1711,8 @@ class HyperResponse implements Responsable
         $refreshOptions = ['merge' => $options['merge'] ?? true] + $options;
         $safeOptions = json_encode($this->normalizeNavigationOptions($refreshOptions, ''), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 
-        return "window.hyperRefreshWithOptions({$safeKey}, {$safeOptions});";
+        // Call @refresh Datastar action (proper integration)
+        return "@refresh({$safeKey}, {$safeOptions})";
     }
 
     /**
@@ -1821,18 +1824,21 @@ class HyperResponse implements Responsable
         $urlManager = app(\Dancycodes\Hyper\Services\HyperUrlManager::class);
         $urlManager->enforceUrlSingleUse();
 
-        // Process input based on type
+        // Process input based on type - NO backend merging, let frontend handle it
         if (is_array($url)) {
-            // JSON query array navigation
-            $finalUrl = $this->processJsonNavigation($url, $options);
+            // JSON query array navigation - convert to current path with queries
+            $queryString = $this->buildQueryString($url);
+            $currentPath = request()->getPathInfo();
+            $finalUrl = $queryString ? "{$currentPath}?{$queryString}" : $currentPath;
         } else {
-            // Traditional string URL navigation
-            $finalUrl = $this->processStringNavigation($url, $options);
+            // Traditional string URL navigation - send as-is
+            $finalUrl = $url;
         }
 
         $urlManager->validateUrl($finalUrl);
 
         // Generate navigation script with comprehensive options
+        // Frontend @navigate action will handle all merging based on window.location
         $script = $this->generateEnhancedNavigateScript($finalUrl, $key, $options);
 
         return $this->executeScript($script, ['autoRemove' => true]);
@@ -2155,7 +2161,7 @@ class HyperResponse implements Responsable
     }
 
     /**
-     * Generate enhanced navigation script with all options
+     * Generate enhanced navigation script using Datastar action
      *
      * @param string $url Target URL
      * @param string $key Navigation key
@@ -2165,20 +2171,40 @@ class HyperResponse implements Responsable
      */
     private function generateEnhancedNavigateScript(string $url, string $key, array $options): string
     {
-        $safeUrl = json_encode($url, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-        $safeKey = json_encode($key, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-
-        // Build options for frontend
+        // Build options for frontend - pass ALL navigation options
         $frontendOptions = [];
+
+        if (isset($options['merge'])) {
+            $frontendOptions['merge'] = (bool) $options['merge'];
+        }
+
+        if (!empty($options['only'])) {
+            $frontendOptions['only'] = $options['only'];
+        }
+
+        if (!empty($options['except'])) {
+            $frontendOptions['except'] = $options['except'];
+        }
 
         if (!empty($options['replace'])) {
             $frontendOptions['replace'] = true;
         }
 
-        $safeOptions = json_encode($frontendOptions, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+        // DATASTAR-NATIVE APPROACH: Use signals to trigger navigation
+        // Set a special __hyperNavigate signal that the frontend watcher will detect
+        // This is the proper Datastar way - reactive signal-based triggering!
+        $navigationData = [
+            'url' => $url,
+            'key' => $key,
+            'options' => $frontendOptions,
+            'timestamp' => microtime(true), // Ensure uniqueness to trigger reactivity
+        ];
 
-        // Use enhanced navigation function
-        return "window.hyperNavigateWithOptions({$safeUrl}, {$safeKey}, {$safeOptions});";
+        $safeData = json_encode($navigationData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES);
+
+        // Dispatch a custom DOM event that our navigate watcher will listen to
+        // This works in script execution context and is Datastar-compatible
+        return "document.dispatchEvent(new CustomEvent('hyper:navigate', { detail: {$safeData} }))";
     }
 
     // COMPATIBILITY METHODS - DEPRECATED BUT MAINTAINED

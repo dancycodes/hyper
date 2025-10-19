@@ -1391,8 +1391,8 @@ class HyperResponseTest extends TestCase
 
         $data = $events[0]['data'];
 
-        // Verify navigation script is present
-        $this->assertStringContainsString('hyperNavigateWithOptions', $data);
+        // Verify navigation script dispatches hyper:navigate event (Datastar-native approach)
+        $this->assertStringContainsString('hyper:navigate', $data);
         $this->assertStringContainsString($targetUrl, $data);
     }
 
@@ -1419,8 +1419,8 @@ class HyperResponseTest extends TestCase
 
         $data = $events[0]['data'];
 
-        // Verify navigation with merge is generated
-        $this->assertStringContainsString('hyperNavigateWithOptions', $data);
+        // Verify navigation with merge dispatches hyper:navigate event
+        $this->assertStringContainsString('hyper:navigate', $data);
     }
 
     /** @test */
@@ -1446,8 +1446,8 @@ class HyperResponseTest extends TestCase
 
         $data = $events[0]['data'];
 
-        // Verify clean navigation (no merge)
-        $this->assertStringContainsString('hyperNavigateWithOptions', $data);
+        // Verify clean navigation (no merge) dispatches hyper:navigate event
+        $this->assertStringContainsString('hyper:navigate', $data);
         $this->assertStringContainsString($targetUrl, $data);
     }
 
@@ -1475,8 +1475,8 @@ class HyperResponseTest extends TestCase
 
         $data = $events[0]['data'];
 
-        // Verify navigation is present
-        $this->assertStringContainsString('hyperNavigateWithOptions', $data);
+        // Verify navigation dispatches hyper:navigate event
+        $this->assertStringContainsString('hyper:navigate', $data);
     }
 
     /** @test */
@@ -1503,8 +1503,8 @@ class HyperResponseTest extends TestCase
 
         $data = $events[0]['data'];
 
-        // Verify navigation is present
-        $this->assertStringContainsString('hyperNavigateWithOptions', $data);
+        // Verify navigation dispatches hyper:navigate event
+        $this->assertStringContainsString('hyper:navigate', $data);
     }
 
     /** @test */
@@ -1527,8 +1527,8 @@ class HyperResponseTest extends TestCase
 
         $data = $events[0]['data'];
 
-        // Verify replace navigation is present
-        $this->assertStringContainsString('hyperNavigateWithOptions', $data);
+        // Verify replace navigation dispatches hyper:navigate event
+        $this->assertStringContainsString('hyper:navigate', $data);
         // Replace mode should be in the options
         $this->assertStringContainsString('replace', $data);
     }
@@ -1556,8 +1556,8 @@ class HyperResponseTest extends TestCase
 
         $data = $events[0]['data'];
 
-        // Verify query update navigation
-        $this->assertStringContainsString('hyperNavigateWithOptions', $data);
+        // Verify query update navigation dispatches hyper:navigate event
+        $this->assertStringContainsString('hyper:navigate', $data);
     }
 
     /** @test */
@@ -1583,8 +1583,8 @@ class HyperResponseTest extends TestCase
 
         $data = $events[0]['data'];
 
-        // Verify clear queries navigation
-        $this->assertStringContainsString('hyperNavigateWithOptions', $data);
+        // Verify clear queries navigation dispatches hyper:navigate event
+        $this->assertStringContainsString('hyper:navigate', $data);
     }
 
     /** @test */
@@ -1609,8 +1609,8 @@ class HyperResponseTest extends TestCase
 
         $data = $events[0]['data'];
 
-        // Verify pagination reset (page=1)
-        $this->assertStringContainsString('hyperNavigateWithOptions', $data);
+        // Verify pagination reset (page=1) dispatches hyper:navigate event
+        $this->assertStringContainsString('hyper:navigate', $data);
         // Should set page to 1
         $this->assertStringContainsString('page', $data);
     }
