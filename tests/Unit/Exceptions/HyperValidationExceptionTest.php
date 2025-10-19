@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class HyperValidationExceptionTest extends TestCase
 {
+    protected static $latestResponse;
+
     /** @test */
     public function test_constructor_stores_validation_errors()
     {

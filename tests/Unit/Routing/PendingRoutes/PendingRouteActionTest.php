@@ -15,6 +15,8 @@ use ReflectionMethod;
  */
 class PendingRouteActionTest extends TestCase
 {
+    protected static $latestResponse;
+
     private function getTestMethod(): ReflectionMethod
     {
         return new ReflectionMethod($this, 'setUp');

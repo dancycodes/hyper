@@ -14,6 +14,8 @@ use Dancycodes\Hyper\Tests\TestCase;
  */
 class DoNotDiscoverAttributeTest extends TestCase
 {
+    protected static $latestResponse;
+
     /** @test */
     public function test_do_not_discover_attribute_implements_discovery_attribute()
     {

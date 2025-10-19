@@ -14,6 +14,8 @@ use SplFileInfo;
  */
 class PendingRouteFactoryTest extends TestCase
 {
+    protected static $latestResponse;
+
     /** @test */
     public function test_factory_stores_base_path()
     {

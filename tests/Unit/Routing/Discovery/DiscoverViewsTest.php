@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Route;
  */
 class DiscoverViewsTest extends TestCase
 {
+    protected static $latestResponse;
+
     /** @test */
     public function test_in_method_discovers_views()
     {

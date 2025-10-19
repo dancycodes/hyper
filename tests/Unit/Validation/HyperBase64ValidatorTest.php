@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Validator as ValidatorFacade;
  */
 class HyperBase64ValidatorTest extends TestCase
 {
+    protected static $latestResponse;
+
     protected HyperBase64Validator $validator;
 
     // Valid 1x1 PNG image (smallest possible PNG)

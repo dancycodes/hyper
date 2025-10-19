@@ -14,6 +14,8 @@ use Illuminate\Support\Collection;
  */
 class HyperSignalsDirectiveTest extends TestCase
 {
+    protected static $latestResponse;
+
     protected HyperSignalsDirective $directive;
 
     protected function setUp(): void

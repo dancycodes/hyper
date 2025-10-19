@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\View;
  */
 class BladeFragmentTest extends TestCase
 {
+    protected static $latestResponse;
+
     protected function setUp(): void
     {
         parent::setUp();

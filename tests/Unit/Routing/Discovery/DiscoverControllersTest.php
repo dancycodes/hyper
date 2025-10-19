@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Route;
  */
 class DiscoverControllersTest extends TestCase
 {
+    protected static $latestResponse;
+
     /** @test */
     public function test_in_method_discovers_controllers()
     {

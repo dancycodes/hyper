@@ -15,6 +15,8 @@ use InvalidArgumentException;
  */
 class HyperFileStorageTest extends TestCase
 {
+    protected static $latestResponse;
+
     protected HyperFileStorage $storage;
 
     protected function setUp(): void

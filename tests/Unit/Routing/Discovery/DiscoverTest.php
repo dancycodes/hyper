@@ -15,6 +15,8 @@ use Dancycodes\Hyper\Tests\TestCase;
  */
 class DiscoverTest extends TestCase
 {
+    protected static $latestResponse;
+
     /** @test */
     public function test_discover_controllers_factory_method()
     {

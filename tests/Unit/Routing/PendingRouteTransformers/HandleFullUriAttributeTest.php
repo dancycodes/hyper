@@ -8,6 +8,8 @@ use Dancycodes\Hyper\Tests\TestCase;
 
 class HandleFullUriAttributeTest extends TestCase
 {
+    protected static $latestResponse;
+
     /** @test */
     public function test_transform_applies_transformation()
     {
