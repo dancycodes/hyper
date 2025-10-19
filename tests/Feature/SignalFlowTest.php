@@ -28,19 +28,16 @@ class SignalFlowTest extends TestCase
                 'received_name' => $name,
             ]);
         });
-
         // Simulate frontend sending signals
         $signalsData = json_encode([
             'count' => 5,
             'name' => 'Test User',
         ]);
-
         $this->call('POST', '/test-signal-flow', [
             'datastar' => $signalsData,
         ], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         // Verify signals were received
         $this->assertEquals(5, request()->signals('count'));
         $this->assertEquals('Test User', request()->signals('name'));
@@ -55,11 +52,9 @@ class SignalFlowTest extends TestCase
                 'message' => 'Updated from backend',
             ]);
         });
-
         $response = $this->call('GET', '/update-signals', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
         // Signal updates are sent via SSE
         $this->assertInstanceOf(\Symfony\Component\HttpFoundation\StreamedResponse::class, $response->baseResponse);
@@ -76,11 +71,9 @@ class SignalFlowTest extends TestCase
                 'active' => true,
             ]);
         });
-
         $response = $this->call('POST', '/batch-update', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -95,19 +88,16 @@ class SignalFlowTest extends TestCase
 
             return hyper()->signals(['validated' => true]);
         });
-
         // Valid data
         $validSignals = json_encode([
             'email' => 'user@example.com',
             'age' => 25,
         ]);
-
         $response = $this->call('POST', '/validate-signals', [
             'datastar' => $validSignals,
         ], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -123,15 +113,12 @@ class SignalFlowTest extends TestCase
                 'transformed' => $transformedName,
             ]);
         });
-
         $signals = json_encode(['name' => 'john doe']);
-
         $this->call('POST', '/transform-signals', [
             'datastar' => $signals,
         ], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         // Verify transformation happened
         $this->assertEquals('john doe', request()->signals('name'));
     }
@@ -152,20 +139,17 @@ class SignalFlowTest extends TestCase
                 ],
             ]);
         });
-
         $signals = json_encode([
             'user' => [
                 'name' => 'John',
                 'email' => 'john@example.com',
             ],
         ]);
-
         $response = $this->call('POST', '/nested-signals', [
             'datastar' => $signals,
         ], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -180,17 +164,14 @@ class SignalFlowTest extends TestCase
                 'count' => count($items),
             ]);
         });
-
         $signals = json_encode([
             'items' => ['apple', 'banana', 'cherry'],
         ]);
-
         $response = $this->call('POST', '/array-signals', [
             'datastar' => $signals,
         ], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -205,17 +186,14 @@ class SignalFlowTest extends TestCase
                 'hasConfig' => !empty($config),
             ]);
         });
-
         $signals = json_encode([
             'config' => ['theme' => 'dark', 'lang' => 'en'],
         ]);
-
         $response = $this->call('POST', '/object-signals', [
             'datastar' => $signals,
         ], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -227,13 +205,11 @@ class SignalFlowTest extends TestCase
             '_tempValue' => 'temporary',
             'persistedValue' => 'saved',
         ]);
-
         $this->call('POST', '/', [
             'datastar' => $signals,
         ], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         // Both should be readable if sent
         $this->assertEquals('temporary', request()->signals('_tempValue'));
         $this->assertEquals('saved', request()->signals('persistedValue'));
@@ -248,11 +224,9 @@ class SignalFlowTest extends TestCase
                 'globalState' => 'also updated',
             ]);
         });
-
         $response = $this->call('GET', '/update-local', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -267,17 +241,14 @@ class SignalFlowTest extends TestCase
                 'verified' => true,
             ]);
         });
-
         $signals = json_encode([
             'userId_' => 123,
         ]);
-
         $response = $this->call('POST', '/locked-signals', [
             'datastar' => $signals,
         ], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -290,11 +261,9 @@ class SignalFlowTest extends TestCase
                 ->signals(['name' => 'John'])
                 ->signals(['count' => 2]); // Should overwrite previous count
         });
-
         $response = $this->call('POST', '/merge-signals', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -307,11 +276,9 @@ class SignalFlowTest extends TestCase
                 'toDelete' => null, // Null should delete the signal
             ]);
         });
-
         $response = $this->call('POST', '/delete-signal', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -326,17 +293,14 @@ class SignalFlowTest extends TestCase
                 'isNull' => is_null($value),
             ]);
         });
-
         $signals = json_encode([
             'nullableValue' => null,
         ]);
-
         $response = $this->call('POST', '/null-signals', [
             'datastar' => $signals,
         ], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -360,7 +324,6 @@ class SignalFlowTest extends TestCase
                 ],
             ]);
         });
-
         $signals = json_encode([
             'stringValue' => 'text',
             'intValue' => 42,
@@ -368,13 +331,11 @@ class SignalFlowTest extends TestCase
             'boolValue' => true,
             'arrayValue' => [1, 2, 3],
         ]);
-
         $response = $this->call('POST', '/type-signals', [
             'datastar' => $signals,
         ], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -389,7 +350,6 @@ class SignalFlowTest extends TestCase
                 'processed' => true,
             ]);
         });
-
         // Complex nested data
         $complexData = [
             'nested' => [
@@ -400,15 +360,12 @@ class SignalFlowTest extends TestCase
             'array' => [1, 2, 3],
             'mixed' => ['string', 42, true],
         ];
-
         $signals = json_encode(['data' => $complexData]);
-
         $response = $this->call('POST', '/encode-decode', [
             'datastar' => $signals,
         ], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -423,17 +380,14 @@ class SignalFlowTest extends TestCase
                 'escaped' => htmlspecialchars($text),
             ]);
         });
-
         $signals = json_encode([
             'text' => '<script>alert("XSS")</script> & "quotes"',
         ]);
-
         $response = $this->call('POST', '/special-chars', [
             'datastar' => $signals,
         ], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -448,25 +402,18 @@ class SignalFlowTest extends TestCase
                 'processed' => true,
             ]);
         });
-
         // Create a large array
         $largeArray = array_fill(0, 100, ['id' => 1, 'name' => 'Item', 'data' => str_repeat('x', 100)]);
-
         $signals = json_encode(['items' => $largeArray]);
-
         $startTime = microtime(true);
-
         $response = $this->call('POST', '/large-payload', [
             'datastar' => $signals,
         ], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $endTime = microtime(true);
         $executionTime = ($endTime - $startTime) * 1000; // Convert to milliseconds
-
         $response->assertOk();
-
         // Performance assertion - should process in reasonable time
         $this->assertLessThan(2000, $executionTime, 'Large payload processing took too long');
     }
@@ -482,20 +429,16 @@ class SignalFlowTest extends TestCase
                 'timestamp' => time(),
             ]);
         });
-
         // Simulate multiple requests
         for ($i = 0; $i < 3; $i++) {
             $signals = json_encode(['counter' => $i]);
-
             $response = $this->call('POST', '/concurrent', [
                 'datastar' => $signals,
             ], [], [], [
                 'HTTP_DATASTAR_REQUEST' => 'true',
             ]);
-
             $response->assertOk();
         }
-
         // All requests should succeed
         $this->assertTrue(true);
     }
@@ -511,7 +454,6 @@ class SignalFlowTest extends TestCase
                 'requestId' => uniqid(),
             ]);
         });
-
         // First request
         $signals1 = json_encode(['persistentValue' => 'first']);
         $response1 = $this->call('POST', '/consistency', [
@@ -519,9 +461,7 @@ class SignalFlowTest extends TestCase
         ], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response1->assertOk();
-
         // Second request with different value
         $signals2 = json_encode(['persistentValue' => 'second']);
         $response2 = $this->call('POST', '/consistency', [
@@ -529,9 +469,7 @@ class SignalFlowTest extends TestCase
         ], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response2->assertOk();
-
         // Each request should handle its own signals independently
         $this->assertTrue(true);
     }

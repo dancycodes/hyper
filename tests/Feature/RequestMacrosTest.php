@@ -15,13 +15,14 @@ use Illuminate\Support\Facades\Route;
  */
 class RequestMacrosTest extends TestCase
 {
+    protected static $latestResponse;
+
     /** @test */
     public function test_is_hyper_macro_detects_hyper_requests()
     {
         // Create a Hyper request
         $request = Request::create('/', 'GET');
         $request->headers->set('Datastar-Request', 'true');
-
         // Should detect as Hyper request
         $this->assertTrue($request->isHyper());
     }
@@ -31,7 +32,6 @@ class RequestMacrosTest extends TestCase
     {
         // Create a normal request
         $request = Request::create('/', 'GET');
-
         // Should NOT detect as Hyper request
         $this->assertFalse($request->isHyper());
     }
@@ -40,10 +40,8 @@ class RequestMacrosTest extends TestCase
     public function test_signals_macro_returns_signal_manager()
     {
         $request = Request::create('/', 'GET');
-
         // signals() without parameters should return HyperSignal instance
         $signals = $request->signals();
-
         $this->assertInstanceOf(HyperSignal::class, $signals);
     }
 
@@ -55,17 +53,14 @@ class RequestMacrosTest extends TestCase
             'count' => 5,
             'name' => 'Test',
         ]);
-
         $this->call('POST', '/', [
             'datastar' => $signalsData,
         ], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         // Use the global request() helper which has the signals data
         $count = request()->signals('count');
         $this->assertEquals(5, $count);
-
         $name = request()->signals('name');
         $this->assertEquals('Test', $name);
     }
@@ -74,10 +69,8 @@ class RequestMacrosTest extends TestCase
     public function test_signals_macro_with_key_and_default()
     {
         $request = Request::create('/', 'GET');
-
         // signals($key, $default) should return default for missing key
         $result = $request->signals('missing', 'default-value');
-
         $this->assertEquals('default-value', $result);
     }
 
@@ -87,7 +80,6 @@ class RequestMacrosTest extends TestCase
         // Create a request without HYPER-NAVIGATE header
         $request = Request::create('/', 'GET');
         $this->assertFalse($request->isHyperNavigate());
-
         // Create a request with HYPER-NAVIGATE header
         $navigateRequest = Request::create('/', 'GET');
         $navigateRequest->headers->set('HYPER-NAVIGATE', 'true');
@@ -101,10 +93,8 @@ class RequestMacrosTest extends TestCase
         $request = Request::create('/', 'GET');
         $request->headers->set('HYPER-NAVIGATE', 'true');
         $request->headers->set('HYPER-NAVIGATE-KEY', 'sidebar');
-
         // Should match the exact key
         $this->assertTrue($request->isHyperNavigate('sidebar'));
-
         // Should not match different key
         $this->assertFalse($request->isHyperNavigate('header'));
     }
@@ -116,11 +106,9 @@ class RequestMacrosTest extends TestCase
         $request = Request::create('/', 'GET');
         $request->headers->set('HYPER-NAVIGATE', 'true');
         $request->headers->set('HYPER-NAVIGATE-KEY', 'sidebar, header');
-
         // Should match if any key matches
         $this->assertTrue($request->isHyperNavigate(['sidebar', 'footer']));
         $this->assertTrue($request->isHyperNavigate(['header']));
-
         // Should not match if no keys match
         $this->assertFalse($request->isHyperNavigate(['footer', 'nav']));
     }
@@ -131,7 +119,6 @@ class RequestMacrosTest extends TestCase
         // Request without navigate key
         $request = Request::create('/', 'GET');
         $this->assertNull($request->hyperNavigateKey());
-
         // Request with navigate key
         $navigateRequest = Request::create('/', 'GET');
         $navigateRequest->headers->set('HYPER-NAVIGATE-KEY', 'sidebar');
@@ -144,12 +131,10 @@ class RequestMacrosTest extends TestCase
         // Request without navigate keys
         $request = Request::create('/', 'GET');
         $this->assertEquals([], $request->hyperNavigateKeys());
-
         // Request with single key
         $singleKeyRequest = Request::create('/', 'GET');
         $singleKeyRequest->headers->set('HYPER-NAVIGATE-KEY', 'sidebar');
         $this->assertEquals(['sidebar'], $singleKeyRequest->hyperNavigateKeys());
-
         // Request with multiple keys
         $multiKeyRequest = Request::create('/', 'GET');
         $multiKeyRequest->headers->set('HYPER-NAVIGATE-KEY', 'sidebar, header, footer');
@@ -168,10 +153,8 @@ class RequestMacrosTest extends TestCase
                 'navigateKeys' => $request->hyperNavigateKeys(),
             ]);
         });
-
         // Make a request to the route
         $response = $this->get('/test-macros');
-
         // Should execute without errors
         $response->assertOk();
         $response->assertJson([
@@ -187,14 +170,11 @@ class RequestMacrosTest extends TestCase
     {
         // Test that macros are available on the Request class globally
         // This ensures they work in middleware context as well
-
         // Create a Hyper request to test the macros
         $request = Request::create('/', 'GET');
         $request->headers->set('Datastar-Request', 'true');
-
         // Set the request in the container
         $this->app->instance('request', $request);
-
         // Test that all macros work on the request
         $this->assertTrue($request->isHyper());
         $this->assertInstanceOf(HyperSignal::class, $request->signals());

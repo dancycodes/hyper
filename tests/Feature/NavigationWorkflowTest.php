@@ -13,17 +13,17 @@ use Illuminate\Support\Facades\Route;
  */
 class NavigationWorkflowTest extends TestCase
 {
+    protected static $latestResponse;
+
     /** @test */
     public function test_navigate_method_updates_url()
     {
         Route::get('/navigate-test', function () {
             return hyper()->navigate('/dashboard');
         });
-
         $response = $this->call('GET', '/navigate-test', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -35,11 +35,9 @@ class NavigationWorkflowTest extends TestCase
                 ->signals(['count' => 5])
                 ->navigate('/next-page');
         });
-
         $response = $this->call('GET', '/navigate-preserve', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -49,11 +47,9 @@ class NavigationWorkflowTest extends TestCase
         Route::get('/navigate-merge', function () {
             return hyper()->navigateMerge('/search?q=test');
         });
-
         $response = $this->call('GET', '/navigate-merge', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -63,11 +59,9 @@ class NavigationWorkflowTest extends TestCase
         Route::get('/navigate-clean', function () {
             return hyper()->navigateClean('/page');
         });
-
         $response = $this->call('GET', '/navigate-clean', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -77,11 +71,9 @@ class NavigationWorkflowTest extends TestCase
         Route::get('/navigate-only', function () {
             return hyper()->navigateOnly('/filter', ['category', 'sort']);
         });
-
         $response = $this->call('GET', '/navigate-only', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -91,11 +83,9 @@ class NavigationWorkflowTest extends TestCase
         Route::get('/navigate-except', function () {
             return hyper()->navigateExcept('/list', ['page']);
         });
-
         $response = $this->call('GET', '/navigate-except', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -105,15 +95,12 @@ class NavigationWorkflowTest extends TestCase
         Route::get('/target', function () {
             return 'Target';
         })->name('target.page');
-
         Route::get('/navigate-route', function () {
             return hyper()->navigate(route('target.page'));
         });
-
         $response = $this->call('GET', '/navigate-route', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -123,11 +110,9 @@ class NavigationWorkflowTest extends TestCase
         Route::get('/navigate-hash', function () {
             return hyper()->navigate('/page#section');
         });
-
         $response = $this->call('GET', '/navigate-hash', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -139,11 +124,9 @@ class NavigationWorkflowTest extends TestCase
                 ->signals(['updated' => true])
                 ->navigate('/dashboard', 'sidebar');
         });
-
         $response = $this->call('GET', '/navigate-key', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -153,11 +136,9 @@ class NavigationWorkflowTest extends TestCase
         Route::get('/check-navigate', function () {
             return hyper()->navigate('/test');
         });
-
         $response = $this->call('GET', '/check-navigate', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -167,11 +148,9 @@ class NavigationWorkflowTest extends TestCase
         Route::get('/check-navigate-key', function () {
             return hyper()->navigate('/test', 'content');
         });
-
         $response = $this->call('GET', '/check-navigate-key', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -183,20 +162,16 @@ class NavigationWorkflowTest extends TestCase
 
             return hyper()->signals(['isNavigate' => $isNavigate]);
         });
-
         // Without navigate header
         $response1 = $this->call('GET', '/detect-navigate', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response1->assertOk();
-
         // With navigate header
         $response2 = $this->call('GET', '/detect-navigate', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
             'HTTP_HYPER_NAVIGATE' => 'true',
         ]);
-
         $response2->assertOk();
     }
 
@@ -207,15 +182,12 @@ class NavigationWorkflowTest extends TestCase
         Route::get('/page1', function () {
             return hyper()->signals(['page' => 1]);
         });
-
         Route::get('/page2', function () {
             return hyper()->navigate('/page1');
         });
-
         $response = $this->call('GET', '/page2', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -225,11 +197,9 @@ class NavigationWorkflowTest extends TestCase
         Route::get('/forward', function () {
             return hyper()->navigate('/next');
         });
-
         $response = $this->call('GET', '/forward', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -241,11 +211,9 @@ class NavigationWorkflowTest extends TestCase
                 ->signals(['visited' => true])
                 ->navigate('/target');
         });
-
         $response = $this->call('GET', '/history-test', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -257,13 +225,10 @@ class NavigationWorkflowTest extends TestCase
                 ->signals(['submitted' => true])
                 ->navigate('/success');
         });
-
         $signals = json_encode(['name' => 'Test']);
-
         $response = $this->call('POST', '/form-navigate', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -273,11 +238,9 @@ class NavigationWorkflowTest extends TestCase
         Route::get('/redirect-navigate', function () {
             return hyper()->navigate('/final-destination');
         });
-
         $response = $this->call('GET', '/redirect-navigate', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -289,16 +252,12 @@ class NavigationWorkflowTest extends TestCase
                 ->signals(['data' => range(1, 100)])
                 ->navigate('/next');
         });
-
         $startTime = microtime(true);
-
         $response = $this->call('GET', '/perf-navigate', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $endTime = microtime(true);
         $executionTime = ($endTime - $startTime) * 1000;
-
         $response->assertOk();
         $this->assertLessThan(1000, $executionTime, 'Navigation took too long');
     }

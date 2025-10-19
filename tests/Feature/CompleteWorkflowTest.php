@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Storage;
  */
 class CompleteWorkflowTest extends TestCase
 {
+    protected static $latestResponse;
+
     protected string $validPngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
 
     protected function setUp(): void
@@ -33,13 +35,10 @@ class CompleteWorkflowTest extends TestCase
                 ->signals(['todos' => [['id' => 1, 'title' => signals('title'), 'done' => false]]])
                 ->signals(['title' => '']); // Clear input
         });
-
         $signals = json_encode(['title' => 'Buy groceries']);
-
         $response = $this->call('POST', '/todos', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -51,7 +50,6 @@ class CompleteWorkflowTest extends TestCase
                 'name' => 'required',
                 'avatar' => 'required|b64image|b64max:1024',
             ]);
-
             $path = hyperStorage()->store('avatar', 'avatars', 'public');
 
             return hyper()->signals([
@@ -59,16 +57,13 @@ class CompleteWorkflowTest extends TestCase
                 'avatarUrl' => $path,
             ]);
         });
-
         $signals = json_encode([
             'name' => 'John Doe',
             'avatar' => $this->validPngBase64,
         ]);
-
         $response = $this->call('POST', '/profile', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -77,11 +72,9 @@ class CompleteWorkflowTest extends TestCase
     {
         Route::post('/wizard/step/{step}', function ($step) {
             $currentStep = (int) $step;
-
             if ($currentStep === 1) {
                 signals()->validate(['email' => 'required|email']);
             }
-
             if ($currentStep === 2) {
                 signals()->validate(['password' => 'required|min:8']);
             }
@@ -91,12 +84,10 @@ class CompleteWorkflowTest extends TestCase
                 'completed' => $currentStep >= 3,
             ]);
         });
-
         // Step 1
         $response1 = $this->call('POST', '/wizard/step/1', [
             'datastar' => json_encode(['email' => 'test@example.com']),
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response1->assertOk();
     }
 
@@ -112,11 +103,9 @@ class CompleteWorkflowTest extends TestCase
                 'searching' => false,
             ]);
         });
-
         $response = $this->call('GET', '/search', [
             'datastar' => json_encode(['search' => 'test']),
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -133,11 +122,9 @@ class CompleteWorkflowTest extends TestCase
                 'hasMore' => $page < 10,
             ]);
         });
-
         $response = $this->call('GET', '/items', [
             'datastar' => json_encode(['page' => 2]),
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -150,18 +137,15 @@ class CompleteWorkflowTest extends TestCase
                 'modalContent' => 'Modal content here',
             ]);
         });
-
         Route::post('/modal/close', function () {
             return hyper()->signals([
                 'modalOpen' => false,
                 'modalContent' => '',
             ]);
         });
-
         $response = $this->call('POST', '/modal/open', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -175,11 +159,9 @@ class CompleteWorkflowTest extends TestCase
                 ],
             ]);
         });
-
         $response = $this->call('POST', '/notify', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -188,7 +170,6 @@ class CompleteWorkflowTest extends TestCase
     {
         Route::post('/chat/send', function () {
             $message = signals('message', '');
-
             $messages = signals('messages', []);
             $messages[] = ['user' => 'Me', 'text' => $message];
 
@@ -197,16 +178,13 @@ class CompleteWorkflowTest extends TestCase
                 'message' => '', // Clear input
             ]);
         });
-
         $signals = json_encode([
             'message' => 'Hello world',
             'messages' => [],
         ]);
-
         $response = $this->call('POST', '/chat/send', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -221,11 +199,9 @@ class CompleteWorkflowTest extends TestCase
                 'lastUpdate' => now()->toIso8601String(),
             ]);
         });
-
         $response = $this->call('GET', '/dashboard/stats', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -235,7 +211,6 @@ class CompleteWorkflowTest extends TestCase
         Route::post('/cart/add', function () {
             $cart = signals('cart', []);
             $productId = signals('productId');
-
             $cart[] = ['id' => $productId, 'qty' => 1];
 
             return hyper()->signals([
@@ -243,16 +218,13 @@ class CompleteWorkflowTest extends TestCase
                 'cartCount' => count($cart),
             ]);
         });
-
         $signals = json_encode([
             'cart' => [],
             'productId' => 123,
         ]);
-
         $response = $this->call('POST', '/cart/add', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -270,16 +242,13 @@ class CompleteWorkflowTest extends TestCase
                 'user' => ['name' => 'John Doe', 'email' => signals('email')],
             ]);
         });
-
         $signals = json_encode([
             'email' => 'john@example.com',
             'password' => 'secret123',
         ]);
-
         $response = $this->call('POST', '/auth/login', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -289,11 +258,9 @@ class CompleteWorkflowTest extends TestCase
         Route::get('/posts', function () {
             $page = signals('page', 1);
             $posts = signals('posts', []);
-
             $newPosts = [
                 ['id' => $page * 10, 'title' => "Post {$page}"],
             ];
-
             $posts = array_merge($posts, $newPosts);
 
             return hyper()->signals([
@@ -302,13 +269,10 @@ class CompleteWorkflowTest extends TestCase
                 'hasMore' => $page < 5,
             ]);
         });
-
         $signals = json_encode(['page' => 1, 'posts' => []]);
-
         $response = $this->call('GET', '/posts', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -319,7 +283,6 @@ class CompleteWorkflowTest extends TestCase
             $items = signals('items', []);
             $from = signals('from');
             $to = signals('to');
-
             // Simple reorder logic
             $item = $items[$from];
             unset($items[$from]);
@@ -327,17 +290,14 @@ class CompleteWorkflowTest extends TestCase
 
             return hyper()->signals(['items' => array_values($items)]);
         });
-
         $signals = json_encode([
             'items' => ['A', 'B', 'C', 'D'],
             'from' => 0,
             'to' => 2,
         ]);
-
         $response = $this->call('POST', '/items/reorder', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -355,11 +315,9 @@ class CompleteWorkflowTest extends TestCase
                 ],
             ]);
         });
-
         $response = $this->call('POST', '/parent/update', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -368,17 +326,14 @@ class CompleteWorkflowTest extends TestCase
     {
         Route::post('/form/submit', function () {
             $accountType = signals('accountType');
-
             $rules = [
                 'name' => 'required',
                 'accountType' => 'required|in:personal,business',
             ];
-
             if ($accountType === 'business') {
                 $rules['company'] = 'required';
                 $rules['taxId'] = 'required';
             }
-
             signals()->validate($rules);
 
             return hyper()->signals([
@@ -386,18 +341,15 @@ class CompleteWorkflowTest extends TestCase
                 'accountType' => $accountType,
             ]);
         });
-
         $signals = json_encode([
             'name' => 'John Doe',
             'accountType' => 'business',
             'company' => 'Acme Corp',
             'taxId' => '123456789',
         ]);
-
         $response = $this->call('POST', '/form/submit', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 }

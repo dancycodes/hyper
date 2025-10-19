@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Route;
  */
 class LockedSignalsWorkflowTest extends TestCase
 {
+    protected static $latestResponse;
+
     /** @test */
     public function test_locked_signal_created_with_underscore_suffix()
     {
@@ -23,11 +25,9 @@ class LockedSignalsWorkflowTest extends TestCase
                 'regularSignal' => 'value',
             ]);
         });
-
         $response = $this->call('POST', '/create-locked', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -38,11 +38,9 @@ class LockedSignalsWorkflowTest extends TestCase
             // First call - store locked signal
             return hyper()->signals(['userId_' => 456]);
         });
-
         $this->call('POST', '/store-locked', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         // Session should contain locked signal
         $this->assertTrue(true); // Session storage verified internally
     }
@@ -56,17 +54,14 @@ class LockedSignalsWorkflowTest extends TestCase
                 'roleId_' => 1,
             ]);
         });
-
         // First call
         $this->call('POST', '/merge-locked', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         // Second call with additional locked signal
         $response = $this->call('POST', '/merge-locked', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -78,13 +73,10 @@ class LockedSignalsWorkflowTest extends TestCase
 
             return hyper()->signals(['verified' => true]);
         });
-
         $signals = json_encode(['userId_' => 123]);
-
         $response = $this->call('POST', '/validate-locked', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -102,13 +94,10 @@ class LockedSignalsWorkflowTest extends TestCase
                 return hyper()->signals(['tampered' => true]);
             }
         });
-
         $signals = json_encode(['userId_' => 123]);
-
         $response = $this->call('POST', '/detect-tampering', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -123,13 +112,10 @@ class LockedSignalsWorkflowTest extends TestCase
                 'validated' => true,
             ]);
         });
-
         $signals = json_encode(['userId_' => 999]);
-
         $response = $this->call('POST', '/valid-locked', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -142,11 +128,9 @@ class LockedSignalsWorkflowTest extends TestCase
                 'updated' => true,
             ]);
         });
-
         $response = $this->call('POST', '/update-locked', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -159,11 +143,9 @@ class LockedSignalsWorkflowTest extends TestCase
                 'deleted' => true,
             ]);
         });
-
         $response = $this->call('POST', '/delete-locked', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -175,11 +157,9 @@ class LockedSignalsWorkflowTest extends TestCase
                 'optionalId_' => null,
             ]);
         });
-
         $response = $this->call('POST', '/null-locked', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -191,11 +171,9 @@ class LockedSignalsWorkflowTest extends TestCase
                 'secretKey_' => 'encrypted-value',
             ]);
         });
-
         $response = $this->call('POST', '/encrypted-locked', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -210,13 +188,10 @@ class LockedSignalsWorkflowTest extends TestCase
                 'value' => $secretKey,
             ]);
         });
-
         $signals = json_encode(['secretKey_' => 'encrypted-value']);
-
         $response = $this->call('POST', '/decrypt-locked', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -228,11 +203,9 @@ class LockedSignalsWorkflowTest extends TestCase
                 'permissions_' => ['read', 'write', 'delete'],
             ]);
         });
-
         $response = $this->call('POST', '/complex-locked', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -244,11 +217,9 @@ class LockedSignalsWorkflowTest extends TestCase
                 'roles_' => ['admin', 'editor'],
             ]);
         });
-
         $response = $this->call('POST', '/array-locked', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -260,11 +231,9 @@ class LockedSignalsWorkflowTest extends TestCase
                 'user_' => (object) ['id' => 1, 'name' => 'John'],
             ]);
         });
-
         $response = $this->call('POST', '/object-locked', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -278,11 +247,9 @@ class LockedSignalsWorkflowTest extends TestCase
                 'roleId_' => 5,
             ]);
         });
-
         $response = $this->call('POST', '/multiple-locked', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -296,11 +263,9 @@ class LockedSignalsWorkflowTest extends TestCase
                 'count' => 5,          // Regular
             ]);
         });
-
         $response = $this->call('POST', '/mixed-signals', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -313,11 +278,9 @@ class LockedSignalsWorkflowTest extends TestCase
 
             return hyper()->signals(['cleaned' => true]);
         });
-
         $response = $this->call('POST', '/cleanup-locked', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 
@@ -332,16 +295,12 @@ class LockedSignalsWorkflowTest extends TestCase
 
             return hyper()->signals($signals);
         });
-
         $startTime = microtime(true);
-
         $response = $this->call('POST', '/perf-locked', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $endTime = microtime(true);
         $executionTime = ($endTime - $startTime) * 1000;
-
         $response->assertOk();
         $this->assertLessThan(1000, $executionTime, 'Locked signal processing took too long');
     }
@@ -356,17 +315,14 @@ class LockedSignalsWorkflowTest extends TestCase
                 'tabId' => rand(1, 100),
             ]);
         });
-
         // First tab
         $response1 = $this->call('POST', '/multi-tab', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         // Second tab (new session)
         $response2 = $this->call('POST', '/multi-tab', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response1->assertOk();
         $response2->assertOk();
     }
@@ -381,11 +337,9 @@ class LockedSignalsWorkflowTest extends TestCase
                 'global' => 'value',    // Regular
             ]);
         });
-
         $response = $this->call('POST', '/locked-and-local', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         $response->assertOk();
     }
 }

@@ -27,16 +27,16 @@ use Illuminate\Support\Facades\View;
  */
 class HyperServiceProviderTest extends TestCase
 {
+    protected static $latestResponse;
+
     /** @test */
     public function test_service_provider_registers_hyper_response()
     {
         // The hyper.response singleton should be registered
         $this->assertTrue($this->app->bound('hyper.response'));
-
         // It should return a HyperResponse instance
         $instance1 = $this->app->make('hyper.response');
         $this->assertInstanceOf(HyperResponse::class, $instance1);
-
         // It should be a singleton (same instance)
         $instance2 = $this->app->make('hyper.response');
         $this->assertSame($instance1, $instance2);
@@ -47,11 +47,9 @@ class HyperServiceProviderTest extends TestCase
     {
         // HyperSignal should be bound as singleton
         $this->assertTrue($this->app->bound(HyperSignal::class));
-
         // It should return a HyperSignal instance
         $instance = $this->app->make(HyperSignal::class);
         $this->assertInstanceOf(HyperSignal::class, $instance);
-
         // Check alias
         $this->assertTrue($this->app->bound('hyper.signals'));
         $aliasInstance = $this->app->make('hyper.signals');
@@ -63,11 +61,9 @@ class HyperServiceProviderTest extends TestCase
     {
         // HyperFileStorage should be bound as singleton
         $this->assertTrue($this->app->bound(HyperFileStorage::class));
-
         // It should return a HyperFileStorage instance
         $instance = $this->app->make(HyperFileStorage::class);
         $this->assertInstanceOf(HyperFileStorage::class, $instance);
-
         // Check alias
         $this->assertTrue($this->app->bound('hyper.storage'));
         $aliasInstance = $this->app->make('hyper.storage');
@@ -79,7 +75,6 @@ class HyperServiceProviderTest extends TestCase
     {
         // HyperUrlManager should be bound as singleton
         $this->assertTrue($this->app->bound(HyperUrlManager::class));
-
         // It should return a HyperUrlManager instance
         $instance = $this->app->make(HyperUrlManager::class);
         $this->assertInstanceOf(HyperUrlManager::class, $instance);
@@ -90,7 +85,6 @@ class HyperServiceProviderTest extends TestCase
     {
         // HyperSignalsDirective service should be bound
         $this->assertTrue($this->app->bound('hyper.signals.directive'));
-
         // It should return a HyperSignalsDirective instance
         $instance = $this->app->make('hyper.signals.directive');
         $this->assertInstanceOf(HyperSignalsDirective::class, $instance);
@@ -101,7 +95,6 @@ class HyperServiceProviderTest extends TestCase
     {
         // The hyper config should be available
         $this->assertNotNull(config('hyper'));
-
         // Check some default config values
         $this->assertIsArray(config('hyper.route_discovery'));
         $this->assertIsBool(config('hyper.route_discovery.enabled'));
@@ -115,16 +108,13 @@ class HyperServiceProviderTest extends TestCase
         if (File::exists($assetsPath)) {
             File::deleteDirectory(dirname($assetsPath));
         }
-
         // Run the publish command
         Artisan::call('vendor:publish', [
             '--tag' => 'hyper-assets',
             '--force' => true,
         ]);
-
         // Check that assets were published
         $this->assertTrue(File::exists($assetsPath));
-
         // Cleanup
         if (File::exists($assetsPath)) {
             File::deleteDirectory(dirname($assetsPath));
@@ -139,16 +129,13 @@ class HyperServiceProviderTest extends TestCase
         if (File::exists($configPath)) {
             File::delete($configPath);
         }
-
         // Run the publish command
         Artisan::call('vendor:publish', [
             '--tag' => 'hyper-config',
             '--force' => true,
         ]);
-
         // Check that config was published
         $this->assertTrue(File::exists($configPath));
-
         // Cleanup
         if (File::exists($configPath)) {
             File::delete($configPath);
@@ -170,35 +157,30 @@ class HyperServiceProviderTest extends TestCase
         // All base64 validation rules should be available
         // Use invalid base64 data that will fail validation
         $invalidBase64 = 'invalid!!!base64';
-
         // Test b64image - should fail for invalid base64
         $testValidator = Validator::make(
             ['file' => $invalidBase64],
             ['file' => 'b64image']
         );
         $this->assertFalse($testValidator->passes());
-
         // Test b64file - should fail for invalid base64
         $testValidator = Validator::make(
             ['file' => $invalidBase64],
             ['file' => 'b64file']
         );
         $this->assertFalse($testValidator->passes());
-
         // Test b64max - should fail for invalid base64
         $testValidator = Validator::make(
             ['file' => $invalidBase64],
             ['file' => 'b64max:10']
         );
         $this->assertFalse($testValidator->passes());
-
         // Test b64min - should fail for invalid base64
         $testValidator = Validator::make(
             ['file' => $invalidBase64],
             ['file' => 'b64min:10']
         );
         $this->assertFalse($testValidator->passes());
-
         // Test b64mimes - should fail for invalid base64
         $testValidator = Validator::make(
             ['file' => $invalidBase64],
@@ -214,7 +196,6 @@ class HyperServiceProviderTest extends TestCase
         $hyperDirective = Blade::compileString('@hyper');
         $this->assertStringContainsString('csrf-token', $hyperDirective);
         $this->assertStringContainsString('vendor/hyper/js/hyper.js', $hyperDirective);
-
         // @ifhyper directive
         $ifhyperDirective = Blade::compileString('@ifhyper test @endifhyper');
         $this->assertStringContainsString('if', $ifhyperDirective);
@@ -224,24 +205,19 @@ class HyperServiceProviderTest extends TestCase
     public function test_service_provider_registers_request_macros()
     {
         $request = Request::create('/', 'GET');
-
         // isHyper macro should exist and work
         $this->assertTrue(Request::hasMacro('isHyper'));
         $this->assertFalse($request->isHyper());
-
         // signals macro should exist and work
         $this->assertTrue(Request::hasMacro('signals'));
         $signals = $request->signals();
         $this->assertInstanceOf(HyperSignal::class, $signals);
-
         // isHyperNavigate macro should exist and work
         $this->assertTrue(Request::hasMacro('isHyperNavigate'));
         $this->assertFalse($request->isHyperNavigate());
-
         // hyperNavigateKey macro should exist and work
         $this->assertTrue(Request::hasMacro('hyperNavigateKey'));
         $this->assertNull($request->hyperNavigateKey());
-
         // hyperNavigateKeys macro should exist and work
         $this->assertTrue(Request::hasMacro('hyperNavigateKeys'));
         $this->assertIsArray($request->hyperNavigateKeys());
@@ -269,11 +245,9 @@ class HyperServiceProviderTest extends TestCase
         Config::set('hyper.route_discovery.enabled', true);
         Config::set('hyper.route_discovery.discover_controllers_in_directory', []);
         Config::set('hyper.route_discovery.discover_views_in_directory', []);
-
         // Re-register the service provider
         $provider = new HyperServiceProvider($this->app);
         $provider->boot();
-
         // This test just verifies the boot process doesn't throw errors
         $this->assertTrue(true);
     }
@@ -283,11 +257,9 @@ class HyperServiceProviderTest extends TestCase
     {
         // Disable route discovery
         Config::set('hyper.route_discovery.enabled', false);
-
         // Re-register the service provider
         $provider = new HyperServiceProvider($this->app);
         $provider->boot();
-
         // This test just verifies the boot process doesn't throw errors
         $this->assertTrue(true);
     }
@@ -297,7 +269,6 @@ class HyperServiceProviderTest extends TestCase
     {
         $provider = new HyperServiceProvider($this->app);
         $provides = $provider->provides();
-
         // Should list the services it provides
         $this->assertIsArray($provides);
         $this->assertContains(HyperSignal::class, $provides);
@@ -309,7 +280,6 @@ class HyperServiceProviderTest extends TestCase
     {
         // HyperRedirect should be bound
         $this->assertTrue($this->app->bound(HyperRedirect::class));
-
         // It should be creatable when providing required parameters
         $hyperResponse = new HyperResponse;
         $instance = new HyperRedirect('/test-url', $hyperResponse);
@@ -321,7 +291,6 @@ class HyperServiceProviderTest extends TestCase
     {
         // @fragment directive
         $fragmentDirective = Blade::compileString('@fragment("test") content @endfragment');
-
         // The directives should compile without errors
         $this->assertIsString($fragmentDirective);
     }
@@ -334,11 +303,9 @@ class HyperServiceProviderTest extends TestCase
         $hyper2 = hyper();
         $this->assertInstanceOf(HyperResponse::class, $hyper1);
         $this->assertSame($hyper1, $hyper2);
-
         // signals() helper should return HyperSignal instance
         $signals = signals();
         $this->assertInstanceOf(HyperSignal::class, $signals);
-
         // hyperStorage() helper should return HyperFileStorage instance
         $storage = hyperStorage();
         $this->assertInstanceOf(HyperFileStorage::class, $storage);

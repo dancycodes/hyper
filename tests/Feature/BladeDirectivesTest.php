@@ -15,18 +15,18 @@ use Illuminate\Support\Facades\View;
  */
 class BladeDirectivesTest extends TestCase
 {
+    protected static $latestResponse;
+
     protected string $viewsPath;
 
     protected function setUp(): void
     {
         parent::setUp();
-
         // Create a temporary views directory for testing
         $this->viewsPath = storage_path('framework/testing/views');
         if (!File::exists($this->viewsPath)) {
             File::makeDirectory($this->viewsPath, 0755, true);
         }
-
         // Add our test views path to Laravel's view finder
         View::addLocation($this->viewsPath);
     }
@@ -37,7 +37,6 @@ class BladeDirectivesTest extends TestCase
         if (File::exists($this->viewsPath)) {
             File::deleteDirectory($this->viewsPath);
         }
-
         parent::tearDown();
     }
 
@@ -45,7 +44,6 @@ class BladeDirectivesTest extends TestCase
     public function test_hyper_directive_renders_script_tag()
     {
         $compiled = Blade::compileString('@hyper');
-
         // Should include a script tag
         $this->assertStringContainsString('<script', $compiled);
         $this->assertStringContainsString('</script>', $compiled);
@@ -55,7 +53,6 @@ class BladeDirectivesTest extends TestCase
     public function test_hyper_directive_includes_csrf_token()
     {
         $compiled = Blade::compileString('@hyper');
-
         // Should include CSRF meta tag
         $this->assertStringContainsString('csrf-token', $compiled);
         $this->assertStringContainsString('meta', $compiled);
@@ -65,7 +62,6 @@ class BladeDirectivesTest extends TestCase
     public function test_hyper_directive_uses_correct_asset_path()
     {
         $compiled = Blade::compileString('@hyper');
-
         // Should reference the correct asset path
         $this->assertStringContainsString('vendor/hyper/js/hyper.js', $compiled);
         $this->assertStringContainsString('type="module"', $compiled);
@@ -80,11 +76,8 @@ class BladeDirectivesTest extends TestCase
     Content
 </div>
 BLADE;
-
         File::put($this->viewsPath . '/signals-array.blade.php', $viewContent);
-
         $rendered = View::make('signals-array')->render();
-
         // Should render data-signals attribute
         $this->assertStringContainsString('data-signals', $rendered);
     }
@@ -102,11 +95,8 @@ BLADE;
     Content
 </div>
 BLADE;
-
         File::put($this->viewsPath . '/signals-vars.blade.php', $viewContent);
-
         $rendered = View::make('signals-vars')->render();
-
         // Should render data-signals attribute
         $this->assertStringContainsString('data-signals', $rendered);
     }
@@ -123,11 +113,8 @@ BLADE;
     Content
 </div>
 BLADE;
-
         File::put($this->viewsPath . '/signals-spread.blade.php', $viewContent);
-
         $rendered = View::make('signals-spread')->render();
-
         // Should render data-signals attribute with spread data
         $this->assertStringContainsString('data-signals', $rendered);
     }
@@ -141,11 +128,8 @@ BLADE;
     Content
 </div>
 BLADE;
-
         File::put($this->viewsPath . '/signals-escape.blade.php', $viewContent);
-
         $rendered = View::make('signals-escape')->render();
-
         // Should escape HTML entities
         $this->assertStringContainsString('data-signals', $rendered);
         // The HTML should be JSON-encoded, which handles escaping
@@ -161,11 +145,8 @@ BLADE;
     Content
 </div>
 BLADE;
-
         File::put($this->viewsPath . '/signals-empty.blade.php', $viewContent);
-
         $rendered = View::make('signals-empty')->render();
-
         // Should still render data-signals attribute
         $this->assertStringContainsString('data-signals', $rendered);
     }
@@ -179,18 +160,14 @@ BLADE;
     <div>Hyper content</div>
 @endifhyper
 BLADE;
-
         File::put($this->viewsPath . '/ifhyper-test.blade.php', $viewContent);
-
         // Make a Hyper request
         $response = $this->call('GET', '/', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
-
         // Render the view with Hyper request context
         request()->headers->set('Datastar-Request', 'true');
         $rendered = View::make('ifhyper-test')->render();
-
         // Should show Hyper content
         $this->assertStringContainsString('Hyper content', $rendered);
     }
@@ -204,13 +181,10 @@ BLADE;
     <div>Hyper content</div>
 @endifhyper
 BLADE;
-
         File::put($this->viewsPath . '/ifhyper-normal.blade.php', $viewContent);
-
         // Make a normal request (clear any Hyper headers)
         request()->headers->remove('Datastar-Request');
         $rendered = View::make('ifhyper-normal')->render();
-
         // Should NOT show Hyper content
         $this->assertStringNotContainsString('Hyper content', $rendered);
     }
@@ -226,13 +200,10 @@ BLADE;
     <div>Regular content</div>
 @endifhyper
 BLADE;
-
         File::put($this->viewsPath . '/ifhyper-else.blade.php', $viewContent);
-
         // Test with normal request
         request()->headers->remove('Datastar-Request');
         $rendered = View::make('ifhyper-else')->render();
-
         // Should show regular content
         $this->assertStringContainsString('Regular content', $rendered);
         $this->assertStringNotContainsString('Hyper content', $rendered);
@@ -247,12 +218,9 @@ BLADE;
     <div>Fragment content</div>
 @endfragment
 BLADE;
-
         File::put($this->viewsPath . '/fragment-test.blade.php', $viewContent);
-
         // Should compile without errors
         $rendered = View::make('fragment-test')->render();
-
         // Fragment content should still be visible in full view
         $this->assertStringContainsString('Fragment content', $rendered);
     }
@@ -265,17 +233,13 @@ BLADE;
 @fragment('fragment-one')
     <div>First fragment</div>
 @endfragment
-
 @fragment('fragment-two')
     <div>Second fragment</div>
 @endfragment
 BLADE;
-
         File::put($this->viewsPath . '/multi-fragment.blade.php', $viewContent);
-
         // Should compile without errors
         $rendered = View::make('multi-fragment')->render();
-
         // Both fragments should be visible
         $this->assertStringContainsString('First fragment', $rendered);
         $this->assertStringContainsString('Second fragment', $rendered);
@@ -294,13 +258,10 @@ BLADE;
     @endfragment
 @endifhyper
 BLADE;
-
         File::put($this->viewsPath . '/nested-directives.blade.php', $viewContent);
-
         // Test with Hyper request
         request()->headers->set('Datastar-Request', 'true');
         $rendered = View::make('nested-directives')->render();
-
         // Should compile and render correctly
         $this->assertStringContainsString('Nested content', $rendered);
     }
@@ -318,11 +279,8 @@ BLADE;
     Content
 </div>
 BLADE;
-
         File::put($this->viewsPath . '/signals-local.blade.php', $viewContent);
-
         $rendered = View::make('signals-local')->render();
-
         // Should render data-signals with _editing and visible
         $this->assertStringContainsString('data-signals', $rendered);
         $this->assertStringContainsString('_editing', $rendered);
@@ -342,11 +300,8 @@ BLADE;
     Content
 </div>
 BLADE;
-
         File::put($this->viewsPath . '/signals-locked.blade.php', $viewContent);
-
         $rendered = View::make('signals-locked')->render();
-
         // Should render data-signals with userId_ and name
         $this->assertStringContainsString('data-signals', $rendered);
         $this->assertStringContainsString('userId_', $rendered);
@@ -366,11 +321,8 @@ BLADE;
     Content
 </div>
 BLADE;
-
         File::put($this->viewsPath . '/signals-spread-underscore.blade.php', $viewContent);
-
         $rendered = View::make('signals-spread-underscore')->render();
-
         // Should render data-signals with spread values
         $this->assertStringContainsString('data-signals', $rendered);
         $this->assertStringContainsString('modal', $rendered);
@@ -391,11 +343,8 @@ BLADE;
     Content
 </div>
 BLADE;
-
         File::put($this->viewsPath . '/signals-compact.blade.php', $viewContent);
-
         $rendered = View::make('signals-compact')->render();
-
         // Should render data-signals with compacted variables
         $this->assertStringContainsString('data-signals', $rendered);
         $this->assertStringContainsString('username', $rendered);
@@ -419,11 +368,8 @@ BLADE;
     Content
 </div>
 BLADE;
-
         File::put($this->viewsPath . '/signals-mixed.blade.php', $viewContent);
-
         $rendered = View::make('signals-mixed')->render();
-
         // Should render all patterns correctly
         $this->assertStringContainsString('data-signals', $rendered);
         $this->assertStringContainsString('name', $rendered);
@@ -442,7 +388,6 @@ BLADE;
             '@ifhyper content @endifhyper',
             '@fragment("test") content @endfragment',
         ];
-
         foreach ($directives as $directive) {
             try {
                 $compiled = Blade::compileString($directive);
@@ -456,7 +401,6 @@ BLADE;
     // ===================================================================
     // @dispatch Directive Tests (8 tests)
     // ===================================================================
-
     /** @test */
     public function test_dispatch_directive_renders_global_event()
     {
@@ -464,11 +408,8 @@ BLADE;
         $viewContent = <<<'BLADE'
 @dispatch('post-created', ['id' => 123])
 BLADE;
-
         File::put($this->viewsPath . '/dispatch-global.blade.php', $viewContent);
-
         $rendered = View::make('dispatch-global')->render();
-
         // Should render a script tag with window.dispatchEvent
         $this->assertStringContainsString('<script>', $rendered);
         $this->assertStringContainsString('</script>', $rendered);
@@ -484,11 +425,8 @@ BLADE;
         $viewContent = <<<'BLADE'
 @dispatch('user-login', ['userId' => 42, 'email' => 'john@example.com'])
 BLADE;
-
         File::put($this->viewsPath . '/dispatch-data.blade.php', $viewContent);
-
         $rendered = View::make('dispatch-data')->render();
-
         // Should render the event data in the script
         $this->assertStringContainsString('user-login', $rendered);
         $this->assertStringContainsString('userId', $rendered);
@@ -503,16 +441,12 @@ BLADE;
         $viewContent = <<<'BLADE'
 @dispatch('update-stats', ['count' => 5], ['selector' => '#dashboard'])
 BLADE;
-
         File::put($this->viewsPath . '/dispatch-selector.blade.php', $viewContent);
-
         $rendered = View::make('dispatch-selector')->render();
-
         // Should render with querySelectorAll and selector
         $this->assertStringContainsString('querySelectorAll', $rendered);
         $this->assertStringContainsString('#dashboard', $rendered);
         $this->assertStringContainsString('update-stats', $rendered);
-
         // Should NOT dispatch to window
         $this->assertStringNotContainsString('window.dispatchEvent', $rendered);
     }
@@ -524,15 +458,11 @@ BLADE;
         $viewContent = <<<'BLADE'
 @dispatch('body-event', ['data' => 'value'], ['window' => false])
 BLADE;
-
         File::put($this->viewsPath . '/dispatch-body.blade.php', $viewContent);
-
         $rendered = View::make('dispatch-body')->render();
-
         // Should render with document.body.dispatchEvent
         $this->assertStringContainsString('document.body.dispatchEvent', $rendered);
         $this->assertStringContainsString('body-event', $rendered);
-
         // Should NOT dispatch to window
         $this->assertStringNotContainsString('window.dispatchEvent', $rendered);
     }
@@ -544,14 +474,10 @@ BLADE;
         $viewContent = <<<'BLADE'
 @dispatch('safe-event', ['html' => '<script>alert("XSS")</script>'])
 BLADE;
-
         File::put($this->viewsPath . '/dispatch-escape.blade.php', $viewContent);
-
         $rendered = View::make('dispatch-escape')->render();
-
         // Should properly escape HTML in the event data
         $this->assertStringContainsString('safe-event', $rendered);
-
         // The dangerous script should be JSON-encoded with hex escaping
         // JSON_HEX_TAG converts < and > to \u003C and \u003E (uppercase hex)
         $this->assertStringContainsString('\u003Cscript\u003E', $rendered);
@@ -564,14 +490,11 @@ BLADE;
         $viewContent = <<<'BLADE'
 @dispatch('', ['data' => 'value'])
 BLADE;
-
         File::put($this->viewsPath . '/dispatch-empty.blade.php', $viewContent);
-
         // Should throw an exception for empty event name
         // Laravel wraps Blade exceptions in ViewException
         $this->expectException(\Illuminate\View\ViewException::class);
         $this->expectExceptionMessage('@dispatch directive requires an event name');
-
         View::make('dispatch-empty')->render();
     }
 
@@ -597,11 +520,8 @@ BLADE;
 @endphp
 @dispatch('complex-event', $complexData)
 BLADE;
-
         File::put($this->viewsPath . '/dispatch-complex.blade.php', $viewContent);
-
         $rendered = View::make('dispatch-complex')->render();
-
         // Should render all nested data correctly
         $this->assertStringContainsString('complex-event', $rendered);
         $this->assertStringContainsString('John Doe', $rendered);
@@ -618,7 +538,6 @@ BLADE;
             '@dispatch("event", ["data" => "value"])',
             '@dispatch("event", [], ["selector" => "#target"])',
         ];
-
         foreach ($directives as $directive) {
             try {
                 $compiled = Blade::compileString($directive);

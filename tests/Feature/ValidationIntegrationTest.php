@@ -50,13 +50,10 @@ class ValidationIntegrationTest extends TestCase
                 return $e->render(request());
             }
         });
-
         $signals = json_encode(['email' => 'invalid']);
-
         $response = $this->call('POST', '/validate', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -74,17 +71,14 @@ class ValidationIntegrationTest extends TestCase
                 return $e->render(request());
             }
         });
-
         $signals = json_encode([
             'name' => 'ab',
             'email' => 'invalid',
             'age' => 15,
         ]);
-
         $response = $this->call('POST', '/validate-multi', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -101,13 +95,10 @@ class ValidationIntegrationTest extends TestCase
                 'errors' => [],
             ]);
         });
-
         $signals = json_encode(['email' => 'valid@example.com']);
-
         $response = $this->call('POST', '/clear-errors', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -129,13 +120,10 @@ class ValidationIntegrationTest extends TestCase
                 return $e->render(request());
             }
         });
-
         $signals = json_encode(['email' => '']);
-
         $response = $this->call('POST', '/custom-messages', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -151,13 +139,10 @@ class ValidationIntegrationTest extends TestCase
                 return $e->render(request());
             }
         });
-
         $signals = json_encode(['username' => 'ab']);
-
         $response = $this->call('POST', '/custom-rules', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -174,18 +159,15 @@ class ValidationIntegrationTest extends TestCase
                 return $e->render(request());
             }
         });
-
         $signals = json_encode([
             'user' => [
                 'name' => '',
                 'email' => 'invalid',
             ],
         ]);
-
         $response = $this->call('POST', '/nested-validation', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -202,13 +184,10 @@ class ValidationIntegrationTest extends TestCase
                 return $e->render(request());
             }
         });
-
         $signals = json_encode(['tags' => ['a']]);
-
         $response = $this->call('POST', '/array-validation', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -224,13 +203,10 @@ class ValidationIntegrationTest extends TestCase
                 return $e->render(request());
             }
         });
-
         $signals = json_encode(['avatar' => 'invalid-base64']);
-
         $response = $this->call('POST', '/file-validation', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -245,14 +221,11 @@ class ValidationIntegrationTest extends TestCase
 
             return hyper()->signals(['validated' => true]);
         });
-
         // Without phone field
         $signals = json_encode(['email' => 'test@example.com']);
-
         $response = $this->call('POST', '/sometimes-validation', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -261,18 +234,15 @@ class ValidationIntegrationTest extends TestCase
     {
         Route::post('/after-hook', function () {
             $hookCalled = false;
-
             try {
                 $validator = \Illuminate\Support\Facades\Validator::make(
                     signals()->all(),
                     ['email' => 'required|email']
                 );
-
                 $validator->after(function ($validator) use (&$hookCalled) {
                     $hookCalled = true;
                     $validator->errors()->add('custom', 'Custom error');
                 });
-
                 if ($validator->fails()) {
                     throw new HyperValidationException($validator);
                 }
@@ -280,13 +250,10 @@ class ValidationIntegrationTest extends TestCase
                 return $e->render(request());
             }
         });
-
         $signals = json_encode(['email' => 'test@example.com']);
-
         $response = $this->call('POST', '/after-hook', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -294,11 +261,8 @@ class ValidationIntegrationTest extends TestCase
     public function test_validation_exception_thrown()
     {
         $this->expectException(HyperValidationException::class);
-
         $signals = json_encode(['email' => 'invalid']);
-
         $this->call('POST', '/', ['datastar' => $signals], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         signals()->validate(['email' => 'required|email']);
     }
 
@@ -307,9 +271,7 @@ class ValidationIntegrationTest extends TestCase
     {
         try {
             $signals = json_encode(['email' => 'invalid', 'name' => '']);
-
             $this->call('POST', '/', ['datastar' => $signals], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
             signals()->validate([
                 'email' => 'required|email',
                 'name' => 'required',
@@ -334,13 +296,10 @@ class ValidationIntegrationTest extends TestCase
                 return $response;
             }
         });
-
         $signals = json_encode(['email' => 'invalid']);
-
         $response = $this->call('POST', '/response-format', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -351,7 +310,6 @@ class ValidationIntegrationTest extends TestCase
             <input data-bind="email" />
             <div data-error="email"></div>
         ');
-
         $rendered = View::make('error-display')->render();
         $this->assertStringContainsString('data-error="email"', $rendered);
     }
@@ -366,13 +324,10 @@ class ValidationIntegrationTest extends TestCase
                 return $e->render(request());
             }
         });
-
         $signals = json_encode(['email' => 'invalid']);
-
         $response = $this->call('POST', '/error-bags', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -390,16 +345,13 @@ class ValidationIntegrationTest extends TestCase
                 'success' => true,
             ]);
         });
-
         $signals = json_encode([
             'name' => 'John Doe',
             'email' => 'john@example.com',
         ]);
-
         $response = $this->call('POST', '/preserve-data', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -409,22 +361,17 @@ class ValidationIntegrationTest extends TestCase
         Route::post('/authorized-validation', function () {
             // Simulate authorization check
             $authorized = true;
-
             if (!$authorized) {
                 return hyper()->signals(['error' => 'Unauthorized']);
             }
-
             $validated = signals()->validate(['email' => 'required|email']);
 
             return hyper()->signals(['success' => true]);
         });
-
         $signals = json_encode(['email' => 'test@example.com']);
-
         $response = $this->call('POST', '/authorized-validation', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -433,27 +380,21 @@ class ValidationIntegrationTest extends TestCase
     {
         Route::post('/conditional-rules', function () {
             $requirePhone = signals('requirePhone', false);
-
             $rules = ['email' => 'required|email'];
-
             if ($requirePhone) {
                 $rules['phone'] = 'required|regex:/^[0-9]{10}$/';
             }
-
             $validated = signals()->validate($rules);
 
             return hyper()->signals(['validated' => true]);
         });
-
         $signals = json_encode([
             'email' => 'test@example.com',
             'requirePhone' => false,
         ]);
-
         $response = $this->call('POST', '/conditional-rules', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -465,28 +406,21 @@ class ValidationIntegrationTest extends TestCase
             for ($i = 1; $i <= 50; $i++) {
                 $rules["field{$i}"] = 'required|string|min:2|max:100';
             }
-
             $validated = signals()->validate($rules);
 
             return hyper()->signals(['validated' => true]);
         });
-
         $data = [];
         for ($i = 1; $i <= 50; $i++) {
             $data["field{$i}"] = "value{$i}";
         }
-
         $signals = json_encode($data);
-
         $startTime = microtime(true);
-
         $response = $this->call('POST', '/perf-validation', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $endTime = microtime(true);
         $executionTime = ($endTime - $startTime) * 1000;
-
         $response->assertOk();
         $this->assertLessThan(1000, $executionTime, 'Validation took too long');
     }
@@ -504,13 +438,10 @@ class ValidationIntegrationTest extends TestCase
                 return $e->render(request());
             }
         });
-
         $signals = json_encode(['email' => '']);
-
         $response = $this->call('POST', '/translated-validation', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -527,13 +458,10 @@ class ValidationIntegrationTest extends TestCase
                 return $e->render(request());
             }
         });
-
         $signals = json_encode(['email' => 'invalid']);
-
         $response = $this->call('POST', '/localized-messages', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -555,16 +483,13 @@ class ValidationIntegrationTest extends TestCase
                 return $e->render(request());
             }
         });
-
         $signals = json_encode([
             'email' => 'test@example.com',
             'password' => 'password123',
         ]);
-
         $response = $this->call('POST', '/livewire-style', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -575,7 +500,6 @@ class ValidationIntegrationTest extends TestCase
             // Simulate unique validation
             $email = signals('email');
             $existingEmails = ['existing@example.com'];
-
             if (in_array($email, $existingEmails)) {
                 return hyper()->signals([
                     'errors' => ['email' => ['The email has already been taken.']],
@@ -584,13 +508,10 @@ class ValidationIntegrationTest extends TestCase
 
             return hyper()->signals(['success' => true]);
         });
-
         $signals = json_encode(['email' => 'new@example.com']);
-
         $response = $this->call('POST', '/unique-validation', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -605,16 +526,13 @@ class ValidationIntegrationTest extends TestCase
 
             return hyper()->signals(['success' => true]);
         });
-
         $signals = json_encode([
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
-
         $response = $this->call('POST', '/confirmed-validation', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 
@@ -628,13 +546,10 @@ class ValidationIntegrationTest extends TestCase
 
             return hyper()->signals(['success' => true]);
         });
-
         $signals = json_encode(['role' => 'user']);
-
         $response = $this->call('POST', '/in-array-validation', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-
         $response->assertOk();
     }
 }
