@@ -1,0 +1,24 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 9
+    paths:
+        - src
+
+    # Exclude vendor and specific paths
+    excludePaths:
+        - vendor
+
+    # Extra strictness for production-grade package
+    checkBenevolentUnionTypes: true
+    checkUninitializedProperties: true
+    checkDynamicProperties: true
+
+    # Be strict about mixed types
+    checkExplicitMixedMissingReturn: true
+    checkPhpDocMissingReturn: true
+
+    # Bootstrap files for better Laravel understanding
+    bootstrapFiles:
+        - vendor/autoload.php

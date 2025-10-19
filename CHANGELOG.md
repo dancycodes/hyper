@@ -7,10 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0] - 2025-10-18
+## [0.1.0] - 2025-10-19
+
+> **Pre-release Version**: Laravel Hyper is currently in active development (0.x.x). The API may change as we gather feedback and refine features. We're committed to reaching a stable 1.0.0 release once the package is battle-tested with real-world usage. Breaking changes will be clearly documented in the changelog.
 
 ### Added
-- Initial release of Laravel Hyper
+- Initial pre-release of Laravel Hyper
 - **Core Features:**
   - Reactive signals with automatic UI synchronization
   - Server-side signal validation using Laravel's validation system
@@ -93,5 +95,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `php artisan vendor:publish --tag=hyper-assets` - Publish JavaScript assets
 - `php artisan vendor:publish --tag=hyper-config` - Publish configuration
 
-[Unreleased]: https://github.com/dancycodes/hyper/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/dancycodes/hyper/releases/tag/v1.0.0
+[Unreleased]: https://github.com/dancycodes/hyper/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/dancycodes/hyper/releases/tag/v0.1.0

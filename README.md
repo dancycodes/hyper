@@ -1,5 +1,12 @@
 # Laravel Hyper
 
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/dancycodes/hyper.svg?style=flat-square)](https://packagist.org/packages/dancycodes/hyper)
+[![Total Downloads](https://img.shields.io/packagist/dt/dancycodes/hyper.svg?style=flat-square)](https://packagist.org/packages/dancycodes/hyper)
+[![Tests](https://img.shields.io/github/actions/workflow/status/dancycodes/hyper/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/dancycodes/hyper/actions/workflows/tests.yml)
+[![Code Style](https://img.shields.io/github/actions/workflow/status/dancycodes/hyper/code-style.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/dancycodes/hyper/actions/workflows/code-style.yml)
+[![License](https://img.shields.io/packagist/l/dancycodes/hyper.svg?style=flat-square)](https://packagist.org/packages/dancycodes/hyper)
+[![PHP Version](https://img.shields.io/packagist/php-v/dancycodes/hyper.svg?style=flat-square)](https://packagist.org/packages/dancycodes/hyper)
+
 ## What is Laravel Hyper?
 
 Laravel Hyper integrates [Datastar](https://data-star.dev)—a reactive hypermedia framework—with Laravel's development patterns, enabling you to build reactive user interfaces using server-side rendering and Blade templates.

@@ -1,0 +1,39 @@
+# CODEOWNERS for Laravel Hyper Package
+#
+# This file defines individuals or teams responsible for code in this repository.
+# Code owners are automatically requested for review when someone opens a pull
+# request that modifies code that they own.
+#
+# More info: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything in the repo
+# This ensures all PRs get reviewed
+* @dancycodes
+
+# Core package code
+/src/ @dancycodes
+
+# Configuration files
+/config/ @dancycodes
+
+# Tests should be reviewed to maintain quality
+/tests/ @dancycodes
+
+# Documentation changes
+*.md @dancycodes
+/docs/ @dancycodes
+
+# GitHub workflows and automation
+/.github/ @dancycodes
+
+# Composer and dependency management
+composer.json @dancycodes
+composer.lock @dancycodes
+
+# Code quality configuration
+pint.json @dancycodes
+phpstan.neon.dist @dancycodes
+phpunit.xml @dancycodes
+
+# Security-related files
+SECURITY.md @dancycodes

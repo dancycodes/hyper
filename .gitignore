@@ -107,14 +107,11 @@ credentials.json
 .php-cs-fixer.cache
 .php_cs.cache
 .pint.cache
-pint.json
 
 # PHPStan
 .phpstan.cache
 /.phpstan
 phpstan.neon.local
-phpstan.neon.dist
-phpstan-baseline.neon
 phpstan-errors.txt
 phpstan-errors.json
 
@@ -154,3 +151,6 @@ claude.json
 # IDE test runners
 .vscode-test/
 .vscode_test/
+
+
+PRODUCTION_READY.md

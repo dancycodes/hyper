@@ -6,7 +6,7 @@ We release patches for security vulnerabilities. Which versions are eligible for
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.x     | :white_check_mark: |
+| 0.x     | :white_check_mark: |
 
 ## Reporting a Vulnerability
 
