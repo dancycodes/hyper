@@ -147,33 +147,6 @@ class HyperServiceProvider extends ServiceProvider
         Blade::if('ifhyper', function () {
             return request()->hasHeader('Datastar-Request');
         });
-
-        Blade::directive('dispatch', function ($expression) {
-            return "<?php
-                \$__dispatchArgs = [{$expression}];
-                \$__eventName = \$__dispatchArgs[0] ?? '';
-                \$__eventData = \$__dispatchArgs[1] ?? [];
-                \$__eventOptions = \$__dispatchArgs[2] ?? [];
-
-                if (empty(\$__eventName)) {
-                    throw new \\InvalidArgumentException('@dispatch directive requires an event name');
-                }
-
-                \$__safeEventName = json_encode(\$__eventName, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-                \$__safeData = json_encode(\$__eventData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-                \$__selector = \$__eventOptions['selector'] ?? null;
-                \$__window = \$__eventOptions['window'] ?? (!\$__selector);
-
-                if (\$__selector) {
-                    \$__safeSelector = json_encode(\$__selector, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-                    echo '<script>document.querySelectorAll(' . \$__safeSelector . ').forEach(el => el.dispatchEvent(new CustomEvent(' . \$__safeEventName . ', {detail: ' . \$__safeData . ', bubbles: true})));</script>';
-                } elseif (\$__window) {
-                    echo '<script>window.dispatchEvent(new CustomEvent(' . \$__safeEventName . ', {detail: ' . \$__safeData . ', bubbles: true}));</script>';
-                } else {
-                    echo '<script>document.body.dispatchEvent(new CustomEvent(' . \$__safeEventName . ', {detail: ' . \$__safeData . ', bubbles: true}));</script>';
-                }
-            ?>";
-        });
     }
 
     /**
