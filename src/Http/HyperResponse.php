@@ -1332,11 +1332,14 @@ class HyperResponse implements Responsable
 
         $scriptTag .= '>' . $script . '</script>';
 
-        return [
-            'selector body',
-            'mode append',
-            "elements {$scriptTag}",
-        ];
+        // Split script tag by newlines to properly format SSE data lines
+        $dataLines = ['selector body', 'mode append'];
+        $scriptLines = explode("\n", trim($scriptTag));
+        foreach ($scriptLines as $line) {
+            $dataLines[] = "elements {$line}";
+        }
+
+        return $dataLines;
     }
 
     /**
