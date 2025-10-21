@@ -5,6 +5,24 @@ All notable changes to `dancycodes/hyper` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1](https://github.com/dancycodes/hyper/compare/v0.1.0...v0.1.1) (2025-10-21)
+
+
+### Bug Fixes
+
+* add static $latestResponse property to all Feature test classes ([7e97181](https://github.com/dancycodes/hyper/commit/7e97181131d43faa114bee8bca568c99b767baf9))
+* add static $latestResponse property to all Unit test classes ([1a9eafe](https://github.com/dancycodes/hyper/commit/1a9eafe217d0cb2f4a5fa616b5d98632bd6eeea4))
+* declare missing static property in test classes ([1234bf3](https://github.com/dancycodes/hyper/commit/1234bf3107d99c86e1e64973922b7b8739d3d423))
+* remove Laravel 12 from test matrix (version doesn't exist yet) ([87df410](https://github.com/dancycodes/hyper/commit/87df4105a82e649cde3017cd3916a3a89b508498))
+* update phpunit.xml to ensure GitHub Actions workflows pass ([0bbdb98](https://github.com/dancycodes/hyper/commit/0bbdb9813ef83d3bb845a49967c5bd20d696b737))
+
+
+### Miscellaneous Chores
+
+* configure Release Please for automated releases ([cf4009b](https://github.com/dancycodes/hyper/commit/cf4009bcdf2be8627f960015e152de20d910c824))
+* **deps-dev:** update orchestra/testbench requirement || ^10.0 ([8dee5b8](https://github.com/dancycodes/hyper/commit/8dee5b84b05f20fc321faed4abbc3c0315318bb7))
+* **deps-dev:** update orchestra/testbench requirement from ^9.0 to ^9.0 || ^10.0 ([def27c0](https://github.com/dancycodes/hyper/commit/def27c022048fa1d1e58f402baff070f1c0ea6d8))
+
 ## [Unreleased]
 
 ## [0.1.0] - 2025-10-19
