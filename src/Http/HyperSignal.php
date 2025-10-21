@@ -91,6 +91,8 @@ class HyperSignal
      * with underscore) are present in the parsed data. Throws exception if tampering detected.
      *
      *
+     *
+     *
      * @throws \Dancycodes\Hyper\Exceptions\HyperSignalTamperedException When locked signals validation fails
      *
      * @return array<string, mixed> Associative array of signal names and values

@@ -40,7 +40,9 @@ class HyperResponse implements Responsable
 {
     /** @var array<int, string> */
     protected array $events = [];
+
     protected bool $streamingMode = false;
+
     protected ?Closure $streamCallback = null;
 
     /** @var mixed */

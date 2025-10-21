@@ -792,7 +792,7 @@ Run the test suite:
 composer test
 ```
 
-Hyper includes 746 tests covering:
+Hyper includes tests covering:
 
 - Signals and state management
 - Validation integration
