@@ -1948,6 +1948,256 @@ class HyperResponseTest extends TestCase
         $this->assertEquals('datastar-patch-signals', $events[0]['type']);
     }
 
+    /** @test */
+    public function test_forget_method_resets_errors_signal_to_empty_array()
+    {
+        $this->setupHyperRequest();
+
+        // Set up signals including errors
+        request()->merge(['datastar' => [
+            'errors' => ['field1' => ['Error message']],
+            'count' => 5,
+            'name' => 'John',
+        ]]);
+
+        // Forget the errors signal
+        $response = hyper()->forget('errors');
+
+        $this->assertInstanceOf(HyperResponse::class, $response);
+
+        // Get SSE events from response
+        $httpResponse = $response->toResponse(request());
+        $events = $this->getSSEEvents($httpResponse);
+
+        // Should have one signal update event
+        $this->assertCount(1, $events);
+        $this->assertEquals('datastar-patch-signals', $events[0]['type']);
+
+        // Parse signal data - errors signal should be an empty array, not null
+        $signalData = json_decode($events[0]['data'], true);
+
+        // Verify that errors is set to empty array instead of null
+        $this->assertArrayHasKey('errors', $signalData);
+        $this->assertIsArray($signalData['errors']);
+        $this->assertEmpty($signalData['errors']);
+        $this->assertEquals([], $signalData['errors']);
+    }
+
+    /** @test */
+    public function test_forget_method_with_multiple_signals_including_errors()
+    {
+        $this->setupHyperRequest();
+
+        // Set up multiple signals including errors
+        request()->merge(['datastar' => [
+            'errors' => ['field1' => ['Error 1'], 'field2' => ['Error 2']],
+            'count' => 10,
+            'name' => 'Test User',
+        ]]);
+
+        // Forget multiple signals including errors
+        $response = hyper()->forget(['errors', 'count']);
+
+        $this->assertInstanceOf(HyperResponse::class, $response);
+
+        // Get SSE events from response
+        $httpResponse = $response->toResponse(request());
+        $events = $this->getSSEEvents($httpResponse);
+
+        // Should have one signal update event
+        $this->assertCount(1, $events);
+        $this->assertEquals('datastar-patch-signals', $events[0]['type']);
+
+        // Parse signal data
+        $signalData = json_decode($events[0]['data'], true);
+
+        // Verify that errors is set to empty array, not null
+        $this->assertArrayHasKey('errors', $signalData);
+        $this->assertIsArray($signalData['errors']);
+        $this->assertEmpty($signalData['errors']);
+
+        // Verify that count is set to null (standard deletion)
+        $this->assertArrayHasKey('count', $signalData);
+        $this->assertNull($signalData['count']);
+    }
+
+    /** @test */
+    public function test_forget_method_includes_locked_signals_by_default()
+    {
+        $this->setupHyperRequest();
+
+        // Set up mixed normal and locked signals
+        request()->merge(['datastar' => [
+            'userId_' => 123,      // Locked signal
+            'count' => 5,          // Normal signal
+            'name' => 'John',      // Normal signal
+            'role_' => 'admin',    // Locked signal
+        ]]);
+
+        // Store locked signals in session (simulate first call)
+        signals()->storeLockedSignals([
+            'userId_' => 123,
+            'role_' => 'admin',
+        ]);
+
+        // Verify locked signals are in session before forgetting
+        $this->assertNotNull(signals()->getStoredLockedSignals());
+
+        // Forget all signals (should include locked signals by default)
+        $response = hyper()->forget();
+
+        $this->assertInstanceOf(HyperResponse::class, $response);
+
+        // Get SSE events from response
+        $httpResponse = $response->toResponse(request());
+        $events = $this->getSSEEvents($httpResponse);
+
+        // Should have one signal update event
+        $this->assertCount(1, $events);
+        $this->assertEquals('datastar-patch-signals', $events[0]['type']);
+
+        // Parse signal data - only NORMAL signals should be in deletion event
+        // Locked signals are filtered out and only deleted server-side
+        $signalData = json_decode($events[0]['data'], true);
+
+        // Verify NORMAL signals are present in deletion event
+        $this->assertArrayHasKey('count', $signalData);
+        $this->assertArrayHasKey('name', $signalData);
+        $this->assertNull($signalData['count']);
+        $this->assertNull($signalData['name']);
+
+        // Verify LOCKED signals are NOT in deletion event (server-side only deletion)
+        $this->assertArrayNotHasKey('userId_', $signalData);
+        $this->assertArrayNotHasKey('role_', $signalData);
+
+        // Verify locked signals ARE cleared from session (server-side deletion happened)
+        $storedLocked = signals()->getStoredLockedSignals();
+        $this->assertTrue($storedLocked === null || $storedLocked === [] || $storedLocked === []);
+
+    }
+
+    /** @test */
+    public function test_forget_method_excludes_locked_signals_when_requested()
+    {
+        $this->setupHyperRequest();
+
+        // Set up mixed normal and locked signals
+        request()->merge(['datastar' => [
+            'userId_' => 123,      // Locked signal
+            'count' => 5,          // Normal signal
+            'name' => 'John',      // Normal signal
+            'role_' => 'admin',    // Locked signal
+        ]]);
+
+        // Store locked signals in session
+        signals()->storeLockedSignals([
+            'userId_' => 123,
+            'role_' => 'admin',
+        ]);
+
+        // Forget only normal signals (exclude locked signals)
+        $response = hyper()->forget(null, false);
+
+        $this->assertInstanceOf(HyperResponse::class, $response);
+
+        // Get SSE events from response
+        $httpResponse = $response->toResponse(request());
+        $events = $this->getSSEEvents($httpResponse);
+
+        // Should have one signal update event
+        $this->assertCount(1, $events);
+        $this->assertEquals('datastar-patch-signals', $events[0]['type']);
+
+        // When excluding locked signals, verify locked signals remain in session
+        $storedLocked = signals()->getStoredLockedSignals();
+        $this->assertIsArray($storedLocked);
+        $this->assertNotEmpty($storedLocked);
+        $this->assertArrayHasKey('userId_', $storedLocked);
+        $this->assertArrayHasKey('role_', $storedLocked);
+        $this->assertEquals(123, $storedLocked['userId_']);
+        $this->assertEquals('admin', $storedLocked['role_']);
+    }
+
+    /** @test */
+    public function test_forget_method_clears_specific_locked_signal_from_session()
+    {
+        $this->setupHyperRequest();
+
+        // Set up multiple locked signals
+        request()->merge(['datastar' => [
+            'userId_' => 123,
+            'role_' => 'admin',
+            'tenantId_' => 456,
+        ]]);
+
+        // Store locked signals in session
+        signals()->storeLockedSignals([
+            'userId_' => 123,
+            'role_' => 'admin',
+            'tenantId_' => 456,
+        ]);
+
+        // Forget specific locked signal
+        $response = hyper()->forget('userId_');
+
+        $this->assertInstanceOf(HyperResponse::class, $response);
+
+        // Verify the specific locked signal was cleared from session
+        $storedLocked = signals()->getStoredLockedSignals();
+        $this->assertIsArray($storedLocked);
+        $this->assertArrayNotHasKey('userId_', $storedLocked);
+
+        // Verify other locked signals remain in session
+        $this->assertArrayHasKey('role_', $storedLocked);
+        $this->assertArrayHasKey('tenantId_', $storedLocked);
+        $this->assertEquals('admin', $storedLocked['role_']);
+        $this->assertEquals(456, $storedLocked['tenantId_']);
+    }
+
+    /** @test */
+    public function test_forget_method_with_mixed_signals_and_include_locked_true()
+    {
+        $this->setupHyperRequest();
+
+        // Set up mixed signals
+        request()->merge(['datastar' => [
+            'userId_' => 123,      // Locked
+            'count' => 5,          // Normal
+            'permissions_' => [],  // Locked
+            'name' => 'Test',      // Normal
+        ]]);
+
+        // Store locked signals
+        signals()->storeLockedSignals([
+            'userId_' => 123,
+            'permissions_' => [],
+        ]);
+
+        // Forget specific signals including locked ones
+        $response = hyper()->forget(['userId_', 'count'], true);
+
+        $this->assertInstanceOf(HyperResponse::class, $response);
+
+        // Get SSE events
+        $httpResponse = $response->toResponse(request());
+        $events = $this->getSSEEvents($httpResponse);
+        $signalData = json_decode($events[0]['data'], true);
+
+        // Verify NORMAL signal (count) is in deletion event
+        $this->assertArrayHasKey('count', $signalData);
+        $this->assertNull($signalData['count']);
+
+        // Verify LOCKED signal (userId_) is NOT in deletion event (server-side only)
+        $this->assertArrayNotHasKey('userId_', $signalData);
+
+        // Verify userId_ was cleared from session (server-side deletion happened)
+        $storedLocked = signals()->getStoredLockedSignals();
+        $this->assertArrayNotHasKey('userId_', $storedLocked);
+
+        // Verify permissions_ remains in session (not forgotten)
+        $this->assertArrayHasKey('permissions_', $storedLocked);
+    }
+
     // ===================================================================
     // BATCH 11: Streaming Methods (5 tests - Basic Coverage)
     // ===================================================================

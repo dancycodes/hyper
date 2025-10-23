@@ -198,12 +198,19 @@ class HyperResponse implements Responsable
      *
      * Deletes specified signals or all signals if no specific names are provided.
      * Signal deletion is performed by sending null values to the client per Datastar protocol.
+     * For locked signals (names ending with underscore), also removes them from server-side
+     * session storage to maintain consistency.
+     *
+     * By default, both normal and locked signals are forgotten. Set $includeLocked to false
+     * to only forget normal signals while preserving locked signals in both client store
+     * and server session.
      *
      * @param string|array<int, string>|null $signals Signal name(s) to delete, or null to delete all
+     * @param bool $includeLocked Whether to include locked signals in deletion (default: true)
      *
      * @return static Returns this instance for method chaining
      */
-    public function forget(string|array|null $signals = null): self
+    public function forget(string|array|null $signals = null, bool $includeLocked = true): self
     {
         if (is_null($signals)) {
             /** @var \Dancycodes\Hyper\Http\HyperSignal $hyperSignal */
@@ -211,7 +218,24 @@ class HyperResponse implements Responsable
             $signals = array_keys($hyperSignal->all());
         }
 
-        return $this->forgetSignals($signals);
+        // Filter out locked signals if requested
+        $signalNames = $this->parseSignalNames($signals);
+        if (!$includeLocked) {
+            $signalNames = array_filter($signalNames, fn ($name) => !str_ends_with($name, '_'));
+        }
+
+        // Clean up locked signals from server-side session storage
+        if ($includeLocked) {
+            /** @var \Dancycodes\Hyper\Http\HyperSignal $hyperSignal */
+            $hyperSignal = signals();
+            foreach ($signalNames as $signalName) {
+                if (str_ends_with($signalName, '_')) {
+                    $hyperSignal->clearLockedSignal($signalName);
+                }
+            }
+        }
+
+        return $this->forgetSignals($signalNames);
     }
 
     /**
@@ -1570,11 +1594,13 @@ class HyperResponse implements Responsable
      *
      * Transforms signal names into associative array format required for deletion,
      * where each signal name maps to null value to trigger client-side removal per
-     * Datastar protocol.
+     * Datastar protocol. The 'errors' signal receives special treatment and is reset
+     * to an empty array instead of null, as it should always remain an array for the
+     * data-error attribute to function correctly.
      *
      * @param string|array<int, string> $signals Signal name or array of signal names
      *
-     * @return array<string, null> Deletion array with signal names as keys, null as values
+     * @return array<string, null|array<empty, empty>> Deletion array with signal names as keys, null or empty array as values
      */
     private function parseSignalsForDeletion(string|array $signals): array
     {
@@ -1582,7 +1608,9 @@ class HyperResponse implements Responsable
 
         $deletionArray = [];
         foreach ($signalNames as $signalName) {
-            $deletionArray[$signalName] = null;
+            // Special handling for errors signal - reset to empty array instead of null
+            // The errors signal is used by data-error attribute and should always be an array
+            $deletionArray[$signalName] = ($signalName === 'errors') ? [] : null;
         }
 
         return $deletionArray;
