@@ -13,6 +13,8 @@ Laravel Hyper integrates [Datastar](https://data-star.dev)—a reactive hypermed
 
 Datastar provides the reactive signals system and frontend reactivity engine. Laravel provides the backend framework and development patterns. Hyper bridges these two technologies with Laravel-specific helpers, Blade directives, CSRF protection, validation integration, and file upload handling.
 
+**📚 [Full Documentation at laravel-hyper.com](https://laravel-hyper.com)**
+
 ```blade
 <!-- Reactive counter with Datastar's signals and Laravel's backend -->
 <div @signals(['count' => 0])>
@@ -186,6 +188,8 @@ public function store()
 
 The `signals()` helper (Hyper) reads signals from the request. The `hyper()` helper (Hyper) builds the response.
 
+> **📚 Learn more at [laravel-hyper.com](https://laravel-hyper.com)**
+
 ### Updating HTML Content
 
 Render Blade views to update specific sections of your page:
@@ -216,6 +220,8 @@ public function destroy($id)
 ```
 
 Datastar receives the rendered HTML and updates the matching element by ID.
+
+> **📚 Learn more at [laravel-hyper.com](https://laravel-hyper.com)**
 
 ## Working with Signals
 
@@ -253,6 +259,8 @@ Local signals are useful for UI state that doesn't need server processing—drop
 ```
 
 Locked signals are stored encrypted in the session and validated on every request. If a locked signal is tampered with, Hyper throws a `HyperSignalTamperedException`. This feature is provided by Hyper for secure state management.
+
+> **📚 Learn more at [laravel-hyper.com](https://laravel-hyper.com)**
 
 ### Creating Signals
 
@@ -446,6 +454,8 @@ signals()->validate(
 );
 ```
 
+> **📚 Learn more at [laravel-hyper.com](https://laravel-hyper.com)**
+
 ## File Uploads
 
 File inputs bound with `data-bind` automatically encode files as base64 (Datastar behavior). Hyper provides validation rules and storage helpers for handling these base64-encoded files.
@@ -518,6 +528,8 @@ $paths = signals()->storeMultiple([
     'banner' => 'banners'
 ], 'public');
 ```
+
+> **📚 Learn more at [laravel-hyper.com](https://laravel-hyper.com)**
 
 ## Fragment Rendering
 
@@ -633,6 +645,8 @@ return redirect('/dashboard');
 // With flash data
 return redirect('/dashboard')->with('success', 'User created');
 ```
+
+> **📚 Learn more at [laravel-hyper.com](https://laravel-hyper.com)**
 
 ## Advanced Features
 
@@ -783,6 +797,8 @@ Event modifiers:
 - `data-intersect="expression"` - Run when element enters viewport
 
 For complete Datastar documentation, visit [data-star.dev](https://data-star.dev).
+
+> **📚 For Hyper-specific attributes and Laravel integration, visit [laravel-hyper.com](https://laravel-hyper.com)**
 
 ## Testing
 
