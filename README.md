@@ -16,9 +16,9 @@ Datastar provides the reactive signals system and frontend reactivity engine. La
 ```blade
 <!-- Reactive counter with Datastar's signals and Laravel's backend -->
 <div @signals(['count' => 0])>
-    <button data-on-click="@postx('/increment')">+</button>
+    <button data-on:click="@postx('/increment')">+</button>
     <span data-text="$count"></span>
-    <button data-on-click="@postx('/decrement')">-</button>
+    <button data-on:click="@postx('/decrement')">-</button>
 </div>
 ```
 
@@ -148,7 +148,7 @@ Use CSRF-protected HTTP actions to communicate with your Laravel controllers:
 
 ```blade
 <form @signals(['name' => '', 'email' => '', 'errors' => []])
-      data-on-submit__prevent="@postx('/contacts')">
+      data-on:submit__prevent="@postx('/contacts')">
 
     <div>
         <input data-bind="name" />
@@ -196,7 +196,7 @@ Render Blade views to update specific sections of your page:
     @foreach($users as $user)
         <div class="user-item">
             <span>{{ $user->name }}</span>
-            <button data-on-click="@deletex('/users/{{ $user->id }}')">
+            <button data-on:click="@deletex('/users/{{ $user->id }}')">
                 Delete
             </button>
         </div>
@@ -236,7 +236,7 @@ Signals come in three types, each serving different purposes:
 ```blade
 <div @signals(['count' => 0, '_showMenu' => false])>
     <!-- _showMenu stays in the browser (underscore prefix) -->
-    <button data-on-click="$_showMenu = !$_showMenu">Toggle Menu</button>
+    <button data-on:click="$_showMenu = !$_showMenu">Toggle Menu</button>
     <nav data-show="$_showMenu">Navigation content...</nav>
 </div>
 ```
@@ -354,9 +354,9 @@ public function updateCart()
 
 ```blade
 <div @signals(['count' => 0])>
-    <button data-on-click="$count++">Increment</button>
-    <button data-on-click="$count--">Decrement</button>
-    <button data-on-click="$count = 0">Reset</button>
+    <button data-on:click="$count++">Increment</button>
+    <button data-on:click="$count--">Decrement</button>
+    <button data-on:click="$count = 0">Reset</button>
 </div>
 ```
 
@@ -407,7 +407,7 @@ When validation fails, Hyper automatically:
 
 ```blade
 <form @signals(['title' => '', 'content' => '', 'errors' => []])
-      data-on-submit__prevent="@postx('/posts')">
+      data-on:submit__prevent="@postx('/posts')">
 
     <div>
         <label>Title</label>
@@ -452,13 +452,13 @@ File inputs bound with `data-bind` automatically encode files as base64 (Datasta
 
 ```blade
 <form @signals(['avatar' => null, 'errors' => []])
-      data-on-submit__prevent="@postx('/profile/avatar')">
+      data-on:submit__prevent="@postx('/profile/avatar')">
 
     <input type="file" data-bind="avatar" accept="image/*" />
 
     <!-- Live preview -->
     <img data-show="$avatar !== null"
-         data-attr-src="@fileUrl($avatar)"
+         data-attr:src="@fileUrl($avatar)"
          class="w-32 h-32 object-cover rounded" />
 
     <div data-error="avatar" class="text-red-500"></div>
@@ -530,7 +530,7 @@ Fragments let you define reusable sections within Blade views and render them in
         @forelse($todos as $todo)
             <div class="todo-item">
                 <span>{{ $todo->title }}</span>
-                <button data-on-click="@deletex('/todos/{{ $todo->id }}')">
+                <button data-on:click="@deletex('/todos/{{ $todo->id }}')">
                     Delete
                 </button>
             </div>
@@ -738,7 +738,7 @@ Hyper applications use Datastar's reactive attributes. Here are the most commonl
 ### State Management
 
 - `data-signals="{...}"` - Create reactive signals
-- `data-computed-name="expression"` - Create computed signal
+- `data-computed:name="expression"` - Create computed signal
 - `data-effect="expression"` - Run code when signals change
 
 ### Display & Binding
@@ -746,21 +746,21 @@ Hyper applications use Datastar's reactive attributes. Here are the most commonl
 - `data-text="$signal"` - Display signal value as text
 - `data-bind="signal"` - Two-way bind input to signal
 - `data-show="condition"` - Show/hide element
-- `data-class-name="condition"` - Toggle CSS class
-- `data-attr-name="value"` - Set attribute value
+- `data-class:name="condition"` - Toggle CSS class
+- `data-attr:name="value"` - Set attribute value
 
 ### Events
 
-- `data-on-click="expression"` - Handle click events
-- `data-on-input="expression"` - Handle input events
-- `data-on-submit="expression"` - Handle form submit
+- `data-on:click="expression"` - Handle click events
+- `data-on:input="expression"` - Handle input events
+- `data-on:submit="expression"` - Handle form submit
 - `data-on-[event]="expression"` - Handle any DOM event
 
 Event modifiers:
 
-- `data-on-click__prevent` - Prevent default
-- `data-on-submit__prevent__stop` - Prevent default and stop propagation
-- `data-on-input__debounce.300ms` - Debounce input
+- `data-on:click__prevent` - Prevent default
+- `data-on:submit__prevent__stop` - Prevent default and stop propagation
+- `data-on:input__debounce.300ms` - Debounce input
 
 ### HTTP Actions
 

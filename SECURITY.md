@@ -110,10 +110,10 @@ Always use CSRF-protected actions for mutating operations:
 
 ```blade
 <!-- ✅ Correct: Uses @postx with automatic CSRF -->
-<button data-on-click="@postx('/delete')">Delete</button>
+<button data-on:click="@postx('/delete')">Delete</button>
 
 <!-- ❌ Wrong: Uses @post without CSRF -->
-<button data-on-click="@post('/delete')">Delete</button>
+<button data-on:click="@post('/delete')">Delete</button>
 ```
 
 **Why:** The `x` suffix (`@postx`, `@putx`, etc.) automatically includes CSRF tokens.
