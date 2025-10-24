@@ -3548,6 +3548,8 @@ const createHttpMethodWithCSRF = (name, method) => {
       }
       const enhancedArgs = {
         ...args,
+        credentials: "include",
+        // Required for session cookies
         headers: {
           ...args?.headers,
           ...getCSRFHeaders(args?.headers)
@@ -3762,38 +3764,40 @@ function setupResponseInterceptor() {
     if (shouldSkipUrl(requestUrl)) {
       return originalFetch(...args);
     }
-    const isDatastarRequest = init?.headers?.["Datastar-Request"] === "true" || init?.headers?.get?.("Datastar-Request") === "true";
+    const enhancedInit = {
+      ...init,
+      credentials: init?.credentials || "include"
+    };
+    const isDatastarRequest = enhancedInit?.headers?.["Datastar-Request"] === "true" || enhancedInit?.headers?.get?.("Datastar-Request") === "true";
     try {
-      const response = await originalFetch(...args);
+      const response = await originalFetch(resource, enhancedInit);
       if (isRedirectResponse(response, requestUrl)) {
         const redirectUrl = getRedirectUrl(response);
         if (redirectUrl && redirectUrl !== window.location.href) {
-          window.location.href = redirectUrl;
-          return new Response("", { status: 204 });
+          setTimeout(() => {
+            window.location.href = redirectUrl;
+          }, 300);
+          throw new RedirectHandled();
         }
       }
-      if (isDatastarRequest) {
+      if (shouldPassThroughToDatastar(response, isDatastarRequest)) {
         return response;
       }
-      const isHyperResponse = response.headers.get("X-Hyper-Response") === "true";
-      const isSSEResponse = response.headers.get("Content-Type")?.includes("text/event-stream");
-      const hasDatastarEvent = response.headers.get("Content-Type")?.includes("text/event-stream") && response.url.includes("datastar") || response.headers.get("event")?.startsWith("datastar-");
-      if (isHyperResponse || isSSEResponse || hasDatastarEvent) {
-        return response;
+      if (shouldHandleLaravelResponse(response, isDatastarRequest)) {
+        await handleLaravelResponse(response);
+        return new Response("", { status: 200 });
       }
-      try {
-        await handleLaravelResponse(response, requestUrl);
-      } catch (error2) {
-        if (error2 instanceof RedirectHandled) {
-          return new Response("", { status: 204 });
-        }
-        throw error2;
-      }
-      return new Response("", { status: 200 });
+      return response;
     } catch (error2) {
-      if (!(error2 instanceof RedirectHandled)) {
-        console.error("Network error:", error2);
+      if (error2 instanceof RedirectHandled) {
+        return new Response("", {
+          status: 200,
+          headers: {
+            "Content-Type": "text/event-stream"
+          }
+        });
       }
+      console.error("Network error:", error2);
       throw error2;
     }
   };
@@ -3804,57 +3808,45 @@ class RedirectHandled extends Error {
     this.name = "RedirectHandled";
   }
 }
-function getUrlFromResource(resource) {
-  if (typeof resource === "string") return resource;
-  if (resource instanceof URL) return resource.href;
-  if (resource instanceof Request) return resource.url;
-  return String(resource);
-}
-function shouldSkipUrl(url2) {
-  const skipPatterns = [
-    "_boost/browser-logs",
-    "_boost/",
-    "_debugbar/",
-    "_ignition/",
-    "telescope/",
-    "horizon/",
-    ".js",
-    ".css",
-    ".png",
-    ".jpg",
-    ".jpeg",
-    ".gif",
-    ".svg",
-    ".ico",
-    ".woff",
-    ".woff2",
-    ".ttf",
-    ".eot"
-  ];
-  return skipPatterns.some((pattern) => url2.includes(pattern));
-}
-async function handleLaravelResponse(response, requestUrl) {
-  if (isRedirectResponse(response, requestUrl)) {
-    const redirectUrl = getRedirectUrl(response);
-    if (redirectUrl && redirectUrl !== window.location.href) {
-      window.location.replace(redirectUrl);
-      throw new RedirectHandled();
-    }
-    return;
-  }
-  if (response.status >= 400) {
-    const html = await response.text();
-    if (isLaravelSpecialResponse(html)) {
-      replaceDocument(html);
-    }
-    return;
-  }
+function shouldPassThroughToDatastar(response, isDatastarRequest) {
+  if (!isDatastarRequest) return false;
   const contentType = response.headers.get("Content-Type") || "";
-  if (contentType.includes("text/html")) {
-    const html = await response.text();
+  if (response.headers.get("X-Hyper-Response") === "true") {
+    return true;
+  }
+  if (contentType.includes("text/event-stream")) {
+    return true;
+  }
+  const hasStandardContentType = contentType.includes("text/html") || contentType.includes("application/json") || contentType.includes("text/javascript");
+  if (hasStandardContentType && response.status >= 200 && response.status < 400) {
+    return true;
+  }
+  return false;
+}
+function shouldHandleLaravelResponse(response, isDatastarRequest) {
+  const contentType = response.headers.get("Content-Type") || "";
+  if (contentType.includes("text/event-stream") || response.headers.get("X-Hyper-Response") === "true") {
+    return false;
+  }
+  if (response.status >= 400 && contentType.includes("text/html")) {
+    return true;
+  }
+  if (response.status >= 200 && response.status < 400 && contentType.includes("text/html") && !isDatastarRequest) {
+    return true;
+  }
+  return false;
+}
+async function handleLaravelResponse(response) {
+  if (response.status < 400) return;
+  const contentType = response.headers.get("Content-Type") || "";
+  if (!contentType.includes("text/html")) return;
+  try {
+    const html = await response.clone().text();
     if (isLaravelSpecialResponse(html)) {
       replaceDocument(html);
     }
+  } catch (error2) {
+    console.error("Error reading response body:", error2);
   }
 }
 function isRedirectResponse(response, originalUrl) {
@@ -3873,6 +3865,9 @@ function isLaravelSpecialResponse(html) {
     return true;
   }
   if (html.includes("sf-dump") || html.includes("var-dump") || html.includes("symfony-var-dumper") || html.includes("dump-container")) {
+    return true;
+  }
+  if (html.includes("<!DOCTYPE html>") && (html.includes("<title>404") || html.includes("<title>403") || html.includes("<title>500") || html.includes("<title>503") || html.includes("<title>Server Error") || html.includes("<title>Page Not Found") || html.includes("<title>Forbidden") || html.includes("<title>Service Unavailable"))) {
     return true;
   }
   return false;
@@ -3909,6 +3904,35 @@ function executeNewScripts() {
       oldScript.parentNode.replaceChild(newScript, oldScript);
     }
   });
+}
+function getUrlFromResource(resource) {
+  if (typeof resource === "string") return resource;
+  if (resource instanceof URL) return resource.href;
+  if (resource instanceof Request) return resource.url;
+  return String(resource);
+}
+function shouldSkipUrl(url2) {
+  const skipPatterns = [
+    "_boost/browser-logs",
+    "_boost/",
+    "_debugbar/",
+    "_ignition/",
+    "telescope/",
+    "horizon/",
+    ".js",
+    ".css",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".svg",
+    ".ico",
+    ".woff",
+    ".woff2",
+    ".ttf",
+    ".eot"
+  ];
+  return skipPatterns.some((pattern) => url2.includes(pattern));
 }
 let globalNavigateSetup = false;
 if (!globalNavigateSetup) {

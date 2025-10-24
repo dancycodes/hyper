@@ -149,8 +149,7 @@ The `@signals` directive (Hyper) creates signals from PHP data. The `data-bind` 
 Use CSRF-protected HTTP actions to communicate with your Laravel controllers:
 
 ```blade
-<form @signals(['name' => '', 'email' => '', 'errors' => []])
-      data-on:submit__prevent="@postx('/contacts')">
+<form data-on:submit__prevent="@postx('/contacts')">
 
     <div>
         <input data-bind="name" />
@@ -181,7 +180,6 @@ public function store()
     return hyper()->signals([
         'name' => '',
         'email' => '',
-        'errors' => []
     ]);
 }
 ```
@@ -209,9 +207,9 @@ Render Blade views to update specific sections of your page:
 ```
 
 ```php
-public function destroy($id)
+public function destroy(User $user)
 {
-    User::destroy($id);
+    $user->delete();
 
     $users = User::all();
 
@@ -403,7 +401,7 @@ public function store()
 
     Post::create($validated);
 
-    return hyper()->signals(['errors' => [], 'message' => 'Post created']);
+    return hyper()->signals(['message' => 'Post created']);
 }
 ```
 
@@ -414,8 +412,7 @@ When validation fails, Hyper automatically:
 3. The `data-error` attribute displays field-specific errors
 
 ```blade
-<form @signals(['title' => '', 'content' => '', 'errors' => []])
-      data-on:submit__prevent="@postx('/posts')">
+<form data-on:submit__prevent="@postx('/posts')">
 
     <div>
         <label>Title</label>
@@ -461,14 +458,12 @@ signals()->validate(
 File inputs bound with `data-bind` automatically encode files as base64 (Datastar behavior). Hyper provides validation rules and storage helpers for handling these base64-encoded files.
 
 ```blade
-<form @signals(['avatar' => null, 'errors' => []])
-      data-on:submit__prevent="@postx('/profile/avatar')">
+<form data-on:submit__prevent="@postx('/profile/avatar')">
 
     <input type="file" data-bind="avatar" accept="image/*" />
 
     <!-- Live preview -->
-    <img data-show="$avatar !== null"
-         data-attr:src="@fileUrl($avatar)"
+    <img data-attr:src="@fileUrl($avatar)"
          class="w-32 h-32 object-cover rounded" />
 
     <div data-error="avatar" class="text-red-500"></div>
@@ -492,7 +487,7 @@ public function uploadAvatar()
 
     auth()->user()->update(['avatar' => $path]);
 
-    return hyper()->signals(['avatar' => null, 'errors' => []]);
+    return hyper()->signals(['avatar' => $path]);
 }
 ```
 
@@ -537,34 +532,37 @@ Fragments let you define reusable sections within Blade views and render them in
 
 ```blade
 <!-- resources/views/todos/index.blade.php -->
-<div id="todo-list">
-    @fragment('todo-list')
-        @forelse($todos as $todo)
-            <div class="todo-item">
-                <span>{{ $todo->title }}</span>
-                <button data-on:click="@deletex('/todos/{{ $todo->id }}')">
-                    Delete
-                </button>
-            </div>
-        @empty
-            <p>No todos found.</p>
-        @endforelse
-    @endfragment
-</div>
+@fragment('todo-list')
+   <div id="todo-list">
+      @forelse($todos as $todo)
+         <div class="todo-item">
+               <span>{{ $todo->title }}</span>
+               <button data-on:click="@deletex('/todos/{{ $todo->id }}')">
+                  Delete
+               </button>
+         </div>
+      @empty
+         <p>No todos found.</p>
+      @endforelse
+   </div>
+@endfragment
 
-<div id="todo-count">
-    @fragment('todo-count')
+
+
+@fragment('todo-count')
+    <div id="todo-count">
         <p>{{ $todos->count() }} todos remaining</p>
-    @endfragment
-</div>
+    </div>
+@endfragment
+
 ```
 
 From your controller, render specific fragments:
 
 ```php
-public function destroy($id)
+public function destroy(Todo $todo)
 {
-    Todo::destroy($id);
+    $todo->delete();
     $todos = Todo::all();
 
     return hyper()
@@ -580,7 +578,7 @@ By default, fragments target elements by ID. You can specify custom selectors:
 ```php
 return hyper()->fragment('todos.index', 'todo-list', compact('todos'), [
     'selector' => '#todo-list',
-    'mode' => 'inner'  // Update only inner HTML
+    'mode' => 'outer'  // Replace the element selected with all content
 ]);
 ```
 
@@ -768,7 +766,7 @@ Hyper applications use Datastar's reactive attributes. Here are the most commonl
 - `data-on:click="expression"` - Handle click events
 - `data-on:input="expression"` - Handle input events
 - `data-on:submit="expression"` - Handle form submit
-- `data-on-[event]="expression"` - Handle any DOM event
+- `data-on:[event]="expression"` - Handle any DOM event
 
 Event modifiers:
 
