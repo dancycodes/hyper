@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ConvertRedirectsForDatastarTest extends TestCase
 {
+    protected static $latestResponse;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -30,10 +32,8 @@ class ConvertRedirectsForDatastarTest extends TestCase
         parent::tearDown();
     }
 
-    /**
-     * @test
-     */
-    public function it_passes_through_non_datastar_requests()
+    /** @test */
+    public function test_passes_through_non_datastar_requests()
     {
         // Remove Datastar header for this specific test
         request()->headers->remove('Datastar-Request');
@@ -49,10 +49,8 @@ class ConvertRedirectsForDatastarTest extends TestCase
         $this->assertInstanceOf(RedirectResponse::class, $result);
     }
 
-    /**
-     * @test
-     */
-    public function it_passes_through_non_redirect_responses_for_datastar_requests()
+    /** @test */
+    public function test_passes_through_non_redirect_responses_for_datastar_requests()
     {
         $middleware = new ConvertRedirectsForDatastar;
         $response = new Response('<div>Content</div>', 200);
@@ -65,10 +63,8 @@ class ConvertRedirectsForDatastarTest extends TestCase
         $this->assertInstanceOf(Response::class, $result);
     }
 
-    /**
-     * @test
-     */
-    public function it_converts_redirect_response_to_sse_for_datastar_requests()
+    /** @test */
+    public function test_converts_redirect_response_to_sse_for_datastar_requests()
     {
         $middleware = new ConvertRedirectsForDatastar;
         $response = new RedirectResponse('/target');
@@ -83,10 +79,8 @@ class ConvertRedirectsForDatastarTest extends TestCase
         $this->assertStringContainsString('no-cache', $result->headers->get('Cache-Control'));
     }
 
-    /**
-     * @test
-     */
-    public function it_skips_responses_already_processed_by_hyper_redirect()
+    /** @test */
+    public function test_skips_responses_already_processed_by_hyper_redirect()
     {
         $middleware = new ConvertRedirectsForDatastar;
 
@@ -101,10 +95,8 @@ class ConvertRedirectsForDatastarTest extends TestCase
         $this->assertSame($response, $result);
     }
 
-    /**
-     * @test
-     */
-    public function it_detects_redirect_response_instance()
+    /** @test */
+    public function test_detects_redirect_response_instance()
     {
         $middleware = new ConvertRedirectsForDatastar;
         $response = new RedirectResponse('/target');
@@ -147,10 +139,8 @@ class ConvertRedirectsForDatastarTest extends TestCase
         ];
     }
 
-    /**
-     * @test
-     */
-    public function it_generates_javascript_navigation_script()
+    /** @test */
+    public function test_generates_javascript_navigation_script()
     {
         $middleware = new ConvertRedirectsForDatastar;
         $response = new RedirectResponse('/dashboard');
@@ -188,10 +178,8 @@ class ConvertRedirectsForDatastarTest extends TestCase
         $this->assertTrue($hasSetTimeout, 'JavaScript should include setTimeout');
     }
 
-    /**
-     * @test
-     */
-    public function it_uses_200ms_delay_for_navigation()
+    /** @test */
+    public function test_uses_200ms_delay_for_navigation()
     {
         $middleware = new ConvertRedirectsForDatastar;
         $response = new RedirectResponse('/target');
@@ -214,10 +202,8 @@ class ConvertRedirectsForDatastarTest extends TestCase
         $this->assertTrue($has200msDelay, 'Navigation script should use 200ms delay');
     }
 
-    /**
-     * @test
-     */
-    public function it_escapes_url_in_javascript()
+    /** @test */
+    public function test_escapes_url_in_javascript()
     {
         $middleware = new ConvertRedirectsForDatastar;
         $response = new RedirectResponse('/search?q=test&category=books');
@@ -247,10 +233,8 @@ class ConvertRedirectsForDatastarTest extends TestCase
         $this->assertTrue($hasUrl, 'URL with query parameters should be in the navigation script');
     }
 
-    /**
-     * @test
-     */
-    public function it_extracts_url_from_location_header()
+    /** @test */
+    public function test_extracts_url_from_location_header()
     {
         $middleware = new ConvertRedirectsForDatastar;
 
@@ -280,10 +264,8 @@ class ConvertRedirectsForDatastarTest extends TestCase
         $this->assertTrue($hasCustomTarget, 'Custom target URL from Location header should be in the script');
     }
 
-    /**
-     * @test
-     */
-    public function it_preserves_session_flash_data_through_redirect()
+    /** @test */
+    public function test_preserves_session_flash_data_through_redirect()
     {
         $middleware = new ConvertRedirectsForDatastar;
 
@@ -301,10 +283,8 @@ class ConvertRedirectsForDatastarTest extends TestCase
         $this->assertContains('success', session()->get('_flash.new'));
     }
 
-    /**
-     * @test
-     */
-    public function it_attaches_session_cookie_to_response()
+    /** @test */
+    public function test_attaches_session_cookie_to_response()
     {
         $middleware = new ConvertRedirectsForDatastar;
 
@@ -328,10 +308,8 @@ class ConvertRedirectsForDatastarTest extends TestCase
         $this->assertEquals(session()->getId(), $sessionCookie->getValue());
     }
 
-    /**
-     * @test
-     */
-    public function it_copies_cookies_from_original_response()
+    /** @test */
+    public function test_copies_cookies_from_original_response()
     {
         $middleware = new ConvertRedirectsForDatastar;
 
@@ -352,10 +330,8 @@ class ConvertRedirectsForDatastarTest extends TestCase
         $this->assertEquals('test_value', $customCookie->getValue());
     }
 
-    /**
-     * @test
-     */
-    public function it_creates_session_cookie_with_correct_configuration()
+    /** @test */
+    public function test_creates_session_cookie_with_correct_configuration()
     {
         config(['session.cookie' => 'test_session']);
         config(['session.lifetime' => 240]);
