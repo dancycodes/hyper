@@ -118,7 +118,7 @@ class HyperRedirect implements Responsable
      */
     public function toResponse($request = null): \Symfony\Component\HttpFoundation\StreamedResponse
     {
-        // Flash session data with guaranteed write completion
+        // Persist session flash data with dual-aging compensation
         if (!empty($this->flashData)) {
             if (!session()->isStarted()) {
                 session()->start();
@@ -128,11 +128,14 @@ class HyperRedirect implements Responsable
                 session()->flash((string) $key, $value);
             }
 
-            // Force immediate session write and close to ensure data persists
-            // This prevents race conditions where redirect occurs before flash
-            // data is fully committed to session storage
+            // Persist flash data to storage, aging from _flash.new to _flash.old
             session()->save();
-            session_write_close();
+
+            // Compensate for dual session save by reflashing data back to _flash.new
+            // StartSession middleware's terminate() will execute final save(), properly
+            // aging flash data for consumption by the next request. Without reflash(),
+            // terminate() would age data twice (_flash.old to deleted)
+            session()->reflash();
         }
 
         $safeUrl = json_encode($this->url, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
@@ -300,7 +303,7 @@ class HyperRedirect implements Responsable
      */
     public function forceReload(bool $forceReload = false): \Symfony\Component\HttpFoundation\StreamedResponse
     {
-        // Flash session data with guaranteed write completion
+        // Persist session flash data with dual-aging compensation
         if (!empty($this->flashData)) {
             if (!session()->isStarted()) {
                 session()->start();
@@ -310,9 +313,14 @@ class HyperRedirect implements Responsable
                 session()->flash((string) $key, $value);
             }
 
-            // Force immediate session write and close to ensure data persists
+            // Persist flash data to storage, aging from _flash.new to _flash.old
             session()->save();
-            session_write_close();
+
+            // Compensate for dual session save by reflashing data back to _flash.new
+            // StartSession middleware's terminate() will execute final save(), properly
+            // aging flash data for consumption by the next request. Without reflash(),
+            // terminate() would age data twice (_flash.old to deleted)
+            session()->reflash();
         }
 
         $reloadParam = $forceReload ? 'true' : 'false';

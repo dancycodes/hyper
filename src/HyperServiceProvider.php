@@ -120,6 +120,7 @@ class HyperServiceProvider extends ServiceProvider
         $this->registerBase64ValidationRules();
         $this->registerRouteDiscovery();
         $this->registerSignalsDirective();
+        $this->registerRedirectConversionMiddleware();
     }
 
     /**
@@ -561,5 +562,27 @@ class HyperServiceProvider extends ServiceProvider
 
             return "<?php echo app('hyper.signals.directive')->render({$rewrittenExpression}); ?>";
         });
+    }
+
+    /**
+     * Register middleware to automatically convert redirects for Datastar requests
+     *
+     * Registers the ConvertRedirectsForDatastar middleware globally to intercept
+     * standard Laravel redirect responses and convert them into Hyper-style SSE
+     * responses for Datastar requests. This prevents the double-navigation issue
+     * where flash data is consumed during fetch API's automatic redirect following.
+     *
+     * This middleware runs for ALL requests but only modifies responses for
+     * Datastar requests that result in redirects, ensuring zero impact on normal
+     * HTTP request/response cycles.
+     */
+    protected function registerRedirectConversionMiddleware(): void
+    {
+        /** @var \Illuminate\Contracts\Http\Kernel $kernel */
+        $kernel = $this->app->make(\Illuminate\Contracts\Http\Kernel::class);
+
+        // Push middleware to the global middleware stack
+        // This ensures it runs for all requests and can intercept responses
+        $kernel->pushMiddleware(\Dancycodes\Hyper\Http\Middleware\ConvertRedirectsForDatastar::class);
     }
 }

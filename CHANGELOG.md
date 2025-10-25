@@ -5,15 +5,6 @@ All notable changes to `dancycodes/hyper` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.2](https://github.com/dancycodes/hyper/compare/v0.1.1...v0.1.2) (2025-10-24)
-
-
-### Bug Fixes
-
-* Consider forgetting locked signals in HyperResponse forget method ([bcd8162](https://github.com/dancycodes/hyper/commit/bcd81629db06d2fd5ae6a4f53071993b599e1069))
-* Improve CSRF and error handling in hyper.js ([6908aca](https://github.com/dancycodes/hyper/commit/6908acac4a63ccb127d1c6ba8d26f83d07e28fca))
-* Update attribute syntax and refactor hyper.js internals to match Datastar RC6 ([54a8b3f](https://github.com/dancycodes/hyper/commit/54a8b3fbe661a66431a4670c6f1f91c02784d433))
-
 ## [0.1.1](https://github.com/dancycodes/hyper/compare/v0.1.0...v0.1.1) (2025-10-21)
 
 
