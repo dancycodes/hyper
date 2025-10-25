@@ -537,4 +537,170 @@ class HyperRedirectTest extends TestCase
 
         $this->assertTrue($hasReloadScript, 'Should generate window.location.reload script');
     }
+
+    /** @test */
+    public function test_with_method_sets_flash_data()
+    {
+        $this->setupHyperRequest();
+
+        $hyperResponse = app(HyperResponse::class);
+        $redirect = new HyperRedirect('/dashboard', $hyperResponse);
+
+        // Set flash data
+        $redirect->with('success', 'Operation completed successfully');
+
+        $response = $redirect->toResponse(request());
+
+        // Verify flash data was set and reflashed
+        $this->assertNotNull(session()->get('_flash.new'));
+        $this->assertContains('success', session()->get('_flash.new'));
+    }
+
+    /** @test */
+    public function test_with_method_sets_multiple_flash_data()
+    {
+        $this->setupHyperRequest();
+
+        $hyperResponse = app(HyperResponse::class);
+        $redirect = new HyperRedirect('/dashboard', $hyperResponse);
+
+        // Set multiple flash data
+        $redirect->with([
+            'success' => 'Item created',
+            'item_id' => 123,
+            'metadata' => ['count' => 5],
+        ]);
+
+        $response = $redirect->toResponse(request());
+
+        // Verify all flash data was set
+        $flashNew = session()->get('_flash.new', []);
+        $this->assertContains('success', $flashNew);
+        $this->assertContains('item_id', $flashNew);
+        $this->assertContains('metadata', $flashNew);
+    }
+
+    /** @test */
+    public function test_flash_data_is_reflashed_after_save()
+    {
+        $this->setupHyperRequest();
+
+        $hyperResponse = app(HyperResponse::class);
+        $redirect = new HyperRedirect('/dashboard', $hyperResponse);
+
+        $redirect->with('test', 'value');
+
+        // Call toResponse which will flash, save, and reflash
+        $response = $redirect->toResponse(request());
+
+        // After toResponse with reflash(), flash data should be in new (reflashed after save)
+        $flashAfter = session()->get('_flash.new', []);
+        $this->assertContains('test', $flashAfter);
+
+        // Verify the actual value is still accessible
+        $this->assertEquals('value', session()->get('test'));
+    }
+
+    /** @test */
+    public function test_force_reload_preserves_flash_data()
+    {
+        $this->setupHyperRequest();
+
+        $hyperResponse = app(HyperResponse::class);
+        $redirect = new HyperRedirect('/ignored', $hyperResponse);
+
+        $redirect->with('reload_message', 'Page will reload with this message');
+
+        $response = $redirect->forceReload(true);
+
+        // Verify flash data was reflashed
+        $flashNew = session()->get('_flash.new', []);
+        $this->assertContains('reload_message', $flashNew);
+    }
+
+    /** @test */
+    public function test_session_save_is_called_before_reflash()
+    {
+        $this->setupHyperRequest();
+
+        $hyperResponse = app(HyperResponse::class);
+        $redirect = new HyperRedirect('/target', $hyperResponse);
+
+        $redirect->with('test_key', 'test_value');
+
+        // Capture session state before toResponse
+        $sessionIdBefore = session()->getId();
+
+        $response = $redirect->toResponse(request());
+
+        // Session should still be active (not closed) with same ID
+        $this->assertEquals($sessionIdBefore, session()->getId());
+
+        // Flash data should be in _flash.new after reflash
+        $this->assertContains('test_key', session()->get('_flash.new', []));
+    }
+
+    /** @test */
+    public function test_empty_flash_data_does_not_call_session_operations()
+    {
+        $this->setupHyperRequest();
+
+        $hyperResponse = app(HyperResponse::class);
+        $redirect = new HyperRedirect('/target', $hyperResponse);
+
+        // Don't set any flash data
+        $response = $redirect->toResponse(request());
+
+        // Should still generate valid SSE response
+        $this->assertInstanceOf(\Symfony\Component\HttpFoundation\StreamedResponse::class, $response);
+    }
+
+    /** @test */
+    public function test_flash_data_persists_through_dual_save_cycle()
+    {
+        $this->setupHyperRequest();
+
+        $hyperResponse = app(HyperResponse::class);
+        $redirect = new HyperRedirect('/dashboard', $hyperResponse);
+
+        $redirect->with('message', 'Test persistence');
+
+        // First save happens in toResponse
+        $response = $redirect->toResponse(request());
+
+        // Verify data is in _flash.new (reflashed after save)
+        $flashKeys = session()->get('_flash.new', []);
+        $this->assertContains('message', $flashKeys);
+
+        // Simulate StartSession middleware's terminate() save
+        session()->save();
+
+        // After terminate's save, data should be in _flash.old (aged correctly)
+        $flashOldKeys = session()->get('_flash.old', []);
+        $this->assertContains('message', $flashOldKeys);
+
+        // And the actual value should still be accessible
+        $this->assertEquals('Test persistence', session()->get('message'));
+    }
+
+    /** @test */
+    public function test_multiple_with_calls_accumulate_flash_data()
+    {
+        $this->setupHyperRequest();
+
+        $hyperResponse = app(HyperResponse::class);
+        $redirect = new HyperRedirect('/target', $hyperResponse);
+
+        $redirect
+            ->with('first', 'value1')
+            ->with('second', 'value2')
+            ->with('third', 'value3');
+
+        $response = $redirect->toResponse(request());
+
+        $flashKeys = session()->get('_flash.new', []);
+        $this->assertContains('first', $flashKeys);
+        $this->assertContains('second', $flashKeys);
+        $this->assertContains('third', $flashKeys);
+    }
 }
