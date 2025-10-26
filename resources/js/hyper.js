@@ -2601,7 +2601,16 @@ action({
       if (fileSource.length === 0) {
         return fallback;
       }
-      const base64Content = fileSource[0];
+      const firstItem = fileSource[0];
+      if (typeof firstItem === "object" && firstItem !== null && "contents" in firstItem) {
+        const { contents, mime } = firstItem;
+        if (!contents || typeof contents !== "string") {
+          return fallback;
+        }
+        const mimeType2 = mime || defaultMime;
+        return `data:${mimeType2};base64,${contents}`;
+      }
+      const base64Content = firstItem;
       if (!base64Content || typeof base64Content !== "string") {
         return fallback;
       }
