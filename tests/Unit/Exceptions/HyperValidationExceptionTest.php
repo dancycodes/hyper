@@ -27,7 +27,7 @@ class HyperValidationExceptionTest extends TestCase
 
         $validator->fails(); // Trigger validation
 
-        $exception = new HyperValidationException($validator);
+        $exception = new HyperValidationException($validator, []);
 
         $this->assertInstanceOf(HyperValidationException::class, $exception);
         $this->assertNotEmpty($exception->getErrors());
@@ -44,7 +44,7 @@ class HyperValidationExceptionTest extends TestCase
 
         $validator->fails();
 
-        $exception = new HyperValidationException($validator);
+        $exception = new HyperValidationException($validator, []);
         $errors = $exception->getErrors();
 
         $this->assertIsArray($errors);
@@ -64,7 +64,7 @@ class HyperValidationExceptionTest extends TestCase
 
         $validator->fails();
 
-        $exception = new HyperValidationException($validator);
+        $exception = new HyperValidationException($validator, []);
 
         // Create a proper request
         $request = request();
@@ -84,7 +84,7 @@ class HyperValidationExceptionTest extends TestCase
 
         $validator->fails();
 
-        $exception = new HyperValidationException($validator);
+        $exception = new HyperValidationException($validator, []);
         $response = $exception->render(request());
 
         // Verify it's a HyperResponse with errors
@@ -106,7 +106,7 @@ class HyperValidationExceptionTest extends TestCase
 
         $validator->fails();
 
-        $exception = new HyperValidationException($validator, null, 'custom');
+        $exception = new HyperValidationException($validator, [], null, 'custom');
 
         // Should still store errors regardless of bag name
         $this->assertNotEmpty($exception->getErrors());
@@ -132,7 +132,7 @@ class HyperValidationExceptionTest extends TestCase
 
         $validator->fails();
 
-        $exception = new HyperValidationException($validator);
+        $exception = new HyperValidationException($validator, []);
         $errors = $exception->getErrors();
 
         // All fields should have errors
@@ -161,7 +161,7 @@ class HyperValidationExceptionTest extends TestCase
 
         $validator->fails();
 
-        $exception = new HyperValidationException($validator);
+        $exception = new HyperValidationException($validator, []);
         $errors = $exception->getErrors();
 
         // Should handle nested field names
@@ -181,7 +181,7 @@ class HyperValidationExceptionTest extends TestCase
 
         $validator->fails();
 
-        $exception = new HyperValidationException($validator);
+        $exception = new HyperValidationException($validator, []);
         $errors = $exception->getErrors();
 
         // Password field should have multiple error messages
