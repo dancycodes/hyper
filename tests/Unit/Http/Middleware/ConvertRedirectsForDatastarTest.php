@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ConvertRedirectsForDatastarTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     protected function setUp(): void
     {
