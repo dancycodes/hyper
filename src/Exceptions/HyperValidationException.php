@@ -44,10 +44,11 @@ class HyperValidationException extends ValidationException
      * @param \Symfony\Component\HttpFoundation\Response|null $response Optional custom response
      * @param string $errorBag Error bag name for multiple validation contexts
      */
-    public function __construct($validator, $response = null, $errorBag = 'default')
+    public function __construct($validator, $errors, $response = null, $errorBag = 'default')
     {
         parent::__construct($validator, $response, $errorBag);
-        $this->errors = $validator->errors()->toArray();
+        $errors = [...$errors, ...$validator->errors()->toArray()];
+        $this->errors = $errors;
     }
 
     /**
