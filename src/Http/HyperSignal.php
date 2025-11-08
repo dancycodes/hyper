@@ -514,7 +514,7 @@ class HyperSignal
     {
         $data = $this->all();
 
-        /** @var array<string, mixed> $errors */
+        /** @var array<string, array<int, string>> $errors */
         $errors = signals('errors') ?? [];
 
         if (count($errors) > 0) {
