@@ -4,6 +4,7 @@ namespace Dancycodes\Hyper\Html\Elements\Base;
 
 use Closure;
 use Dancycodes\Hyper\Html\Concerns\Assets\ManagesAssets;
+use Dancycodes\Hyper\Html\Concerns\Visual\HasIcons;
 use Dancycodes\Hyper\Html\Contracts\Structure\HasChildren;
 
 /**
@@ -185,6 +186,7 @@ use Dancycodes\Hyper\Html\Contracts\Structure\HasChildren;
 abstract class ContainerElement extends TextElement implements HasChildren
 {
     use ManagesAssets;
+    use HasIcons;
 
     protected array $children = [];
     protected ?string $rawHtml = null;
@@ -360,6 +362,30 @@ abstract class ContainerElement extends TextElement implements HasChildren
     }
 
     /**
+     * Prepend content to the beginning of children array
+     *
+     * Used by HasIcons trait to inject icons before main content.
+     *
+     * @param mixed $item Content to prepend
+     */
+    protected function prependContent(mixed $item): void
+    {
+        array_unshift($this->children, $item);
+    }
+
+    /**
+     * Append content to the end of children array
+     *
+     * Used by HasIcons trait to inject icons after main content.
+     *
+     * @param mixed $item Content to append
+     */
+    protected function appendContent(mixed $item): void
+    {
+        $this->children[] = $item;
+    }
+
+    /**
      * Render child element to string
      *
      * Uses __toString() for Element instances to ensure error handling is applied.
@@ -388,22 +414,26 @@ abstract class ContainerElement extends TextElement implements HasChildren
      */
     public function toHtml(): string
     {
-        $attributes = $this->renderAttributes();
-
-        // Build content from multiple sources
-        $content = '';
-
-        // 1. Text content from parent TextElement (if set)
+        // Convert text content to a child element so icons can be positioned around it
         if ($this->textContent !== null) {
-            $content .= htmlspecialchars($this->textContent, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            $this->children[] = $this->textContent;
+            $this->textContent = null;  // Clear to prevent double rendering
         }
 
-        // 2. Children elements/strings
+        // Inject icons before rendering (from HasIcons trait)
+        $this->injectIcons();
+
+        $attributes = $this->renderAttributes();
+
+        // Build content from children and raw HTML
+        $content = '';
+
+        // 1. Children elements/strings (includes former text content + icons)
         foreach ($this->children as $child) {
             $content .= $this->renderChild($child);
         }
 
-        // 3. Raw HTML (dangerous but sometimes necessary)
+        // 2. Raw HTML (dangerous but sometimes necessary)
         if ($this->rawHtml !== null) {
             $content .= $this->rawHtml;
         }

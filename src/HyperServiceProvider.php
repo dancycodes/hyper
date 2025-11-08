@@ -2,6 +2,7 @@
 
 namespace Dancycodes\Hyper;
 
+use Dancycodes\Hyper\Html\Services\IconManager;
 use Dancycodes\Hyper\Http\HyperRedirect;
 use Dancycodes\Hyper\Http\HyperSignal;
 use Dancycodes\Hyper\Services\HyperFileStorage;
@@ -79,6 +80,9 @@ class HyperServiceProvider extends ServiceProvider
         $this->app->singleton(HyperFileStorage::class);
         $this->app->alias(HyperFileStorage::class, 'hyper.storage');
 
+        $this->app->singleton(IconManager::class);
+        $this->app->alias(IconManager::class, 'hyper.icons');
+
         $this->mergeConfigFrom(
             __DIR__ . '/../config/hyper.php',
             'hyper'
@@ -121,6 +125,7 @@ class HyperServiceProvider extends ServiceProvider
         $this->registerRouteDiscovery();
         $this->registerSignalsDirective();
         $this->registerRedirectConversionMiddleware();
+        $this->registerIconProviders();
     }
 
     /**
@@ -584,5 +589,60 @@ class HyperServiceProvider extends ServiceProvider
         // Push middleware to the global middleware stack
         // This ensures it runs for all requests and can intercept responses
         $kernel->pushMiddleware(\Dancycodes\Hyper\Http\Middleware\ConvertRedirectsForDatastar::class);
+    }
+
+    /**
+     * Register built-in icon providers with auto-discovery
+     *
+     * Automatically registers Heroicons provider if the blade-ui-kit/blade-heroicons
+     * package is installed. This provides zero-configuration icon support out
+     * of the box while allowing developers to add custom providers.
+     *
+     * Auto-discovery Logic:
+     * 1. Check if Heroicons package is installed (file existence check)
+     * 2. Register HeroiconsProvider as the default if found
+     * 3. Developers can override or add more providers in their AppServiceProvider
+     *
+     * Custom Registration:
+     * ```php
+     * // In AppServiceProvider boot():
+     * Html::iconProvider('fontawesome', FontAwesomeProvider::class);
+     * Html::setDefaultIconProvider('fontawesome');
+     * ```
+     */
+    protected function registerIconProviders(): void
+    {
+        $iconManager = $this->app->make(IconManager::class);
+
+        // Auto-discover and register Heroicons if installed (blade-ui-kit/blade-heroicons)
+        $heroiconsPath = base_path('vendor/blade-ui-kit/blade-heroicons');
+
+        if (is_dir($heroiconsPath)) {
+            $iconManager->register(
+                'heroicons',
+                \Dancycodes\Hyper\Html\Services\IconProviders\HeroiconsProvider::class
+            );
+        }
+
+        // Auto-discover and register Feather Icons if installed
+        $feathericonsPaths = [
+            base_path('vendor/brunocfalcao/blade-feather-icons'),
+            base_path('vendor/outhebox/blade-feather-icons'),
+        ];
+
+        foreach ($feathericonsPaths as $path) {
+            if (is_dir($path)) {
+                $iconManager->register(
+                    'feathericons',
+                    \Dancycodes\Hyper\Html\Services\IconProviders\FeathericonsProvider::class
+                );
+
+                break; // Only register once
+            }
+        }
+
+        // Future: Add auto-discovery for other popular icon libraries
+        // - Font Awesome (owenvoke/blade-fontawesome)
+        // - Bootstrap Icons (davidhsianturi/blade-bootstrap-icons)
     }
 }

@@ -116,6 +116,9 @@ use Dancycodes\Hyper\Html\Elements\Text\Sup;
 use Dancycodes\Hyper\Html\Elements\Text\Time;
 use Dancycodes\Hyper\Html\Elements\Text\U;
 use Dancycodes\Hyper\Html\Elements\Text\VarElement;
+use Dancycodes\Hyper\Html\Elements\Visual\Icon;
+use Dancycodes\Hyper\Html\Contracts\IconProviderContract;
+use Dancycodes\Hyper\Html\Services\IconManager;
 
 /**
  * HTML Element Facade - Programmatic HTML Builder with XSS Protection
@@ -1182,5 +1185,70 @@ class Html
     public static function raw(string $html): string
     {
         return $html;
+    }
+
+    // ========================================================================
+    // ICON MANAGEMENT
+    // ========================================================================
+
+    /**
+     * Create an icon element
+     *
+     * Convenience method for creating standalone icons.
+     *
+     * Examples:
+     * ```php
+     * Html::icon('heroicon-s-home');
+     * Html::icon('heroicon-o-user')->lg();
+     * Html::icon('home', 'heroicons')->solid();
+     * ```
+     *
+     * @param string $name Icon name
+     * @param string|null $provider Provider name (null = use default)
+     */
+    public static function icon(string $name, ?string $provider = null): Icon
+    {
+        return Icon::make($name, $provider);
+    }
+
+    /**
+     * Register an icon provider
+     *
+     * FilamentPHP-style simple registration. One-liner to add new icon providers.
+     *
+     * Examples:
+     * ```php
+     * // In AppServiceProvider boot() method:
+     * Html::iconProvider('heroicons', HeroiconsProvider::class);
+     * Html::iconProvider('fontawesome', FontAwesomeProvider::class);
+     * Html::iconProvider('custom', new MyIconProvider());
+     * ```
+     *
+     * @param string $name Provider name (e.g., 'heroicons', 'fontawesome')
+     * @param string|IconProviderContract $provider Provider class name or instance
+     */
+    public static function iconProvider(string $name, string|IconProviderContract $provider): void
+    {
+        app(IconManager::class)->register($name, $provider);
+    }
+
+    /**
+     * Set the default icon provider
+     *
+     * The default provider is used when no provider is explicitly specified.
+     *
+     * Example:
+     * ```php
+     * Html::setDefaultIconProvider('heroicons');
+     *
+     * // Now icons without provider use Heroicons
+     * Html::icon('home');  // Uses Heroicons
+     * ```
+     *
+     * @param string $name Provider name
+     */
+    public static function setDefaultIconProvider(string $name): void
+    {
+        app(IconManager::class)->setDefaultProvider($name);
     }
 }
