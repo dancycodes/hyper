@@ -5,6 +5,14 @@ All notable changes to `dancycodes/hyper` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4](https://github.com/dancycodes/hyper/compare/v0.1.3...v0.1.4) (2025-11-08)
+
+
+### Bug Fixes
+
+* Improve fileSource handling for object input ([0ed7de1](https://github.com/dancycodes/hyper/commit/0ed7de1bb8b90d3ce9297dd9af24d9deb6437ffd))
+* Merge pull request [#7](https://github.com/dancycodes/hyper/issues/7) from dancycodes/develop ([6ae11bb](https://github.com/dancycodes/hyper/commit/6ae11bba70c4e7adc7608390ad9b7565427267e4))
+
 ## [0.1.3](https://github.com/dancycodes/hyper/compare/v0.1.2...v0.1.3) (2025-10-25)
 
 
