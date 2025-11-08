@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Crypt;
  */
 class HyperSignalTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     // ===================================================================
     // BATCH 1: Signal Reading Tests (8 methods)

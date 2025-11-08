@@ -8,7 +8,7 @@ use Dancycodes\Hyper\Tests\TestCase;
 
 class AddControllerUriToActionsTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     /** @test */
     public function test_transform_applies_transformation()

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Validator as ValidatorFacade;
  */
 class HyperBase64ValidatorTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     protected HyperBase64Validator $validator;
 

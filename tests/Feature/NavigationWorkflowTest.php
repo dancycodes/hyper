@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
  */
 class NavigationWorkflowTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     /** @test */
     public function test_navigate_method_updates_url()

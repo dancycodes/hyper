@@ -15,7 +15,7 @@ use Dancycodes\Hyper\View\Fragment\OpenFragmentElement;
  */
 class FragmentElementTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     // ==========================================
     // OpenFragmentElement Tests (4 methods)

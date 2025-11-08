@@ -14,7 +14,7 @@ use Dancycodes\Hyper\Tests\TestCase;
  */
 class HyperRedirectTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     /**
      * Set up a fake Hyper request

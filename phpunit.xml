@@ -26,6 +26,10 @@
     </source>
 
     <php>
+        <!-- Disable OPcache to prevent stack overflow with large test files in PHP 8.4 -->
+        <ini name="opcache.enable" value="0"/>
+        <ini name="opcache.jit" value="disable"/>
+
         <env name="APP_ENV" value="testing"/>
         <env name="APP_KEY" value="base64:2fl1JRpkYXOX8JgKp/P6dXkAXvAKmPMnEtcJZ2nHqzw="/>
         <env name="CACHE_DRIVER" value="array"/>

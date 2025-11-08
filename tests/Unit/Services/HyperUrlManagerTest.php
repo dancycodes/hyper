@@ -16,7 +16,7 @@ use LogicException;
  */
 class HyperUrlManagerTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     protected HyperUrlManager $urlManager;
 

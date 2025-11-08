@@ -1,0 +1,28 @@
+<?php
+
+namespace Dancycodes\Hyper\Html\Elements\Text;
+
+use Dancycodes\Hyper\Html\Elements\Base\TextElement;
+
+/**
+ * H4 Element
+ *
+ * Represents a level 4 heading.
+ *
+ * @see https://html.spec.whatwg.org/multipage/sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements
+ */
+class H4 extends TextElement
+{
+    public function __construct(?string $text = null)
+    {
+        parent::__construct('h4');
+        if ($text) {
+            $this->text($text);
+        }
+    }
+
+    public static function make(...$args): static
+    {
+        return new static(...$args);
+    }
+}

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
  */
 class ResponseMacrosTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     /** @test */
     public function test_hyper_macro_returns_instance()

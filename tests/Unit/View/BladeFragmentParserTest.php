@@ -15,7 +15,7 @@ use Dancycodes\Hyper\View\Fragment\OpenFragmentElement;
  */
 class BladeFragmentParserTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     protected BladeFragmentParser $parser;
 

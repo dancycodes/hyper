@@ -13,7 +13,7 @@ use Dancycodes\Hyper\Tests\TestCase;
  */
 class HyperResponseTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     // ===================================================================
     // BATCH 1: Signal Methods Tests (8 tests)

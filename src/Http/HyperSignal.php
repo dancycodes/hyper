@@ -520,18 +520,18 @@ class HyperSignal
         if (count($errors) > 0) {
             foreach ($rules as $key => $value) {
                 if (isset($errors[$key])) {
-                    unset($errors[$key]);
+                    $errors[$key] = [];
                 }
             }
         }
 
-        hyper()->signals(['errors' => $errors]);
-
         $validator = Validator::make($data, $rules, $messages, $attributes);
 
         if ($validator->fails()) {
-            throw new HyperValidationException($validator);
+            throw new HyperValidationException($validator, $errors);
         }
+
+        hyper()->signals(['errors' => $errors]);
 
         return $validator->validated();
     }

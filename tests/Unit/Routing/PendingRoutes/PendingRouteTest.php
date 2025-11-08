@@ -17,7 +17,7 @@ use SplFileInfo;
  */
 class PendingRouteTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     /** @test */
     public function test_pending_route_stores_properties()

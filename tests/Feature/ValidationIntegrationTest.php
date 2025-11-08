@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\View;
  */
 class ValidationIntegrationTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     protected string $viewsPath;
 
@@ -244,7 +244,7 @@ class ValidationIntegrationTest extends TestCase
                     $validator->errors()->add('custom', 'Custom error');
                 });
                 if ($validator->fails()) {
-                    throw new HyperValidationException($validator);
+                    throw new HyperValidationException($validator, []);
                 }
             } catch (HyperValidationException $e) {
                 return $e->render(request());

@@ -1,1471 +1,841 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Method Dancycodes\\Hyper\\Exceptions\\HyperSignalTamperedException\:\:render\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Exceptions/HyperSignalTamperedException.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Exceptions\\HyperSignalTamperedException\:\:render\(\) has parameter \$request with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Exceptions/HyperSignalTamperedException.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Exceptions\\HyperValidationException\:\:getErrors\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Exceptions/HyperValidationException.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Exceptions\\HyperValidationException\:\:render\(\) has parameter \$request with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Exceptions/HyperValidationException.php
-
-		-
-			message: '#^Property Dancycodes\\Hyper\\Exceptions\\HyperValidationException\:\:\$errors type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Exceptions/HyperValidationException.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperRedirect\:\:backOr\(\) has parameter \$routeParameters with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperRedirect.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperRedirect\:\:forceReload\(\) should return Illuminate\\Http\\Response but returns Symfony\\Component\\HttpFoundation\\Response\.$#'
-			identifier: return.type
-			count: 1
-			path: src/Http/HyperRedirect.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperRedirect\:\:route\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperRedirect.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperRedirect\:\:with\(\) has parameter \$key with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/HyperRedirect.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperRedirect\:\:withErrors\(\) has parameter \$errors with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/HyperRedirect.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperRedirect\:\:withInput\(\) has parameter \$input with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperRedirect.php
-
-		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Session\\Store\:\:flash\(\) expects string, \(int\|string\) given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/Http/HyperRedirect.php
-
-		-
-			message: '#^Parameter \#1 \$path of function url expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/HyperRedirect.php
-
-		-
-			message: '#^Parameter \#1 \$url of function parse_url expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/Http/HyperRedirect.php
-
-		-
-			message: '#^Property Dancycodes\\Hyper\\Http\\HyperRedirect\:\:\$flashData type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperRedirect.php
-
-		-
-			message: '#^Property Dancycodes\\Hyper\\Http\\HyperRedirect\:\:\$url \(string\) does not accept Illuminate\\Contracts\\Routing\\UrlGenerator\|string\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: src/Http/HyperRedirect.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Http\\Request\:\:isHyper\(\)\.$#'
-			identifier: method.notFound
-			count: 14
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Http\\Request\:\:isHyperNavigate\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Cannot cast mixed to string\.$#'
-			identifier: cast.string
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:addEventToQueue\(\) has parameter \$dataLines with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:back\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:buildElementsEvent\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:buildElementsEvent\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:buildQueryString\(\) has parameter \$queries with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:buildRemovalEvent\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:buildRemovalEvent\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:buildScriptEvent\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:buildScriptEvent\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:buildSignalsEvent\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:buildSignalsEvent\(\) has parameter \$signals with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:buildSignalsEvent\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:clearQueries\(\) has parameter \$paramNames with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:component\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:component\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:dispatch\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:dispatch\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:executeScript\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:filterQueries\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:filterQueries\(\) has parameter \$queries with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:filterQueries\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:forget\(\) has parameter \$signals with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:forgetSignals\(\) has parameter \$signals with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:formatEvent\(\) has parameter \$dataLines with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:fragment\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:fragment\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:fragments\(\) has parameter \$fragments with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:generateBackScript\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:generateBackScript\(\) is unused\.$#'
-			identifier: method.unused
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:generateEnhancedNavigateScript\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:generateNativeDumpHtml\(\) has parameter \$var with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:generateNavigateScript\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:generateNavigateScript\(\) is unused\.$#'
-			identifier: method.unused
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:generateRefreshScript\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:generateRefreshScript\(\) is unused\.$#'
-			identifier: method.unused
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:getSmartNavigationOptions\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:handleEvent\(\) has parameter \$dataLines with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:handleLockedSignalUpdates\(\) has parameter \$signals with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:handleSignalDeletions\(\) has parameter \$signals with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:headers\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:html\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:js\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:mergeQueriesIntoUrl\(\) has parameter \$additionalQueries with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:mergeQueryParameters\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:navigate\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:navigate\(\) has parameter \$url with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:navigateClean\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:navigateClean\(\) has parameter \$url with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:navigateExcept\(\) has parameter \$except with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:navigateExcept\(\) has parameter \$url with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:navigateMerge\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:navigateMerge\(\) has parameter \$url with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:navigateOnly\(\) has parameter \$only with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:navigateOnly\(\) has parameter \$url with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:navigateReplace\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:navigateReplace\(\) has parameter \$url with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:navigateWith\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:navigateWith\(\) has parameter \$url with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:normalizeNavigationOptions\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:normalizeNavigationOptions\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:parseSignalNames\(\) has parameter \$signals with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:parseSignalNames\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:parseSignalsForDeletion\(\) has parameter \$signals with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:parseSignalsForDeletion\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:patchElements\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:patchFragment\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:patchFragment\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:patchFragments\(\) has parameter \$fragments with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:processJsonNavigation\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:processJsonNavigation\(\) has parameter \$queries with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:processStringNavigation\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:pushRoute\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:refresh\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:removeElements\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:renderFragment\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:replaceRoute\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:route\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:route\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:routeUrl\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:script\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:sendEventImmediately\(\) has parameter \$dataLines with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:shouldApplyMerge\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:signals\(\) has parameter \$key with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:updateQueries\(\) has parameter \$queries with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:updateSignals\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:updateSignals\(\) has parameter \$signals with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:view\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:view\(\) has parameter \$options with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:web\(\) has parameter \$response with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperResponse\:\:whenHyperNavigate\(\) has parameter \$key with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:__call\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:__call\(\) has parameter \$args with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:__call\(\) has parameter \$method with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:back\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:back\(\) has parameter \$fallback with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:back\(\) has parameter \$headers with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:back\(\) has parameter \$status with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:performRealRedirect\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:performRealRedirect\(\) has parameter \$url with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:route\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:route\(\) has parameter \$headers with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:route\(\) has parameter \$params with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:route\(\) has parameter \$route with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:route\(\) has parameter \$status with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:to\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:to\(\) has parameter \$headers with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:to\(\) has parameter \$path with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:to\(\) has parameter \$secure with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Method class@anonymous/Http/HyperResponse\.php\:616\:\:to\(\) has parameter \$status with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^PHPDoc tag @param references unknown parameter\: \$web$#'
-			identifier: parameter.notFound
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Parameter \#1 \$callback of function call_user_func expects callable\(\)\: mixed, Closure\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Parameter \#1 \$haystack of function str_ends_with expects string, \(int\|string\) given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Parameter \#1 \$html of method Dancycodes\\Hyper\\Http\\HyperResponse\:\:replaceDocumentAndExit\(\) expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Parameter \#1 \$key of method Symfony\\Component\\HttpFoundation\\ResponseHeaderBag\:\:set\(\) expects string, \(int\|string\) given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Parameter \#1 \$string of function trim expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Parameter \#1 \$string of function urlencode expects string, \(int\|string\) given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Parameter \#1 \$url of method Dancycodes\\Hyper\\Http\\HyperResponse\:\:navigate\(\) expects array\|string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Parameter \#2 \$key of method Dancycodes\\Hyper\\Http\\HyperResponse\:\:navigate\(\) expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Parameter \#2 \$string of function explode expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Property Dancycodes\\Hyper\\Http\\HyperResponse\:\:\$events type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Property Dancycodes\\Hyper\\Http\\HyperResponse\:\:\$webResponse has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: src/Http/HyperResponse.php
-
-		-
-			message: '#^Argument of an invalid type mixed supplied for foreach, only iterables are supported\.$#'
-			identifier: foreach.nonIterable
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Http\\Request\:\:isHyper\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Cannot access offset ''signals'' on mixed\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 2
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Cannot access offset \(int\|string\) on mixed\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:all\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:all\(\) should return array but returns array\|null\.$#'
-			identifier: return.type
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:collect\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:extractLockedSignals\(\) has parameter \$signals with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:extractLockedSignals\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:getStoredLockedSignals\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:getStoredLockedSignals\(\) should return array\|null but returns mixed\.$#'
-			identifier: return.type
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:hasLockedSignals\(\) has parameter \$signals with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:only\(\) has parameter \$keys with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:only\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:read\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:readSignals\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:readSignals\(\) should return array but returns mixed\.$#'
-			identifier: return.type
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:storeLockedSignals\(\) has parameter \$signals with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:storeLockedSignalsDirectly\(\) has parameter \$lockedSignals with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:storeMultiple\(\) has parameter \$mapping with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:storeMultiple\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:validate\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:validate\(\) has parameter \$messages with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:validate\(\) has parameter \$rules with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Http\\HyperSignal\:\:validate\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Parameter \#1 \$haystack of function str_ends_with expects string, \(int\|string\) given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Parameter \#1 \$json of function json_decode expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Parameter \#1 \$payload of static method Illuminate\\Support\\Facades\\Crypt\:\:decryptString\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Parameter \#1 \$signals of method Dancycodes\\Hyper\\Http\\HyperSignal\:\:extractLockedSignals\(\) expects array, array\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Parameter \#1 \$value of static method Illuminate\\Support\\Facades\\Crypt\:\:encryptString\(\) expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Part \$signalName \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Possibly invalid array key type mixed\.$#'
-			identifier: offsetAccess.invalidOffset
-			count: 2
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Property Dancycodes\\Hyper\\Http\\HyperSignal\:\:\$signals type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/HyperSignal.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Http\\Request\:\:hyperNavigateKey\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: src/HyperServiceProvider.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\HyperServiceProvider\:\:provides\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/HyperServiceProvider.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:each\(\) expects callable\(mixed, int\|string\)\: mixed, Closure\(array\|string, int\|string\)\: void given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/HyperServiceProvider.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:each\(\) expects callable\(mixed, int\|string\)\: mixed, Closure\(string\)\: void given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/HyperServiceProvider.php
-
-		-
-			message: '#^Parameter \#1 \$value of function collect expects Illuminate\\Contracts\\Support\\Arrayable\<\(int\|string\), mixed\>\|iterable\<\(int\|string\), mixed\>\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/HyperServiceProvider.php
-
-		-
-			message: '#^Parameter \#2 \$extension of static method Illuminate\\Support\\Facades\\Validator\:\:extend\(\) expects Closure\|string, array\{Dancycodes\\Hyper\\Validation\\HyperBase64Validator, ''validateB64dimensio…''\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/HyperServiceProvider.php
-
-		-
-			message: '#^Parameter \#2 \$extension of static method Illuminate\\Support\\Facades\\Validator\:\:extend\(\) expects Closure\|string, array\{Dancycodes\\Hyper\\Validation\\HyperBase64Validator, ''validateB64file''\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/HyperServiceProvider.php
-
-		-
-			message: '#^Parameter \#2 \$extension of static method Illuminate\\Support\\Facades\\Validator\:\:extend\(\) expects Closure\|string, array\{Dancycodes\\Hyper\\Validation\\HyperBase64Validator, ''validateB64image''\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/HyperServiceProvider.php
-
-		-
-			message: '#^Parameter \#2 \$extension of static method Illuminate\\Support\\Facades\\Validator\:\:extend\(\) expects Closure\|string, array\{Dancycodes\\Hyper\\Validation\\HyperBase64Validator, ''validateB64max''\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/HyperServiceProvider.php
-
-		-
-			message: '#^Parameter \#2 \$extension of static method Illuminate\\Support\\Facades\\Validator\:\:extend\(\) expects Closure\|string, array\{Dancycodes\\Hyper\\Validation\\HyperBase64Validator, ''validateB64mimes''\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/HyperServiceProvider.php
-
-		-
-			message: '#^Parameter \#2 \$extension of static method Illuminate\\Support\\Facades\\Validator\:\:extend\(\) expects Closure\|string, array\{Dancycodes\\Hyper\\Validation\\HyperBase64Validator, ''validateB64min''\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/HyperServiceProvider.php
-
-		-
-			message: '#^Parameter \#2 \$extension of static method Illuminate\\Support\\Facades\\Validator\:\:extend\(\) expects Closure\|string, array\{Dancycodes\\Hyper\\Validation\\HyperBase64Validator, ''validateB64size''\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/HyperServiceProvider.php
-
-		-
-			message: '#^Unable to resolve the template type TKey in call to function collect$#'
-			identifier: argument.templateType
-			count: 2
-			path: src/HyperServiceProvider.php
-
-		-
-			message: '#^Unable to resolve the template type TValue in call to function collect$#'
-			identifier: argument.templateType
-			count: 2
-			path: src/HyperServiceProvider.php
-
-		-
-			message: '#^Property Dancycodes\\Hyper\\Routing\\Attributes\\Route\:\:\$methods \(array\<int, string\>\) does not accept array\<mixed\>\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: src/Routing/Attributes/Route.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:each\(\) expects callable\(mixed, int\|string\)\: mixed, Closure\(SplFileInfo\)\: void given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Routing/Discovery/DiscoverViews.php
-
-		-
-			message: '#^Access to an undefined property Dancycodes\\Hyper\\Routing\\Attributes\\DiscoveryAttribute\:\:\$uri\.$#'
-			identifier: property.notFound
-			count: 1
-			path: src/Routing/PendingRouteTransformers/HandleUriAttribute.php
-
-		-
-			message: '#^Parameter \#1 \$search of method Illuminate\\Support\\Stringable\:\:replace\(\) expects iterable\<string\>\|string, array\<mixed\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Routing/PendingRouteTransformers/HandleUrisOfNestedControllers.php
-
-		-
-			message: '#^Class App\\Http\\Controllers\\Controller not found\.$#'
-			identifier: class.notFound
-			count: 1
-			path: src/Routing/PendingRouteTransformers/RejectDefaultControllerMethodRoutes.php
-
-		-
-			message: '#^Cannot call method getName\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Routing/PendingRoutes/PendingRouteAction.php
-
-		-
-			message: '#^Cannot call method isDefaultValueAvailable\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Routing/PendingRoutes/PendingRouteAction.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Routing\\PendingRoutes\\PendingRouteAction\:\:getUrlParameters\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: src/Routing/PendingRoutes/PendingRouteAction.php
-
-		-
-			message: '#^Class Dancycodes\\Hyper\\Routing\\RouteRegistrar has an uninitialized property \$rootNamespace\. Give it default value or assign it in the constructor\.$#'
-			identifier: property.uninitialized
-			count: 1
-			path: src/Routing/RouteRegistrar.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Routing\\RouteRegistrar\:\:convertToPendingRoutes\(\) should return Illuminate\\Support\\Collection\<int, Dancycodes\\Hyper\\Routing\\PendingRoutes\\PendingRoute\> but returns Illuminate\\Support\\Collection\<\(int\|string\), Dancycodes\\Hyper\\Routing\\PendingRoutes\\PendingRoute\>\.$#'
-			identifier: return.type
-			count: 1
-			path: src/Routing/RouteRegistrar.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:flatMap\(\) expects callable\(mixed, int\|string\)\: \(array\<int, Dancycodes\\Hyper\\Routing\\PendingRoutes\\PendingRoute\>\|Illuminate\\Support\\Collection\<int, Dancycodes\\Hyper\\Routing\\PendingRoutes\\PendingRoute\>\), Closure\(SplFileInfo\)\: Illuminate\\Support\\Collection\<int, Dancycodes\\Hyper\\Routing\\PendingRoutes\\PendingRoute\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Routing/RouteRegistrar.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:map\(\) expects callable\(mixed, int\|string\)\: \(Dancycodes\\Hyper\\Routing\\PendingRoutes\\PendingRoute\|null\), Closure\(SplFileInfo\)\: \(Dancycodes\\Hyper\\Routing\\PendingRoutes\\PendingRoute\|null\) given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Routing/RouteRegistrar.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Services\\HyperFileStorage\:\:storeMultiple\(\) has parameter \$mapping with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Services/HyperFileStorage.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Services\\HyperFileStorage\:\:storeMultiple\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Services/HyperFileStorage.php
-
-		-
-			message: '#^Offset ''mime'' on array\{0\: int\<0, max\>, 1\: int\<0, max\>, 2\: int, 3\: string, mime\: string, channels\?\: int, bits\?\: int\} in isset\(\) always exists and is not nullable\.$#'
-			identifier: isset.offset
-			count: 1
-			path: src/Services/HyperFileStorage.php
-
-		-
-			message: '#^Parameter \#1 \$signalKey of method Dancycodes\\Hyper\\Services\\HyperFileStorage\:\:store\(\) expects string, \(int\|string\) given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Services/HyperFileStorage.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Services\\HyperSignalsDirective\:\:convertSignalBatch\(\) has parameter \$signals with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Services/HyperSignalsDirective.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Services\\HyperSignalsDirective\:\:convertSignalBatch\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Services/HyperSignalsDirective.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Services\\HyperSignalsDirective\:\:convertToSignal\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Services/HyperSignalsDirective.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Services\\HyperSignalsDirective\:\:convertToSignal\(\) has parameter \$data with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Services/HyperSignalsDirective.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Services\\HyperSignalsDirective\:\:generateSignalsAttribute\(\) has parameter \$signals with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Services/HyperSignalsDirective.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Services\\HyperSignalsDirective\:\:render\(\) has parameter \$arrays with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Services/HyperSignalsDirective.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Services\\HyperSignalsDirective\:\:splitExpressionParts\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Services/HyperSignalsDirective.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Services\\HyperSignalsDirective\:\:storeLockedSignalsIfNeeded\(\) has parameter \$signals with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Services/HyperSignalsDirective.php
-
-		-
-			message: '#^Parameter \#1 \$haystack of function str_ends_with expects string, \(int\|string\) given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Services/HyperSignalsDirective.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Services\\HyperUrlManager\:\:buildRouteUrl\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Services/HyperUrlManager.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:extractBase64Value\(\) has parameter \$value with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:getImageInfoFromBase64\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:parseDimensionParameters\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:parseDimensionParameters\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:validateB64dimensions\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:validateB64dimensions\(\) has parameter \$value with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:validateB64file\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:validateB64file\(\) has parameter \$value with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:validateB64image\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:validateB64image\(\) has parameter \$value with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:validateB64max\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:validateB64max\(\) has parameter \$value with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:validateB64mimes\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:validateB64mimes\(\) has parameter \$value with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:validateB64min\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:validateB64min\(\) has parameter \$value with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:validateB64size\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:validateB64size\(\) has parameter \$value with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\Validation\\HyperBase64Validator\:\:validateDimensionParameters\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Offset ''mime'' on array\{0\: int\<0, max\>, 1\: int\<0, max\>, 2\: int, 3\: string, mime\: string, channels\?\: int, bits\?\: int\} in isset\(\) always exists and is not nullable\.$#'
-			identifier: isset.offset
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Strict comparison using \=\=\= between float and int will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
-			count: 1
-			path: src/Validation/HyperBase64Validator.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Contracts\\View\\View\:\:getPath\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: src/View/Fragment/BladeFragment.php
-
-		-
-			message: '#^Cannot access property \$endOffset on Dancycodes\\Hyper\\View\\Fragment\\OpenFragmentElement\|null\.$#'
-			identifier: property.nonObject
-			count: 2
-			path: src/View/Fragment/BladeFragment.php
-
-		-
-			message: '#^Cannot access property \$startOffset on Dancycodes\\Hyper\\View\\Fragment\\CloseFragmentElement\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/View/Fragment/BladeFragment.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\View\\Fragment\\BladeFragment\:\:render\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/View/Fragment/BladeFragment.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\View\\Fragment\\BladeFragment\:\:renderFragment\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/View/Fragment/BladeFragment.php
-
-		-
-			message: '#^Method Dancycodes\\Hyper\\View\\Fragment\\BladeFragment\:\:renderWithCacheRecovery\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			message: '#^Method Dancycodes\\Hyper\\Html\\Contracts\\Structure\\HasChildren\:\:content\(\) has parameter \$items with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: src/View/Fragment/BladeFragment.php
+			path: src/Html/Contracts/Structure/HasChildren.php
 
 		-
-			message: '#^Call to function is_array\(\) with list\<array\<array\{string, int\}\>\> will always evaluate to true\.$#'
+			message: '#^Call to function is_subclass_of\(\) with class\-string\<Dancycodes\\Hyper\\Html\\Elements\\Base\\Element\> and ''Dancycodes\\\\Hyper\\\\Html\\\\Elements\\\\Base\\\\Element'' will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
-			path: src/View/Fragment/BladeFragmentParser.php
+			path: src/Html/ElementRegistry.php
 
 		-
-			message: '#^PHPDoc tag @var for variable \$nodes has no value type specified in iterable type array\.$#'
+			message: '#^Method Dancycodes\\Hyper\\Html\\ElementRegistry\:\:make\(\) has parameter \$args with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: src/View/Fragment/BladeFragmentParser.php
+			path: src/Html/ElementRegistry.php
 
 		-
-			message: '#^Function signals\(\) has no return type specified\.$#'
-			identifier: missingType.return
+			message: '#^Method Dancycodes\\Hyper\\Html\\Elements\\Base\\ContainerElement\:\:children\(\) has parameter \$children with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
 			count: 1
-			path: src/helpers.php
+			path: src/Html/Elements/Base/ContainerElement.php
+
+		-
+			message: '#^Method Dancycodes\\Hyper\\Html\\Elements\\Base\\ContainerElement\:\:content\(\) has parameter \$items with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Html/Elements/Base/ContainerElement.php
+
+		-
+			message: '#^Method Dancycodes\\Hyper\\Html\\Elements\\Base\\ContainerElement\:\:processContent\(\) has parameter \$items with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Html/Elements/Base/ContainerElement.php
+
+		-
+			message: '#^Method Dancycodes\\Hyper\\Html\\Elements\\Base\\ContainerElement\:\:resolveDefaultClosureDependencyForEvaluationByName\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Html/Elements/Base/ContainerElement.php
+
+		-
+			message: '#^Method Dancycodes\\Hyper\\Html\\Elements\\Base\\ContainerElement\:\:vite\(\) has parameter \$entrypoints with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Html/Elements/Base/ContainerElement.php
+
+		-
+			message: '#^Parameter \#1 \$entrypoints of callable Illuminate\\Foundation\\Vite expects array\<string\>\|string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Html/Elements/Base/ContainerElement.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Html/Elements/Base/ContainerElement.php
+
+		-
+			message: '#^Parameter \#2 \$buildDirectory of callable Illuminate\\Foundation\\Vite expects string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Html/Elements/Base/ContainerElement.php
+
+		-
+			message: '#^Property Dancycodes\\Hyper\\Html\\Elements\\Base\\ContainerElement\:\:\$children type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Html/Elements/Base/ContainerElement.php
+
+		-
+			message: '#^Property Dancycodes\\Hyper\\Html\\Elements\\Base\\ContainerElement\:\:\$rawHtml \(string\|null\) does not accept mixed\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: src/Html/Elements/Base/ContainerElement.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/Html/Elements/Base/ContainerElement.php
+
+		-
+			message: '#^Method Dancycodes\\Hyper\\Html\\Elements\\Base\\Element\:\:class\(\) has parameter \$classes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Method Dancycodes\\Hyper\\Html\\Elements\\Base\\Element\:\:dataSignals\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Method Dancycodes\\Hyper\\Html\\Elements\\Base\\Element\:\:debug\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 2
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Method Dancycodes\\Hyper\\Html\\Elements\\Base\\Element\:\:flattenArray\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Method Dancycodes\\Hyper\\Html\\Elements\\Base\\Element\:\:flattenArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Method Dancycodes\\Hyper\\Html\\Elements\\Base\\Element\:\:mergeTailwindClasses\(\) has parameter \$classes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Method Dancycodes\\Hyper\\Html\\Elements\\Base\\Element\:\:mergeTailwindClasses\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Method Dancycodes\\Hyper\\Html\\Elements\\Base\\Element\:\:resolveDefaultClosureDependencyForEvaluationByName\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Method Dancycodes\\Hyper\\Html\\Elements\\Base\\Element\:\:resolveDefaultClosureDependencyForEvaluationByType\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Parameter \#1 \$array of method Dancycodes\\Hyper\\Html\\Elements\\Base\\Element\:\:flattenArray\(\) expects array, array\<mixed\>\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Parameter \#1 \$signals of method Dancycodes\\Hyper\\Html\\Elements\\Base\\Element\:\:storeLockedSignalsIfNeeded\(\) expects array\<string, mixed\>, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, \(int\|string\) given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 5
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Parameter \#1 \$string of function strtolower expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Property Dancycodes\\Hyper\\Html\\Elements\\Base\\Element\:\:\$attributes type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Property Dancycodes\\Hyper\\Html\\Elements\\Base\\Element\:\:\$classMergeCache type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Property Dancycodes\\Hyper\\Html\\Elements\\Base\\Element\:\:\$classes type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Base/Element.php
+
+		-
+			message: '#^Property Dancycodes\\Hyper\\Html\\Elements\\Base\\Element\:\:\$rawHtml \(string\|null\) does not accept mixed\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: src/Html/Elements/Base/TextElement.php
+
+		-
+			message: '#^Property Dancycodes\\Hyper\\Html\\Elements\\Base\\TextElement\:\:\$textContent \(string\|null\) does not accept mixed\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: src/Html/Elements/Base/TextElement.php
+
+		-
+			message: '#^Parameter \$target of method Dancycodes\\Hyper\\Html\\Elements\\Document\\Base\:\:target\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Document\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Document/Base.php
+
+		-
+			message: '#^Parameter \$url of method Dancycodes\\Hyper\\Html\\Elements\\Document\\Base\:\:href\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Document\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Document/Base.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Embedded/Noscript.php
+
+		-
+			message: '#^Parameter \$policy of method Dancycodes\\Hyper\\Html\\Elements\\Embedded\\Portal\:\:referrerpolicy\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Embedded\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Embedded/Portal.php
+
+		-
+			message: '#^Parameter \$url of method Dancycodes\\Hyper\\Html\\Elements\\Embedded\\Portal\:\:src\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Embedded\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Embedded/Portal.php
+
+		-
+			message: '#^Parameter \$name of method Dancycodes\\Hyper\\Html\\Elements\\Embedded\\Slot\:\:name\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Embedded\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Embedded/Slot.php
+
+		-
+			message: '#^Parameter \$disabled of method Dancycodes\\Hyper\\Html\\Elements\\Form\\Fieldset\:\:disabled\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Form\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Form/Fieldset.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Form/Legend.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Form/Option.php
+
+		-
+			message: '#^Parameter \$ids of method Dancycodes\\Hyper\\Html\\Elements\\Form\\Output\:\:forElements\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Form\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Form/Output.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Form/Output.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Interactive/Summary.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/List/Dd.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/List/Dt.php
+
+		-
+			message: '#^Parameter \$alt of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Area\:\:alt\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Area.php
+
+		-
+			message: '#^Parameter \$coords of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Area\:\:coords\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Area.php
+
+		-
+			message: '#^Parameter \$shape of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Area\:\:shape\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Area.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Html/Elements/Media/Audio.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Html/Elements/Media/Canvas.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Html/Elements/Media/Embed.php
+
+		-
+			message: '#^Parameter \$mimeType of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Embed\:\:type\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Embed.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Media/Figcaption.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Html/Elements/Media/Iframe.php
+
+		-
+			message: '#^Parameter \$name of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Iframe\:\:name\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Iframe.php
+
+		-
+			message: '#^Parameter \$permissions of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Iframe\:\:sandbox\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Iframe.php
+
+		-
+			message: '#^Parameter \$policy of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Iframe\:\:allow\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Iframe.php
+
+		-
+			message: '#^Parameter \$policy of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Iframe\:\:referrerpolicy\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Iframe.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Html/Elements/Media/Img.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Media/Img.php
+
+		-
+			message: '#^Parameter \$name of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Map\:\:name\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Map.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Html/Elements/Media/ObjectElement.php
+
+		-
+			message: '#^Parameter \$formId of method Dancycodes\\Hyper\\Html\\Elements\\Media\\ObjectElement\:\:form\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/ObjectElement.php
+
+		-
+			message: '#^Parameter \$mimeType of method Dancycodes\\Hyper\\Html\\Elements\\Media\\ObjectElement\:\:type\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/ObjectElement.php
+
+		-
+			message: '#^Parameter \$name of method Dancycodes\\Hyper\\Html\\Elements\\Media\\ObjectElement\:\:name\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/ObjectElement.php
+
+		-
+			message: '#^Parameter \$url of method Dancycodes\\Hyper\\Html\\Elements\\Media\\ObjectElement\:\:data\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/ObjectElement.php
+
+		-
+			message: '#^Parameter \$name of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Param\:\:name\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Param.php
+
+		-
+			message: '#^Parameter \$value of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Param\:\:value\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Param.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Html/Elements/Media/Source.php
+
+		-
+			message: '#^Parameter \$mimeType of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Source\:\:type\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Source.php
+
+		-
+			message: '#^Parameter \$query of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Source\:\:media\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Source.php
+
+		-
+			message: '#^Parameter \$sizes of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Source\:\:sizes\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Source.php
+
+		-
+			message: '#^Parameter \$srcset of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Source\:\:srcset\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Source.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Html/Elements/Media/Svg.php
+
+		-
+			message: '#^Parameter \$namespace of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Svg\:\:xmlns\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Svg.php
+
+		-
+			message: '#^Parameter \$viewBox of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Svg\:\:viewBox\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Svg.php
+
+		-
+			message: '#^Parameter \$default of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Track\:\:defaultTrack\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Track.php
+
+		-
+			message: '#^Parameter \$kind of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Track\:\:kind\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Track.php
+
+		-
+			message: '#^Parameter \$label of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Track\:\:label\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Track.php
+
+		-
+			message: '#^Parameter \$lang of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Track\:\:srclang\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Track.php
+
+		-
+			message: '#^Parameter \$url of method Dancycodes\\Hyper\\Html\\Elements\\Media\\Track\:\:src\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Media\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Media/Track.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Html/Elements/Media/Video.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Html/Elements/Meta/Link.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Html/Elements/Meta/Meta.php
+
+		-
+			message: '#^Parameter \$async of method Dancycodes\\Hyper\\Html\\Elements\\Meta\\Script\:\:async\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Meta\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Meta/Script.php
+
+		-
+			message: '#^Parameter \$defer of method Dancycodes\\Hyper\\Html\\Elements\\Meta\\Script\:\:defer\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Meta\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Meta/Script.php
+
+		-
+			message: '#^Parameter \$type of method Dancycodes\\Hyper\\Html\\Elements\\Meta\\Script\:\:type\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Meta\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Meta/Script.php
+
+		-
+			message: '#^Parameter \$url of method Dancycodes\\Hyper\\Html\\Elements\\Meta\\Script\:\:src\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Meta\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Meta/Script.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Structure/Section.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Table/Caption.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Html/Elements/Table/Col.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Html/Elements/Table/Colgroup.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Html/Elements/Table/Td.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Table/Td.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Html/Elements/Table/Th.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Table/Th.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Abbr.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Address.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/B.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Bdi.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Bdo.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Blockquote.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Cite.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Code.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Data.php
+
+		-
+			message: '#^Parameter \$datetime of method Dancycodes\\Hyper\\Html\\Elements\\Text\\Del\:\:datetime\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Text\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Text/Del.php
+
+		-
+			message: '#^Parameter \$url of method Dancycodes\\Hyper\\Html\\Elements\\Text\\Del\:\:cite\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Text\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Text/Del.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Del.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Dfn.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Em.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/H2.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/H3.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/H4.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/H5.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/H6.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/I.php
+
+		-
+			message: '#^Parameter \$datetime of method Dancycodes\\Hyper\\Html\\Elements\\Text\\Ins\:\:datetime\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Text\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Text/Ins.php
+
+		-
+			message: '#^Parameter \$url of method Dancycodes\\Hyper\\Html\\Elements\\Text\\Ins\:\:cite\(\) has invalid type Dancycodes\\Hyper\\Html\\Elements\\Text\\Closure\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Html/Elements/Text/Ins.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Ins.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Kbd.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Mark.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Pre.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Q.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Rp.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Rt.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/S.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Samp.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Small.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Strong.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Sub.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Sup.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/Time.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/U.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: src/Html/Elements/Text/VarElement.php
+
+		-
+			message: '#^Method Dancycodes\\Hyper\\Html\\Html\:\:__callStatic\(\) has parameter \$args with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Html/Html.php
+
+		-
+			message: '#^PHPDoc tag @param for parameter \$args with type mixed is not subtype of native type array\.$#'
+			identifier: parameter.phpDocType
+			count: 1
+			path: src/Html/Html.php

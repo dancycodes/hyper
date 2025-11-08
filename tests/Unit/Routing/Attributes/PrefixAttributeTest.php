@@ -14,7 +14,7 @@ use Dancycodes\Hyper\Tests\TestCase;
  */
 class PrefixAttributeTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     /** @test */
     public function test_prefix_attribute_implements_discovery_attribute()

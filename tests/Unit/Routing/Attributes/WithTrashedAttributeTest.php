@@ -14,7 +14,7 @@ use Dancycodes\Hyper\Tests\TestCase;
  */
 class WithTrashedAttributeTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     /** @test */
     public function test_with_trashed_attribute_implements_discovery_attribute()
