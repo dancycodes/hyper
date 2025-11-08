@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\View;
  */
 class BladeDirectivesTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     protected string $viewsPath;
 

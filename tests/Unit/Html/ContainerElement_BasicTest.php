@@ -12,6 +12,8 @@ use Dancycodes\Hyper\Tests\TestCase;
  */
 class ContainerElement_BasicTest extends TestCase
 {
+    public static $latestResponse;
+
     // ===================================================================
     // CONTENT METHOD TESTS (BASIC)
     // ===================================================================

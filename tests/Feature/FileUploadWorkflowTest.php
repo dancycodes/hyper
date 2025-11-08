@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
  */
 class FileUploadWorkflowTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     // Valid 1x1 PNG image (smallest possible PNG)
     protected string $validPngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';

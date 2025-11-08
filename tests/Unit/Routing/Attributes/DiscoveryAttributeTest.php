@@ -18,7 +18,7 @@ use Dancycodes\Hyper\Tests\TestCase;
  */
 class DiscoveryAttributeTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     /** @test */
     public function test_discovery_attribute_is_an_interface()

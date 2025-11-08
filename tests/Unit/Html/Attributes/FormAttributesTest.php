@@ -19,6 +19,8 @@ use Dancycodes\Hyper\Tests\TestCase;
  */
 class FormAttributesTest extends TestCase
 {
+    public static $latestResponse;
+
     // ===================================================================
     // NAME ATTRIBUTE TESTS
     // ===================================================================

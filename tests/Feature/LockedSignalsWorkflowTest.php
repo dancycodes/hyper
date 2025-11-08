@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
  */
 class LockedSignalsWorkflowTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     /** @test */
     public function test_locked_signal_created_with_underscore_suffix()

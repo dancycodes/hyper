@@ -18,6 +18,8 @@ use Dancycodes\Hyper\Tests\TestCase;
  */
 class ElementBasicsTest extends TestCase
 {
+    public static $latestResponse;
+
     // ===================================================================
     // FACTORY METHOD TESTS
     // ===================================================================

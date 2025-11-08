@@ -41,11 +41,11 @@ class HyperValidationException extends ValidationException
      * constructor for standard Laravel validation exception initialization.
      *
      * @param \Illuminate\Contracts\Validation\Validator $validator Validator instance with errors
-     * @param array $errors cleared validation fields
+     * @param array<string, array<int, string>> $errors cleared validation fields
      * @param \Symfony\Component\HttpFoundation\Response|null $response Optional custom response
      * @param string $errorBag Error bag name for multiple validation contexts
      */
-    public function __construct($validator, $errors, $response = null, $errorBag = 'default')
+    public function __construct(\Illuminate\Contracts\Validation\Validator $validator, array $errors = [], ?\Symfony\Component\HttpFoundation\Response $response = null, string $errorBag = 'default')
     {
         parent::__construct($validator, $response, $errorBag);
         $errors = [...$errors, ...$validator->errors()->toArray()];

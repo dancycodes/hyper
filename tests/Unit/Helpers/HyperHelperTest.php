@@ -13,7 +13,7 @@ use Dancycodes\Hyper\Tests\TestCase;
  */
 class HyperHelperTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     /** @test */
     public function test_hyper_helper_returns_hyper_response_instance()

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
  */
 class RouteDiscoveryIntegrationTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     protected function setUp(): void
     {

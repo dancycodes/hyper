@@ -22,6 +22,8 @@ use Dancycodes\Hyper\Tests\TestCase;
  */
 class GlobalAttributesTest extends TestCase
 {
+    public static $latestResponse;
+
     // ===================================================================
     // ID ATTRIBUTE TESTS
     // ===================================================================

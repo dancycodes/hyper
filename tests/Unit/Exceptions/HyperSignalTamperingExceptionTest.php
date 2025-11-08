@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Log;
  */
 class HyperSignalTamperingExceptionTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     /** @test */
     public function test_exception_can_be_instantiated()

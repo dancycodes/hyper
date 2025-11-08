@@ -15,6 +15,8 @@ use Dancycodes\Hyper\Tests\TestCase;
  */
 class VoidElementTest extends TestCase
 {
+    public static $latestResponse;
+
     // ===================================================================
     // SELF-CLOSING BEHAVIOR TESTS
     // ===================================================================

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
  */
 class CompleteWorkflowTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     protected string $validPngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
 

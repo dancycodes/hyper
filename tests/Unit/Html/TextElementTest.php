@@ -19,6 +19,8 @@ use Dancycodes\Hyper\Tests\TestCase;
  */
 class TextElementTest extends TestCase
 {
+    public static $latestResponse;
+
     // ===================================================================
     // TEXT METHOD TESTS
     // ===================================================================

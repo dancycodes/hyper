@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
  */
 class RequestMacrosTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     /** @test */
     public function test_is_hyper_macro_detects_hyper_requests()

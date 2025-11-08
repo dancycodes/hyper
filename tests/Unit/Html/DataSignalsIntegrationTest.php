@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Session;
  */
 class DataSignalsIntegrationTest extends TestCase
 {
+    public static $latestResponse;
+
     protected function setUp(): void
     {
         parent::setUp();

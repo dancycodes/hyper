@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\View;
  */
 class HyperServiceProviderTest extends TestCase
 {
-    protected static $latestResponse;
+    public static $latestResponse;
 
     /** @test */
     public function test_service_provider_registers_hyper_response()

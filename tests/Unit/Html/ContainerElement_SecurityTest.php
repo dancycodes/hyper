@@ -12,6 +12,8 @@ use Dancycodes\Hyper\Tests\TestCase;
  */
 class ContainerElement_SecurityTest extends TestCase
 {
+    public static $latestResponse;
+
     // ===================================================================
     // XSS PROTECTION IN CHILDREN
     // ===================================================================
