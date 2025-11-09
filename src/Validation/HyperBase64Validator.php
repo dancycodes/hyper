@@ -11,9 +11,14 @@ use Illuminate\Contracts\Validation\Validator;
  * reactive signals. Implements validation methods for image type verification, file size
  * constraints, image dimension requirements, and MIME type checking.
  *
- * Handles Datastar signal format where file inputs are transmitted as single-element
- * arrays, automatically extracting and stripping data URL prefixes before validation.
- * All validators delegate empty value handling to required rule for consistent behavior.
+ * Handles both Datastar RC6 format (objects with {name, contents, mime}) and legacy
+ * RC5 format (plain base64 strings). File inputs are transmitted as single-element arrays,
+ * automatically extracting contents from RC6 objects or using plain strings from legacy
+ * format, and stripping data URL prefixes before validation. All validators delegate empty
+ * value handling to required rule for consistent behavior.
+ *
+ * RC6 Format: [{name: 'photo.jpg', contents: 'base64...', mime: 'image/jpeg'}]
+ * Legacy Format: ['base64...'] or 'data:image/png;base64,base64...'
  *
  * Validation rules perform memory-based operations without temporary files, using PHP's
  * getimagesizefromstring for image validation and finfo extension for MIME type detection.
@@ -269,11 +274,16 @@ class HyperBase64Validator
     /**
      * Extract base64 value from Datastar signal format or plain string
      *
-     * Handles array format where Datastar transmits file inputs as single-element arrays,
-     * extracts first element if array provided, returns empty string for non-string values,
-     * strips data URL metadata prefix if present, and returns trimmed base64 string.
+     * Supports both Datastar RC6 format (array of objects with {name, contents, mime})
+     * and legacy RC5 format (array of plain base64 strings). Extracts first element if
+     * array provided, handles RC6 object structure by accessing 'contents' property,
+     * strips data URL metadata prefix if present for backward compatibility, and returns
+     * trimmed base64 string.
      *
-     * @param mixed $value Base64 string or Datastar array format
+     * RC6 Format: [{name: 'photo.jpg', contents: 'base64...', mime: 'image/jpeg'}]
+     * Legacy Format: ['base64...'] or 'data:image/png;base64,base64...'
+     *
+     * @param mixed $value Base64 string or Datastar array format (RC5/RC6)
      *
      * @return string Clean base64 string without data URL prefix
      */
@@ -283,13 +293,23 @@ class HyperBase64Validator
             if (empty($value)) {
                 return '';
             }
-            $value = $value[0];
+
+            $firstItem = $value[0];
+
+            // RC6 format: object with 'contents' key
+            if (is_array($firstItem) && isset($firstItem['contents'])) {
+                $value = $firstItem['contents'];
+            } else {
+                // Legacy RC5 format: plain base64 string
+                $value = $firstItem;
+            }
         }
 
         if (!is_string($value)) {
             return '';
         }
 
+        // Strip data URI prefix if present (legacy format support)
         if (strpos($value, ';base64,') !== false) {
             [, $value] = explode(',', $value, 2);
         }
