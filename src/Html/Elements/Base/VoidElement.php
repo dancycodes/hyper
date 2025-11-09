@@ -151,11 +151,30 @@ abstract class VoidElement extends Element
      */
     public function toHtml(): string
     {
+        // Apply HTML5 validation attributes if enabled
+        if (method_exists($this, 'applyHtml5ValidationAttributes')) {
+            $this->applyHtml5ValidationAttributes();
+        }
+
+        // Apply live validation if enabled
+        if (method_exists($this, 'applyLiveValidation')) {
+            $this->applyLiveValidation();
+        }
+
         $attributes = $this->renderAttributes();
+
+        // Generate error div if needed
+        $errorDiv = '';
+        if (method_exists($this, 'generateErrorDiv')) {
+            $errorDivElement = $this->generateErrorDiv();
+            if ($errorDivElement) {
+                $errorDiv = $errorDivElement->render();
+            }
+        }
 
         // Void elements are self-closing (no content, no closing tag)
         // Format: <tag attributes /> or <tag attributes> (both valid in HTML5)
-        return "<{$this->tag}{$attributes} />";
+        return "<{$this->tag}{$attributes} />".$errorDiv;
     }
 
     /**

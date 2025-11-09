@@ -2,6 +2,7 @@
 
 namespace Dancycodes\Hyper;
 
+use Dancycodes\Hyper\Html\Services\FormValidationRegistry;
 use Dancycodes\Hyper\Html\Services\IconManager;
 use Dancycodes\Hyper\Http\HyperRedirect;
 use Dancycodes\Hyper\Http\HyperSignal;
@@ -61,7 +62,7 @@ class HyperServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        require_once __DIR__ . '/helpers.php';
+        require_once __DIR__.'/helpers.php';
 
         $this->app->singleton(HyperSignal::class, function ($app) {
             return new HyperSignal($app['request']);
@@ -83,8 +84,11 @@ class HyperServiceProvider extends ServiceProvider
         $this->app->singleton(IconManager::class);
         $this->app->alias(IconManager::class, 'hyper.icons');
 
+        $this->app->singleton(FormValidationRegistry::class);
+        $this->app->alias(FormValidationRegistry::class, 'hyper.validation');
+
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/hyper.php',
+            __DIR__.'/../config/hyper.php',
             'hyper'
         );
 
@@ -109,11 +113,11 @@ class HyperServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->publishes([
-            __DIR__ . '/../resources/js' => public_path('vendor/hyper/js'),
+            __DIR__.'/../resources/js' => public_path('vendor/hyper/js'),
         ], 'hyper-assets');
 
         $this->publishes([
-            __DIR__ . '/../config/hyper.php' => config_path('hyper.php'),
+            __DIR__.'/../config/hyper.php' => config_path('hyper.php'),
         ], 'hyper-config');
 
         $this->registerBladeDirectives();
@@ -126,6 +130,7 @@ class HyperServiceProvider extends ServiceProvider
         $this->registerSignalsDirective();
         $this->registerRedirectConversionMiddleware();
         $this->registerIconProviders();
+        $this->registerLiveValidationRoute();
     }
 
     /**
@@ -195,7 +200,7 @@ class HyperServiceProvider extends ServiceProvider
     {
         $registerDirectives = function (BladeCompiler $blade) {
             // Only register if not already registered (prevents double registration)
-            if (!isset($blade->getCustomDirectives()['fragment'])) {
+            if (! isset($blade->getCustomDirectives()['fragment'])) {
                 $blade->directive('fragment', static fn () => '');
                 $blade->directive('endfragment', static fn () => '');
             }
@@ -276,7 +281,7 @@ class HyperServiceProvider extends ServiceProvider
         // Check if request is a Hyper navigate request
         Request::macro('isHyperNavigate', function (string|array|null $key = null) {
             // First check if this is a navigate request at all
-            if (!$this->hasHeader('HYPER-NAVIGATE')) {
+            if (! $this->hasHeader('HYPER-NAVIGATE')) {
                 return false;
             }
 
@@ -297,7 +302,7 @@ class HyperServiceProvider extends ServiceProvider
 
             // Handle array of keys to check
             if (is_array($key)) {
-                return !empty(array_intersect($key, $navigateKeys));
+                return ! empty(array_intersect($key, $navigateKeys));
             }
 
             // Handle single key
@@ -361,7 +366,7 @@ class HyperServiceProvider extends ServiceProvider
             return;
         }
 
-        if (!config('hyper.route_discovery.enabled', false)) {
+        if (! config('hyper.route_discovery.enabled', false)) {
             return;
         }
 
@@ -644,5 +649,51 @@ class HyperServiceProvider extends ServiceProvider
         // Future: Add auto-discovery for other popular icon libraries
         // - Font Awesome (owenvoke/blade-fontawesome)
         // - Bootstrap Icons (davidhsianturi/blade-bootstrap-icons)
+    }
+
+    /**
+     * Register live validation route
+     *
+     * Registers a catch-all route that handles real-time field validation
+     * for inputs with live: true enabled. The route validates individual
+     * fields and returns validation errors via SSE.
+     *
+     * Route: PATCH /validate/{field}
+     *
+     * This route is automatically registered when the package boots and
+     * works in conjunction with the FormValidationRegistry service.
+     *
+     * @see \Dancycodes\Hyper\Html\Services\FormValidationRegistry
+     */
+    protected function registerLiveValidationRoute(): void
+    {
+        Route::macro('patchx', function ($uri, $action = null) {
+            return Route::patch($uri, $action);
+        });
+
+        Route::patchx('/validate/{field}', function (string $field) {
+            $registry = app(FormValidationRegistry::class);
+
+            $rules = $registry->getRulesForField($field);
+            if (! $rules) {
+                return hyper()->signals(['errors' => [$field => []]]);
+            }
+
+            $messages = $registry->getMessagesForField($field);
+            $attributes = $registry->getAttributesForField($field);
+
+            try {
+                signals()->validate(
+                    [$field => $rules],
+                    $messages,
+                    $attributes
+                );
+
+                return hyper()->signals(['errors' => [$field => []]]);
+            } catch (\Dancycodes\Hyper\Exceptions\HyperValidationException $e) {
+                // Errors automatically sent to frontend
+                return null;
+            }
+        });
     }
 }

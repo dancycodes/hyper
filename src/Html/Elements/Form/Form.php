@@ -3,10 +3,13 @@
 namespace Dancycodes\Hyper\Html\Elements\Form;
 
 use Closure;
+use Dancycodes\Hyper\Html\Concerns\Form\ManagesValidation;
 use Dancycodes\Hyper\Html\Elements\Base\ContainerElement;
 
 class Form extends ContainerElement
 {
+    use ManagesValidation;
+
     public function __construct()
     {
         parent::__construct('form');
@@ -15,7 +18,7 @@ class Form extends ContainerElement
     /**
      * Set the action attribute (form submission URL)
      *
-     * @param string|Closure $url Form action URL or closure
+     * @param  string|Closure  $url  Form action URL or closure
      */
     public function action(string|Closure $url): static
     {
@@ -25,7 +28,7 @@ class Form extends ContainerElement
     /**
      * Set the method attribute (HTTP method)
      *
-     * @param string|Closure $method HTTP method ('GET' or 'POST') or closure
+     * @param  string|Closure  $method  HTTP method ('GET' or 'POST') or closure
      */
     public function method(string|Closure $method): static
     {
@@ -40,7 +43,7 @@ class Form extends ContainerElement
      * - 'multipart/form-data' (required for file uploads)
      * - 'text/plain'
      *
-     * @param string|Closure $type Encoding type or closure
+     * @param  string|Closure  $type  Encoding type or closure
      */
     public function enctype(string|Closure $type): static
     {
@@ -50,7 +53,7 @@ class Form extends ContainerElement
     /**
      * Set the novalidate attribute (disable HTML5 validation)
      *
-     * @param bool|Closure $novalidate Disable validation or closure
+     * @param  bool|Closure  $novalidate  Disable validation or closure
      */
     public function novalidate(bool|Closure $novalidate = true): static
     {
@@ -66,7 +69,7 @@ class Form extends ContainerElement
      *
      * Common values: '_self', '_blank', '_parent', '_top'
      *
-     * @param string|Closure $target Target context or closure
+     * @param  string|Closure  $target  Target context or closure
      */
     public function target(string|Closure $target): static
     {

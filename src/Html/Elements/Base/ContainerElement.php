@@ -426,6 +426,11 @@ abstract class ContainerElement extends TextElement implements HasChildren
         // Inject icons before rendering (from HasIcons trait)
         $this->injectIcons();
 
+        // Inject validation setup if enabled (from ManagesValidation trait)
+        if (method_exists($this, 'injectValidationSetup')) {
+            $this->injectValidationSetup();
+        }
+
         $attributes = $this->renderAttributes();
 
         // Build content from children and raw HTML
