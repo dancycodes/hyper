@@ -2,6 +2,7 @@
 
 namespace Dancycodes\Hyper\Html\Elements\Base;
 
+use Dancycodes\Hyper\Html\Concerns\Actions\HasActionMethods;
 use LogicException;
 
 /**
@@ -141,6 +142,8 @@ use LogicException;
  */
 abstract class VoidElement extends Element
 {
+    use HasActionMethods;
+
     protected bool $isVoid = true;
 
     /**

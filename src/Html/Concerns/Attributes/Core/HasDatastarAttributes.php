@@ -48,7 +48,7 @@ trait HasDatastarAttributes
      * ])
      * ```
      *
-     * @param array|Closure $data Signal data array or closure returning array
+     * @param  array|Closure  $data  Signal data array or closure returning array
      */
     public function dataSignals(array|Closure $data): static
     {
@@ -83,7 +83,7 @@ trait HasDatastarAttributes
      *
      * Integrates with the existing @signals Blade directive locked signal system.
      *
-     * @param array<string, mixed> $signals Signal data to check for locked signals
+     * @param  array<string, mixed>  $signals  Signal data to check for locked signals
      */
     protected function storeLockedSignalsIfNeeded(array $signals): void
     {
@@ -93,7 +93,7 @@ trait HasDatastarAttributes
         }, ARRAY_FILTER_USE_BOTH);
 
         // If locked signals exist, delegate to HyperSignal for encrypted storage
-        if (!empty($lockedSignals)) {
+        if (! empty($lockedSignals)) {
             /** @var \Dancycodes\Hyper\Http\HyperSignal $hyperSignal */
             $hyperSignal = signals();
             $hyperSignal->storeLockedSignals($signals);
@@ -132,7 +132,7 @@ trait HasDatastarAttributes
      *
      * Binds a form input value to a Datastar signal (two-way sync)
      *
-     * @param string $signal Signal name to bind to (e.g., 'email', 'title')
+     * @param  string  $signal  Signal name to bind to (e.g., 'email', 'title')
      */
     public function dataBind(string $signal): static
     {
@@ -144,7 +144,7 @@ trait HasDatastarAttributes
      *
      * Updates element text content reactively based on signal expression
      *
-     * @param string $expression Signal expression (e.g., '$count', '$user.name')
+     * @param  string  $expression  Signal expression (e.g., '$count', '$user.name')
      */
     public function dataText(string $expression): static
     {
@@ -190,22 +190,22 @@ trait HasDatastarAttributes
      * ->dataOn('resize', '$width = window.innerWidth', ['window', 'throttle.250ms'])
      * ```
      *
-     * @param string $event Event name (e.g., 'click', 'submit') or event with modifiers (e.g., 'submit__prevent')
-     * @param string $action Datastar action or expression
-     * @param array<string> $modifiers Optional array of modifiers (e.g., ['prevent'], ['debounce.300ms', 'leading'])
+     * @param  string  $event  Event name (e.g., 'click', 'submit') or event with modifiers (e.g., 'submit__prevent')
+     * @param  string  $action  Datastar action or expression
+     * @param  array<string>  $modifiers  Optional array of modifiers (e.g., ['prevent'], ['debounce.300ms', 'leading'])
      *
      * @see https://data-star.dev/reference/plugins/backend
      */
     public function dataOn(string $event, string $action, array $modifiers = []): static
     {
         // If modifiers array provided, append them with double underscore
-        if (!empty($modifiers)) {
-            $event .= '__' . implode('__', $modifiers);
+        if (! empty($modifiers)) {
+            $event .= '__'.implode('__', $modifiers);
         }
 
         // No conversion needed - Datastar expects double underscores in the attribute name
         // Format: data-on:{event}__{modifier}__{modifier}.{option}
-        return $this->attr('data-on:' . $event, $action);
+        return $this->attr('data-on:'.$event, $action);
     }
 
     /**
@@ -215,7 +215,7 @@ trait HasDatastarAttributes
      *
      * @see https://data-star.dev/reference/plugins/visibility
      *
-     * @param string $condition JavaScript expression (e.g., '$isVisible', '$count > 0')
+     * @param  string  $condition  JavaScript expression (e.g., '$isVisible', '$count > 0')
      */
     public function dataShow(string $condition): static
     {
@@ -229,7 +229,7 @@ trait HasDatastarAttributes
      *
      * @see https://data-star.dev/reference/plugins/visibility
      *
-     * @param string $condition JavaScript expression (e.g., '$showContent', '$user !== null')
+     * @param  string  $condition  JavaScript expression (e.g., '$showContent', '$user !== null')
      */
     public function dataIf(string $condition): static
     {
@@ -244,8 +244,8 @@ trait HasDatastarAttributes
      *
      * @see https://data-star.dev/reference/plugins/visibility
      *
-     * @param string $expression Iteration expression (e.g., 'item in $items', 'user, index in $users')
-     * @param string|null $key Optional key property for diffing (e.g., 'id', 'uuid')
+     * @param  string  $expression  Iteration expression (e.g., 'item in $items', 'user, index in $users')
+     * @param  string|null  $key  Optional key property for diffing (e.g., 'id', 'uuid')
      */
     public function dataFor(string $expression, ?string $key = null): static
     {
@@ -264,7 +264,7 @@ trait HasDatastarAttributes
      *
      * Automatically displays validation errors for a given field from Laravel
      *
-     * @param string $field Field name to display errors for (e.g., 'email', 'title')
+     * @param  string  $field  Field name to display errors for (e.g., 'email', 'title')
      */
     public function dataError(string $field): static
     {
@@ -278,8 +278,8 @@ trait HasDatastarAttributes
      *
      * @see https://data-star.dev/reference/plugins/attributes
      *
-     * @param string $attribute HTML attribute name (e.g., 'href', 'src', 'disabled')
-     * @param string $expression JavaScript expression
+     * @param  string  $attribute  HTML attribute name (e.g., 'href', 'src', 'disabled')
+     * @param  string  $expression  JavaScript expression
      */
     public function dataAttr(string $attribute, string $expression): static
     {
@@ -293,7 +293,7 @@ trait HasDatastarAttributes
      *
      * @see https://data-star.dev/reference/plugins/attributes
      *
-     * @param array<string, string> $classes Map of className => condition
+     * @param  array<string, string>  $classes  Map of className => condition
      */
     public function dataClass(array $classes): static
     {
@@ -309,8 +309,8 @@ trait HasDatastarAttributes
      *
      * @see https://data-star.dev/reference/plugins/attributes
      *
-     * @param string $className CSS class name
-     * @param string $condition JavaScript expression
+     * @param  string  $className  CSS class name
+     * @param  string  $condition  JavaScript expression
      */
     public function dataClassIf(string $className, string $condition): static
     {
@@ -324,8 +324,8 @@ trait HasDatastarAttributes
      *
      * @see https://data-star.dev/reference/plugins/attributes
      *
-     * @param string $property CSS property name (e.g., 'width', 'opacity', 'backgroundColor')
-     * @param string $expression JavaScript expression
+     * @param  string  $property  CSS property name (e.g., 'width', 'opacity', 'backgroundColor')
+     * @param  string  $expression  JavaScript expression
      */
     public function dataStyle(string $property, string $expression): static
     {
@@ -340,8 +340,8 @@ trait HasDatastarAttributes
      *
      * @see https://data-star.dev/reference/plugins/signals
      *
-     * @param string $name Computed signal name
-     * @param string $expression JavaScript expression to compute value
+     * @param  string  $name  Computed signal name
+     * @param  string  $expression  JavaScript expression to compute value
      */
     public function dataComputed(string $name, string $expression): static
     {
@@ -355,11 +355,146 @@ trait HasDatastarAttributes
      *
      * @see https://data-star.dev/reference/plugins/effects
      *
-     * @param string $expression JavaScript expression to execute
+     * @param  string  $expression  JavaScript expression to execute
      */
     public function dataEffect(string $expression): static
     {
         return $this->attr('data-effect', $expression);
+    }
+
+    /**
+     * Initialize action on element load
+     *
+     * Executes expression when element initializes (on page load, when patched into DOM,
+     * or when the attribute is modified). Useful for fetching initial data or setting up
+     * element state.
+     *
+     * Common use cases:
+     * - Fetch initial data when component mounts
+     * - Initialize third-party libraries
+     * - Set up initial signal values
+     * - Trigger actions on dynamic content load
+     *
+     * Examples:
+     * ```php
+     * // Fetch data when element loads
+     * Html::div()->dataInit('@get("/initial-data")');
+     *
+     * // Fetch with indicator
+     * Html::div()
+     *     ->dataIndicator('loading')
+     *     ->dataInit('@get("/data")');
+     *
+     * // Set initial signal value
+     * Html::div()->dataInit('$count = 0');
+     *
+     * // Multiple actions
+     * Html::div()->dataInit('@get("/user"); @get("/settings")');
+     * ```
+     *
+     * @see https://data-star.dev/reference/attributes#data-init
+     *
+     * @param  string  $expression  Expression to execute on initialization
+     */
+    public function dataInit(string $expression): static
+    {
+        return $this->attr('data-init', $expression);
+    }
+
+    /**
+     * React to signal patches (any signal changes)
+     *
+     * Runs expression whenever ANY signals are patched/updated. Unlike data-effect
+     * which tracks specific signal dependencies, this fires on all signal changes.
+     *
+     * Use cases:
+     * - Global state change logging
+     * - Syncing state to localStorage
+     * - Broadcasting changes to analytics
+     * - Triggering side effects on any data change
+     *
+     * Examples:
+     * ```php
+     * // Log all signal changes
+     * Html::div()->dataOnSignalPatch('console.log("Signals updated:", ctx.signals())');
+     *
+     * // Save to localStorage on any change
+     * Html::div()->dataOnSignalPatch('localStorage.setItem("state", JSON.stringify(ctx.signals()))');
+     *
+     * // Track analytics
+     * Html::div()->dataOnSignalPatch('analytics.track("state_change", ctx.signals())');
+     * ```
+     *
+     * @see https://data-star.dev/reference/attributes#data-on-signal-patch
+     *
+     * @param  string  $expression  Expression to execute on signal patch
+     */
+    public function dataOnSignalPatch(string $expression): static
+    {
+        return $this->attr('data-on-signal-patch', $expression);
+    }
+
+    /**
+     * Loading indicator signal
+     *
+     * Automatically creates a boolean signal that becomes true during fetch
+     * actions and false when they complete. The signal is scoped to this
+     * element and its children.
+     *
+     * **How it works:**
+     * - Signal is initially false
+     * - Set to true when ANY fetch action starts within this element
+     * - Set to false when fetch completes (success, error, or cancelled)
+     * - Automatically reset to false if element is removed from DOM
+     * - No manual state management needed
+     *
+     * **Common use cases:**
+     * - Disable buttons during save operations
+     * - Show loading spinners during data fetches
+     * - Display progress indicators during form submissions
+     * - Prevent duplicate submissions
+     *
+     * Examples:
+     * ```php
+     * // Disable button while saving
+     * Html::button()
+     *     ->dataIndicator('saving')
+     *     ->postx('/save')
+     *     ->dataAttr('disabled', '$saving')
+     *     ->content(
+     *         Html::span()->dataShow('!$saving')->text('Save'),
+     *         Html::span()->dataShow('$saving')->text('Saving...')
+     *     );
+     *
+     * // Show spinner during fetch
+     * Html::div()
+     *     ->dataIndicator('loading')
+     *     ->get('/data')
+     *     ->content(
+     *         Html::div()->dataShow('$loading')->text('Loading...'),
+     *         Html::div()->dataShow('!$loading')->content(...)
+     *     );
+     *
+     * // Form with loading state
+     * Html::form()
+     *     ->dataIndicator('submitting')
+     *     ->postx('/submit')
+     *     ->content(
+     *         Html::input()->name('email'),
+     *         Html::button()
+     *             ->type('submit')
+     *             ->dataAttr('disabled', '$submitting')
+     *             ->text('Submit')
+     *     );
+     * ```
+     *
+     * @see https://data-star.dev/reference/plugins/backend#data-indicator
+     *
+     * @param  string  $signalName  Name of boolean signal to create (e.g., 'loading', 'saving', 'submitting')
+     */
+    public function dataIndicator(string $signalName): static
+    {
+        return $this->attr('data-indicator', $signalName);
     }
 
     /**
@@ -369,7 +504,7 @@ trait HasDatastarAttributes
      *
      * @see https://data-star.dev/reference/plugins/refs
      *
-     * @param string $name Reference name
+     * @param  string  $name  Reference name
      */
     public function dataRef(string $name): static
     {
@@ -388,15 +523,15 @@ trait HasDatastarAttributes
      *
      * @see https://data-star.dev/reference/plugins/intersect
      *
-     * @param string $expression Action to execute
-     * @param array<string> $modifiers Modifier array (e.g., ['once', 'half'])
+     * @param  string  $expression  Action to execute
+     * @param  array<string>  $modifiers  Modifier array (e.g., ['once', 'half'])
      */
     public function dataOnIntersect(string $expression, array $modifiers = []): static
     {
         $attrName = 'data-on-intersect';
 
-        if (!empty($modifiers)) {
-            $attrName .= '__' . implode('__', $modifiers);
+        if (! empty($modifiers)) {
+            $attrName .= '__'.implode('__', $modifiers);
         }
 
         return $this->attr($attrName, $expression);
@@ -411,15 +546,15 @@ trait HasDatastarAttributes
      *
      * @see https://data-star.dev/reference/plugins/interval
      *
-     * @param string $expression Action to execute
-     * @param array<string> $modifiers Modifier array (e.g., ['duration.5000ms', 'leading'])
+     * @param  string  $expression  Action to execute
+     * @param  array<string>  $modifiers  Modifier array (e.g., ['duration.5000ms', 'leading'])
      */
     public function dataOnInterval(string $expression, array $modifiers = []): static
     {
         $attrName = 'data-on-interval';
 
-        if (!empty($modifiers)) {
-            $attrName .= '__' . implode('__', $modifiers);
+        if (! empty($modifiers)) {
+            $attrName .= '__'.implode('__', $modifiers);
         }
 
         return $this->attr($attrName, $expression);
@@ -430,7 +565,7 @@ trait HasDatastarAttributes
      *
      * @deprecated Use dataOnIntersect() for full modifier support
      *
-     * @param string $expression JavaScript expression to execute on intersection
+     * @param  string  $expression  JavaScript expression to execute on intersection
      */
     public function dataIntersect(string $expression): static
     {

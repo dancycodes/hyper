@@ -3,6 +3,7 @@
 namespace Dancycodes\Hyper\Html\Elements\Base;
 
 use Closure;
+use Dancycodes\Hyper\Html\Concerns\Actions\HasActionMethods;
 use Dancycodes\Hyper\Html\Concerns\Assets\ManagesAssets;
 use Dancycodes\Hyper\Html\Concerns\Visual\HasIcons;
 use Dancycodes\Hyper\Html\Contracts\Structure\HasChildren;
@@ -185,10 +186,12 @@ use Dancycodes\Hyper\Html\Contracts\Structure\HasChildren;
  */
 abstract class ContainerElement extends TextElement implements HasChildren
 {
-    use ManagesAssets;
+    use HasActionMethods;
     use HasIcons;
+    use ManagesAssets;
 
     protected array $children = [];
+
     protected ?string $rawHtml = null;
 
     /**
@@ -217,7 +220,7 @@ abstract class ContainerElement extends TextElement implements HasChildren
      * Circular reference detection prevents elements from containing themselves,
      * either directly or through a chain of parent-child relationships.
      *
-     * @param string|Element|array|Closure|null ...$items Content items or closures returning content
+     * @param  string|Element|array|Closure|null  ...$items  Content items or closures returning content
      *
      * @throws \RuntimeException If maximum recursion depth is exceeded or circular reference detected
      */
@@ -238,9 +241,9 @@ abstract class ContainerElement extends TextElement implements HasChildren
     /**
      * Internal recursive content processor with depth tracking
      *
-     * @param array $items Content items to process
-     * @param int $depth Current recursion depth
-     * @param int $maxDepth Maximum allowed recursion depth
+     * @param  array  $items  Content items to process
+     * @param  int  $depth  Current recursion depth
+     * @param  int  $maxDepth  Maximum allowed recursion depth
      *
      * @throws \RuntimeException If maximum recursion depth is exceeded
      */
@@ -277,8 +280,8 @@ abstract class ContainerElement extends TextElement implements HasChildren
                 $itemHash = spl_object_hash($item);
                 if (isset(self::$additionStack[$itemHash])) {
                     throw new \RuntimeException(
-                        'Circular reference detected: element cannot contain itself. ' .
-                        'Element of type ' . get_class($item) . ' is already being added to the tree.'
+                        'Circular reference detected: element cannot contain itself. '.
+                        'Element of type '.get_class($item).' is already being added to the tree.'
                     );
                 }
 
@@ -296,7 +299,7 @@ abstract class ContainerElement extends TextElement implements HasChildren
             } else {
                 // Invalid type
                 throw new \InvalidArgumentException(
-                    'Content must be string, Element, array, Closure, or null. Got: ' . get_debug_type($item)
+                    'Content must be string, Element, array, Closure, or null. Got: '.get_debug_type($item)
                 );
             }
         }
@@ -310,7 +313,7 @@ abstract class ContainerElement extends TextElement implements HasChildren
      * This is a convenience wrapper around content() for adding a single child.
      * Provides a more intuitive API matching popular frameworks like Filament.
      *
-     * @param string|Element|Closure|null $child Single child element, string, or closure
+     * @param  string|Element|Closure|null  $child  Single child element, string, or closure
      */
     public function child(string|Element|Closure|null $child): static
     {
@@ -332,7 +335,7 @@ abstract class ContainerElement extends TextElement implements HasChildren
      * ])
      * ```
      *
-     * @param array $children Array of child elements, strings, or closures
+     * @param  array  $children  Array of child elements, strings, or closures
      */
     public function children(array $children): static
     {
@@ -347,7 +350,7 @@ abstract class ContainerElement extends TextElement implements HasChildren
      *
      * Use this method with caution. Content is NOT escaped.
      *
-     * @param string|Closure $html Raw HTML content or closure returning HTML
+     * @param  string|Closure  $html  Raw HTML content or closure returning HTML
      */
     public function html(string|Closure $html): static
     {
@@ -366,7 +369,7 @@ abstract class ContainerElement extends TextElement implements HasChildren
      *
      * Used by HasIcons trait to inject icons before main content.
      *
-     * @param mixed $item Content to prepend
+     * @param  mixed  $item  Content to prepend
      */
     protected function prependContent(mixed $item): void
     {
@@ -378,7 +381,7 @@ abstract class ContainerElement extends TextElement implements HasChildren
      *
      * Used by HasIcons trait to inject icons after main content.
      *
-     * @param mixed $item Content to append
+     * @param  mixed  $item  Content to append
      */
     protected function appendContent(mixed $item): void
     {
@@ -451,8 +454,7 @@ abstract class ContainerElement extends TextElement implements HasChildren
      * - $container: This container element instance
      * - $children: Array of child elements
      *
-     * @param string $parameterName The closure parameter name
-     *
+     * @param  string  $parameterName  The closure parameter name
      * @return array{0: mixed}|array Array with value at index 0, or empty array
      */
     protected function resolveDefaultClosureDependencyForEvaluationByName(string $parameterName): array
