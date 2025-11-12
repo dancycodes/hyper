@@ -5,6 +5,16 @@ All notable changes to `dancycodes/hyper` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5](https://github.com/dancycodes/hyper/compare/v0.1.4...v0.1.5) (2025-11-12)
+
+
+### Bug Fixes
+
+* data-for almost completely done ([065a2f7](https://github.com/dancycodes/hyper/commit/065a2f7be5354aa78adcc3b36ed3b2b1ede9deb4))
+* File Validation and Storage compatible to RC6 Datastar ([3da34af](https://github.com/dancycodes/hyper/commit/3da34afe0660d3c89eaed8452b7a7bcfe8c0fa6c))
+* for attribute fully upgraded ([c7f73a5](https://github.com/dancycodes/hyper/commit/c7f73a5f3045a402c421b1e05e51fdc24516e24b))
+* Merge pull request [#9](https://github.com/dancycodes/hyper/issues/9) from dancycodes/Fixes ([cf5ab1c](https://github.com/dancycodes/hyper/commit/cf5ab1ceff04f412b1d206e3e6170b9658180aa2))
+
 ## [0.1.4](https://github.com/dancycodes/hyper/compare/v0.1.3...v0.1.4) (2025-11-08)
 
 
