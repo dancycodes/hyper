@@ -15,8 +15,6 @@ use Illuminate\Support\Facades\View;
  */
 class FragmentRenderingTest extends TestCase
 {
-    public static $latestResponse;
-
     protected string $viewsPath;
 
     protected function setUp(): void
@@ -45,6 +43,7 @@ class FragmentRenderingTest extends TestCase
                 <div>Fragment content</div>
             @endfragment
         ');
+
         $rendered = View::make('test-fragment')->render();
         $this->assertStringContainsString('Fragment content', $rendered);
     }
@@ -57,12 +56,15 @@ class FragmentRenderingTest extends TestCase
                 <div>{{ $message }}</div>
             @endfragment
         ');
+
         Route::get('/update-fragment', function () {
             return hyper()->fragment('updateable-fragment', 'dynamic', ['message' => 'Updated!']);
         });
+
         $response = $this->call('GET', '/update-fragment', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
+
         $response->assertOk();
     }
 
@@ -80,6 +82,7 @@ class FragmentRenderingTest extends TestCase
                 <footer>Footer</footer>
             @endfragment
         ');
+
         $rendered = View::make('multi-fragment')->render();
         $this->assertStringContainsString('Header', $rendered);
         $this->assertStringContainsString('Body', $rendered);
@@ -98,6 +101,7 @@ class FragmentRenderingTest extends TestCase
                 </div>
             @endfragment
         ');
+
         $rendered = View::make('nested-fragments')->render();
         $this->assertStringContainsString('Outer', $rendered);
         $this->assertStringContainsString('Inner', $rendered);
@@ -111,6 +115,7 @@ class FragmentRenderingTest extends TestCase
                 <div>{{ $name }} - {{ $count }}</div>
             @endfragment
         ');
+
         $rendered = View::make('data-fragment', ['name' => 'Test', 'count' => 5])->render();
         $this->assertStringContainsString('Test', $rendered);
         $this->assertStringContainsString('5', $rendered);
@@ -126,6 +131,7 @@ class FragmentRenderingTest extends TestCase
                 @endfragment
             </div>
         ');
+
         $rendered = View::make('signal-fragment')->render();
         $this->assertStringContainsString('data-signals', $rendered);
     }
@@ -138,12 +144,15 @@ class FragmentRenderingTest extends TestCase
                 'selector' => '#custom-target',
             ]);
         });
+
         File::put($this->viewsPath . '/simple-fragment.blade.php', '
             @fragment("content"){{ $msg }}@endfragment
         ');
+
         $response = $this->call('GET', '/custom-selector', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
+
         $response->assertOk();
     }
 
@@ -153,13 +162,16 @@ class FragmentRenderingTest extends TestCase
         File::put($this->viewsPath . '/mode-fragment.blade.php', '
             @fragment("test")Content@endfragment
         ');
+
         foreach (['inner', 'outer', 'append', 'prepend'] as $mode) {
             Route::get("/mode-{$mode}", function () use ($mode) {
                 return hyper()->fragment('mode-fragment', 'test', [], ['mode' => $mode]);
             });
+
             $response = $this->call('GET', "/mode-{$mode}", [], [], [], [
                 'HTTP_DATASTAR_REQUEST' => 'true',
             ]);
+
             $response->assertOk();
         }
     }
@@ -171,14 +183,17 @@ class FragmentRenderingTest extends TestCase
             @fragment("part-a")Part A@endfragment
             @fragment("part-b")Part B@endfragment
         ');
+
         Route::get('/composite', function () {
             return hyper()
                 ->fragment('composite', 'part-a')
                 ->fragment('composite', 'part-b');
         });
+
         $response = $this->call('GET', '/composite', [], [], [], [
             'HTTP_DATASTAR_REQUEST' => 'true',
         ]);
+
         $response->assertOk();
     }
 
@@ -190,6 +205,7 @@ class FragmentRenderingTest extends TestCase
                 <div>{{ $slot ?? "Default slot" }}</div>
             @endfragment
         ');
+
         $rendered = View::make('slot-fragment', ['slot' => 'Custom content'])->render();
         $this->assertStringContainsString('Custom content', $rendered);
     }
@@ -198,6 +214,7 @@ class FragmentRenderingTest extends TestCase
     public function test_fragment_error_handling()
     {
         $this->expectException(\Exception::class);
+
         // Try to render non-existent fragment
         View::renderFragment('non-existent', 'missing-fragment');
     }
@@ -208,6 +225,7 @@ class FragmentRenderingTest extends TestCase
         File::put($this->viewsPath . '/optional-data.blade.php', '
             @fragment("test"){{ $optional ?? "default" }}@endfragment
         ');
+
         $rendered = View::make('optional-data')->render();
         $this->assertStringContainsString('default', $rendered);
     }
@@ -227,6 +245,7 @@ class FragmentRenderingTest extends TestCase
                 </div>
             @endfragment
         ');
+
         $rendered = View::make('complex')->render();
         $this->assertStringContainsString('<div class="container">', $rendered);
         $this->assertStringContainsString('<strong>bold</strong>', $rendered);
@@ -242,6 +261,7 @@ class FragmentRenderingTest extends TestCase
                 @endfragment
             </div>
         ');
+
         $rendered = View::make('reactive')->render();
         $this->assertStringContainsString('data-show', $rendered);
     }
@@ -252,15 +272,19 @@ class FragmentRenderingTest extends TestCase
         Route::get('/lifecycle-1', function () {
             return hyper()->fragment('lifecycle-view', 'step1', ['step' => 1]);
         });
+
         Route::get('/lifecycle-2', function () {
             return hyper()->fragment('lifecycle-view', 'step2', ['step' => 2]);
         });
+
         File::put($this->viewsPath . '/lifecycle-view.blade.php', '
             @fragment("step1")Step {{ $step }}@endfragment
             @fragment("step2")Step {{ $step }}@endfragment
         ');
+
         $response1 = $this->call('GET', '/lifecycle-1', [], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
         $response2 = $this->call('GET', '/lifecycle-2', [], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
+
         $response1->assertOk();
         $response2->assertOk();
     }
@@ -269,8 +293,11 @@ class FragmentRenderingTest extends TestCase
     public function test_fragment_render_fragment_macro()
     {
         File::put($this->viewsPath . '/macro-test.blade.php', '
-            @fragment("test-macro")Hello from macro@endfragment
+            @fragment("test-macro")
+                Hello from macro
+            @endfragment
         ');
+
         $result = View::renderFragment('macro-test', 'test-macro');
         $this->assertStringContainsString('Hello from macro', $result);
     }
@@ -288,6 +315,7 @@ class FragmentRenderingTest extends TestCase
                 @endforeach
             @endfragment
         ');
+
         $rendered = View::make('directive-fragment')->render();
         $this->assertStringContainsString('Conditional content', $rendered);
         $this->assertStringContainsString('<span>1</span>', $rendered);
@@ -303,10 +331,13 @@ class FragmentRenderingTest extends TestCase
                 @endforeach
             @endfragment
         ');
+
         $startTime = microtime(true);
         $rendered = View::make('perf-fragment')->render();
         $endTime = microtime(true);
+
         $executionTime = ($endTime - $startTime) * 1000;
+
         $this->assertLessThan(1000, $executionTime, 'Fragment rendering took too long');
         $this->assertStringContainsString('Item 1', $rendered);
         $this->assertStringContainsString('Item 100', $rendered);

@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Storage;
 /**
  * Test File Upload Workflows with Base64
  *
- * Tests both Datastar RC6 format ({name, contents, mime}) and legacy RC5 format
- * (plain base64 strings) to ensure backward compatibility and proper RC6 support.
+ * Tests Datastar RC6 format ({name, contents, mime}) for file uploads, storage,
+ * validation, and metadata extraction.
  *
  * @see TESTING.md - File 52: FileUploadWorkflow Tests
- * Status: ✅ UPDATED - 25 test methods (22 updated for RC6 + 3 new RC6/legacy tests)
+ * Status: ✅ UPDATED - RC6 format only
  */
 class FileUploadWorkflowTest extends TestCase
 {
@@ -44,18 +44,6 @@ class FileUploadWorkflowTest extends TestCase
             'contents' => $contents,
             'mime' => $mime,
         ]];
-    }
-
-    /**
-     * Create legacy format file data (Datastar RC5 - for backward compatibility tests)
-     *
-     * @param string $contents Base64-encoded file contents
-     *
-     * @return array Legacy format: ['base64...']
-     */
-    protected function createLegacyFile(string $contents): array
-    {
-        return [$contents];
     }
 
     /** @test */
@@ -468,53 +456,18 @@ class FileUploadWorkflowTest extends TestCase
         Route::post('/rc6-metadata', function () {
             $filename = signals()->getFilename('document');
             $mimeType = signals()->getMimeType('document');
-            $isRC6 = signals()->isRC6Format('document');
 
             // Assertions to verify the metadata was extracted correctly
             $this->assertEquals('report.png', $filename);
             $this->assertEquals('image/png', $mimeType);
-            $this->assertTrue($isRC6);
 
             return hyper()->signals([
                 'filename' => $filename,
                 'mimeType' => $mimeType,
-                'isRC6' => $isRC6,
             ]);
         });
         $signals = json_encode(['document' => $this->createRC6File($this->validPngBase64, 'report.png', 'image/png')]);
         $response = $this->call('POST', '/rc6-metadata', [
-            'datastar' => $signals,
-        ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-        $response->assertOk();
-    }
-
-    /** @test */
-    public function test_backward_compatibility_with_legacy_format()
-    {
-        Route::post('/legacy-upload', function () {
-            $path = hyperStorage()->store('file', 'uploads', 'public');
-
-            return hyper()->signals(['uploaded' => true, 'path' => $path]);
-        });
-        // Use legacy RC5 format (plain base64 string in array)
-        $signals = json_encode(['file' => $this->createLegacyFile($this->validPngBase64)]);
-        $response = $this->call('POST', '/legacy-upload', [
-            'datastar' => $signals,
-        ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
-        $response->assertOk();
-    }
-
-    /** @test */
-    public function test_legacy_format_validation()
-    {
-        Route::post('/legacy-validation', function () {
-            signals()->validate(['avatar' => 'required|b64image|b64max:1024']);
-
-            return hyper()->signals(['valid' => true]);
-        });
-        // Use legacy format
-        $signals = json_encode(['avatar' => $this->createLegacyFile($this->validPngBase64)]);
-        $response = $this->call('POST', '/legacy-validation', [
             'datastar' => $signals,
         ], [], [], ['HTTP_DATASTAR_REQUEST' => 'true']);
         $response->assertOk();

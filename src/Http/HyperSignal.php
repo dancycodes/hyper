@@ -598,8 +598,8 @@ class HyperSignal
      * Get MIME type from Datastar RC6 signal format
      *
      * Extracts the MIME type from RC6 format file signals without needing to decode
-     * the base64 data. Returns null for legacy format or when signal doesn't contain
-     * file data. Useful for validation and content-type determination.
+     * the base64 data. Returns null when signal doesn't contain file data. Useful
+     * for validation and content-type determination.
      *
      * RC6 Format: [{name: 'photo.jpg', contents: 'base64...', mime: 'image/jpeg'}]
      *
@@ -610,22 +610,6 @@ class HyperSignal
     public function getMimeType(string $signalKey): ?string
     {
         return $this->getFileStorage()->getMimeType($signalKey);
-    }
-
-    /**
-     * Check if signal contains RC6 format file data
-     *
-     * Determines whether the signal value uses Datastar RC6 format (object with
-     * name, contents, and mime properties) or legacy format. Useful for conditional
-     * processing or feature detection.
-     *
-     * @param string $signalKey Signal key to check
-     *
-     * @return bool True if RC6 format, false otherwise
-     */
-    public function isRC6Format(string $signalKey): bool
-    {
-        return $this->getFileStorage()->isRC6Format($signalKey);
     }
 
     /**

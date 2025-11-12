@@ -2593,7 +2593,6 @@ action({
     const opts = options || {};
     const fallback = opts.fallback || "";
     const defaultMime = opts.defaultMime || "application/octet-stream";
-    const mimeSignal = opts.mimeSignal;
     if (fileSource == null) {
       return fallback;
     }
@@ -2607,21 +2606,10 @@ action({
         if (!contents || typeof contents !== "string") {
           return fallback;
         }
-        const mimeType2 = mime || defaultMime;
-        return `data:${mimeType2};base64,${contents}`;
+        const mimeType = mime || defaultMime;
+        return `data:${mimeType};base64,${contents}`;
       }
-      const base64Content = firstItem;
-      if (!base64Content || typeof base64Content !== "string") {
-        return fallback;
-      }
-      let mimeType = defaultMime;
-      if (mimeSignal && typeof window !== "undefined") {
-        const mimeArray = (window.$ || {})[mimeSignal];
-        if (Array.isArray(mimeArray) && mimeArray.length > 0) {
-          mimeType = mimeArray[0] || defaultMime;
-        }
-      }
-      return `data:${mimeType};base64,${base64Content}`;
+      return fallback;
     }
     if (typeof fileSource === "string") {
       const trimmed = fileSource.trim();

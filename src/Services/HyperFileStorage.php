@@ -12,20 +12,16 @@ use InvalidArgumentException;
  * Provides methods for storing base64 data to Laravel filesystem disks with automatic MIME
  * type detection, extension resolution, and unique filename generation.
  *
- * Supports both Datastar RC6 format (objects with {name, contents, mime}) and legacy RC5
- * format (plain base64 strings). File inputs are transmitted as single-element arrays,
- * automatically extracting contents from RC6 objects or using plain strings from legacy
- * format. Handles data URL prefixes by stripping metadata headers before decoding binary
- * content for storage.
+ * Supports flexible input formats for maximum compatibility:
+ * - RC6 Format: [{name: 'photo.jpg', contents: 'base64...', mime: 'image/jpeg'}] (from file inputs)
+ * - Raw base64: 'base64string...' or ['base64string...'] (manual/custom formats)
  *
- * RC6 Format: [{name: 'photo.jpg', contents: 'base64...', mime: 'image/jpeg'}]
- * Legacy Format: ['base64...'] or 'data:image/png;base64,base64...'
+ * RC6 format provides additional metadata (filename, MIME type) accessible via getFilename()
+ * and getMimeType() methods. Raw base64 format works seamlessly but without metadata.
  *
  * Files are stored using Laravel Storage facade without creating temporary files on disk,
  * enabling efficient memory-based processing for uploaded content. MIME type detection
  * uses PHP's getimagesizefromstring for images and finfo extension for other file types.
- *
- * Public methods available for RC6 metadata access: getFilename(), getMimeType(), isRC6Format()
  *
  * @see \Dancycodes\Hyper\Http\HyperSignal
  * @see \Dancycodes\Hyper\Validation\HyperBase64Validator
@@ -39,14 +35,14 @@ class HyperFileStorage
      * binary content, detects MIME type and extension, generates unique filename if not
      * provided, and stores file to specified disk and directory path.
      *
-     * For RC6 format files, automatically uses the original filename if no custom filename
+     * Automatically uses the original filename from RC6 metadata if no custom filename
      * is provided, preserving the user's original file name. Set $filename to false to
-     * force auto-generation even for RC6 format.
+     * force auto-generation.
      *
      * @param string $signalKey Signal key containing base64 file data
      * @param string $directory Target directory path within disk (optional)
      * @param string $disk Laravel filesystem disk name (default: public)
-     * @param string|null|false $filename Custom filename with extension (null: use RC6 name if available, false: force auto-generate)
+     * @param string|null|false $filename Custom filename with extension (null: use RC6 name, false: force auto-generate)
      *
      * @throws \InvalidArgumentException When signal key contains no base64 data
      *
@@ -60,8 +56,8 @@ class HyperFileStorage
             throw new InvalidArgumentException("No base64 data found for signal: {$signalKey}");
         }
 
-        // Use RC6 filename if no custom filename provided and RC6 format detected
-        if ($filename === null && $this->isRC6Format($signalKey)) {
+        // Use RC6 filename if no custom filename provided
+        if ($filename === null) {
             $filename = $this->getFilename($signalKey);
         }
 
@@ -127,21 +123,16 @@ class HyperFileStorage
     }
 
     /**
-     * Extract base64 data from signal value handling Datastar format
+     * Extract base64 data from signal value with flexible format support
      *
-     * Supports both Datastar RC6 format (objects with {name, contents, mime}) and legacy
-     * RC5 format (plain base64 strings). Retrieves signal value using signals() helper,
-     * handles array format where Datastar transmits file inputs as single-element arrays,
-     * extracts contents from RC6 objects or uses plain strings from legacy format, strips
-     * data URL metadata prefix if present for backward compatibility, and returns clean
-     * base64 string ready for decoding.
-     *
-     * RC6 Format: [{name: 'photo.jpg', contents: 'base64...', mime: 'image/jpeg'}]
-     * Legacy Format: ['base64...'] or 'data:image/png;base64,base64...'
+     * Supports both RC6 format and raw base64 strings for maximum flexibility:
+     * - RC6 Format: [{name: 'photo.jpg', contents: 'base64...', mime: 'image/jpeg'}]
+     * - Raw base64: 'base64string...' or ['base64string...']
+     * - Data URI: 'data:image/png;base64,base64string...'
      *
      * @param string $key Signal key containing file data
      *
-     * @return string Clean base64 string without data URL prefix, empty string if no data
+     * @return string Clean base64 string, empty string if no data
      */
     private function extractBase64FromSignals(string $key): string
     {
@@ -149,6 +140,22 @@ class HyperFileStorage
         $hyperSignal = signals();
         $value = $hyperSignal->get($key);
 
+        // Handle raw string (base64 passed directly or data URI)
+        if (is_string($value)) {
+            $value = trim($value);
+
+            // Strip data URI prefix if present (e.g., "data:image/png;base64,")
+            if (str_starts_with($value, 'data:')) {
+                $parts = explode(',', $value, 2);
+                if (count($parts) === 2) {
+                    $value = $parts[1];
+                }
+            }
+
+            return $value;
+        }
+
+        // Handle array format
         if (is_array($value)) {
             if (empty($value)) {
                 return '';
@@ -158,31 +165,27 @@ class HyperFileStorage
 
             // RC6 format: object with 'contents' key
             if (is_array($firstItem) && isset($firstItem['contents'])) {
-                $value = $firstItem['contents'];
-            } else {
-                // Legacy RC5 format: plain base64 string
-                $value = $firstItem;
+                $contents = $firstItem['contents'];
+                if (is_string($contents)) {
+                    return trim($contents);
+                }
+            }
+
+            // Raw format: plain base64 string in array
+            if (is_string($firstItem)) {
+                return trim($firstItem);
             }
         }
 
-        if (!is_string($value)) {
-            return '';
-        }
-
-        // Strip data URI prefix if present (legacy format support)
-        if (strpos($value, ';base64,') !== false) {
-            [, $value] = explode(',', $value, 2);
-        }
-
-        return trim($value);
+        return '';
     }
 
     /**
      * Extract original filename from Datastar RC6 signal format
      *
-     * Retrieves signal value and extracts the original filename if present in RC6 format.
-     * Returns null for legacy format or when filename is not available. Useful for
-     * preserving original filenames during storage operations.
+     * Retrieves signal value and extracts the original filename from RC6 metadata.
+     * Returns null when filename is not available. Useful for preserving original
+     * filenames during storage operations.
      *
      * RC6 Format: [{name: 'photo.jpg', contents: 'base64...', mime: 'image/jpeg'}]
      *
@@ -202,7 +205,6 @@ class HyperFileStorage
 
         $firstItem = $value[0];
 
-        // RC6 format: object with 'name' key
         if (is_array($firstItem) && isset($firstItem['name']) && is_string($firstItem['name'])) {
             return $firstItem['name'];
         }
@@ -213,9 +215,9 @@ class HyperFileStorage
     /**
      * Extract MIME type from Datastar RC6 signal format
      *
-     * Retrieves signal value and extracts the MIME type if present in RC6 format.
-     * Returns null for legacy format or when MIME type is not available. Useful for
-     * validation and content-type determination without decoding base64 data.
+     * Retrieves signal value and extracts the MIME type from RC6 metadata.
+     * Returns null when MIME type is not available. Useful for validation and
+     * content-type determination without decoding base64 data.
      *
      * RC6 Format: [{name: 'photo.jpg', contents: 'base64...', mime: 'image/jpeg'}]
      *
@@ -235,38 +237,11 @@ class HyperFileStorage
 
         $firstItem = $value[0];
 
-        // RC6 format: object with 'mime' key
         if (is_array($firstItem) && isset($firstItem['mime']) && is_string($firstItem['mime'])) {
             return $firstItem['mime'];
         }
 
         return null;
-    }
-
-    /**
-     * Check if signal contains RC6 format file data
-     *
-     * Determines whether the signal value uses Datastar RC6 format (object with
-     * name, contents, and mime properties) or legacy format. Useful for conditional
-     * processing based on format version.
-     *
-     * @param string $signalKey Signal key to check
-     *
-     * @return bool True if RC6 format, false otherwise
-     */
-    public function isRC6Format(string $signalKey): bool
-    {
-        /** @var \Dancycodes\Hyper\Http\HyperSignal $hyperSignal */
-        $hyperSignal = signals();
-        $value = $hyperSignal->get($signalKey);
-
-        if (!is_array($value) || empty($value)) {
-            return false;
-        }
-
-        $firstItem = $value[0];
-
-        return is_array($firstItem) && isset($firstItem['contents']);
     }
 
     /**

@@ -272,23 +272,34 @@ class HyperBase64Validator
     }
 
     /**
-     * Extract base64 value from Datastar signal format or plain string
+     * Extract base64 value with flexible format support
      *
-     * Supports both Datastar RC6 format (array of objects with {name, contents, mime})
-     * and legacy RC5 format (array of plain base64 strings). Extracts first element if
-     * array provided, handles RC6 object structure by accessing 'contents' property,
-     * strips data URL metadata prefix if present for backward compatibility, and returns
-     * trimmed base64 string.
+     * Supports both RC6 format and raw base64 strings for maximum flexibility:
+     * - RC6 Format: [{name: 'photo.jpg', contents: 'base64...', mime: 'image/jpeg'}]
+     * - Raw base64: 'base64string...' or ['base64string...']
      *
-     * RC6 Format: [{name: 'photo.jpg', contents: 'base64...', mime: 'image/jpeg'}]
-     * Legacy Format: ['base64...'] or 'data:image/png;base64,base64...'
+     * @param mixed $value Signal value in various formats
      *
-     * @param mixed $value Base64 string or Datastar array format (RC5/RC6)
-     *
-     * @return string Clean base64 string without data URL prefix
+     * @return string Clean base64 string
      */
     private function extractBase64Value(mixed $value): string
     {
+        // Handle raw string (base64 passed directly or data URI)
+        if (is_string($value)) {
+            $value = trim($value);
+
+            // Strip data URI prefix if present (e.g., "data:image/png;base64,")
+            if (str_starts_with($value, 'data:')) {
+                $parts = explode(',', $value, 2);
+                if (count($parts) === 2) {
+                    $value = $parts[1];
+                }
+            }
+
+            return $value;
+        }
+
+        // Handle array format
         if (is_array($value)) {
             if (empty($value)) {
                 return '';
@@ -298,23 +309,19 @@ class HyperBase64Validator
 
             // RC6 format: object with 'contents' key
             if (is_array($firstItem) && isset($firstItem['contents'])) {
-                $value = $firstItem['contents'];
-            } else {
-                // Legacy RC5 format: plain base64 string
-                $value = $firstItem;
+                $contents = $firstItem['contents'];
+                if (is_string($contents)) {
+                    return trim($contents);
+                }
+            }
+
+            // Raw format: plain base64 string in array
+            if (is_string($firstItem)) {
+                return trim($firstItem);
             }
         }
 
-        if (!is_string($value)) {
-            return '';
-        }
-
-        // Strip data URI prefix if present (legacy format support)
-        if (strpos($value, ';base64,') !== false) {
-            [, $value] = explode(',', $value, 2);
-        }
-
-        return trim($value);
+        return '';
     }
 
     /**
