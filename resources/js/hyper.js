@@ -2759,7 +2759,9 @@ attribute({
     const keyExpression = keyMod && keyMod.size > 0 ? Array.from(keyMod)[0] : null;
     const template = el;
     template.style.display = "none";
-    const templateContent = template.content.cloneNode(true);
+    const templateContent = template.content.cloneNode(
+      true
+    );
     const sourceSignalPath = parsed.items;
     const sourceData = getPath(sourceSignalPath);
     const isNormalized = shouldNormalizeData(sourceData);
@@ -2772,41 +2774,47 @@ attribute({
       keyExpression,
       effectCleanup: null,
       sourceSignalPath,
-      isNormalized
+      isNormalized,
+      isUpdating: false,
+      justCleaned: false
     };
     iterationStates.set(el, state);
     const effectCleanup = effect(() => {
-      const sourceData2 = getPath(sourceSignalPath);
-      if (Array.isArray(sourceData2)) {
-        const reactiveArray = root[sourceSignalPath];
-        if (reactiveArray && reactiveArray.length > 0) {
-          const firstItem = reactiveArray[0];
-          if (firstItem && typeof firstItem === "object" && !Array.isArray(firstItem)) {
-            for (const key in reactiveArray) {
-              const item = reactiveArray[key];
-              if (item && typeof item === "object") {
-                for (const prop in item) {
-                  void item[prop];
-                }
-              }
-            }
+      if (state.isUpdating) {
+        return;
+      }
+      state.isUpdating = true;
+      try {
+        let sourceData2 = getPath(sourceSignalPath);
+        if (Array.isArray(sourceData2)) {
+          sourceData2 = sourceData2.slice();
+        }
+        if (state.justCleaned && Array.isArray(sourceData2) && state.prevKeys.length > 0) {
+          const currentLength = sourceData2.length;
+          const expectedLength = state.prevKeys.length;
+          if (currentLength > expectedLength) {
+            state.justCleaned = false;
+            return;
           }
         }
+        state.justCleaned = false;
+        const items = normalizeData(sourceData2);
+        const newArrayWithKeys = items.map((item, index) => ({
+          item,
+          index,
+          key: evaluateKey(keyExpression, item, index)
+        }));
+        peek(() => {
+          beginBatch();
+          try {
+            diffAndUpdate(newArrayWithKeys, state, ctx);
+          } finally {
+            endBatch();
+          }
+        });
+      } finally {
+        state.isUpdating = false;
       }
-      const items = normalizeData(sourceData2);
-      const newArrayWithKeys = items.map((item, index) => ({
-        item,
-        index,
-        key: evaluateKey(keyExpression, item, index)
-      }));
-      peek(() => {
-        beginBatch();
-        try {
-          diffAndUpdate(newArrayWithKeys, state, ctx);
-        } finally {
-          endBatch();
-        }
-      });
     });
     state.effectCleanup = effectCleanup;
     return () => {
@@ -2862,7 +2870,24 @@ function diffAndUpdate(newArrayWithKeys, state, ctx) {
   } else if (changeType === "simple-remove") {
     handleRemove(prevKeys, newKeys, state, ctx, finalArray);
   } else {
-    handleReorder(finalArray, state);
+    handleReorder(finalArray, state, ctx);
+  }
+  const oldLength = prevKeys.length;
+  const newLength = newKeys.length;
+  if (newLength < oldLength) {
+    const arrayProxy = root[state.sourceSignalPath];
+    if (arrayProxy) {
+      startPeeking();
+      try {
+        arrayProxy.length = newLength;
+        for (let i = newLength; i < oldLength; i++) {
+          delete arrayProxy[i];
+        }
+      } finally {
+        stopPeeking();
+      }
+      state.justCleaned = true;
+    }
   }
   state.prevKeys = [...newKeys];
 }
@@ -2931,44 +2956,76 @@ function handleRemove(prevKeys, newKeys, state, _ctx, data) {
 }
 function handleReorder(data, state, ctx) {
   const newSet = new Set(data.map((d) => d.key));
-  for (const pk of state.prevKeys) {
-    if (!newSet.has(pk)) {
-      const loopEl = state.lookup.get(pk);
-      if (loopEl) {
-        loopEl.el.remove();
-        state.lookup.delete(pk);
-      }
-    }
-  }
-  let prevEl = state.template;
-  for (const item of data) {
-    const existing = state.lookup.get(item.key);
-    if (existing) {
-      if (existing.index !== item.index) {
-        const oldIndex = existing.index;
-        existing.index = item.index;
-        if (!state.isNormalized) {
-          retransformElement(existing.el, state, oldIndex, item.index);
+  beginBatch();
+  startPeeking();
+  try {
+    for (const pk of state.prevKeys) {
+      if (!newSet.has(pk)) {
+        const loopEl = state.lookup.get(pk);
+        if (loopEl) {
+          loopEl.el.remove();
+          state.lookup.delete(pk);
         }
       }
-      if (existing.el.previousElementSibling !== prevEl) {
-        prevEl.after(existing.el);
-      }
-      prevEl = existing.el;
-    } else {
-      const loopEl = createElement(item, state);
-      state.lookup.set(item.key, loopEl);
-      prevEl.after(loopEl.el);
-      prevEl = loopEl.el;
-      queueMicrotask(() => apply(loopEl.el));
     }
+    let prevEl = state.template;
+    for (const item of data) {
+      const existing = state.lookup.get(item.key);
+      if (existing) {
+        if (existing.index !== item.index) {
+          const oldIndex = existing.index;
+          existing.index = item.index;
+          if (!state.isNormalized) {
+            retransformElement(
+              existing.el,
+              state,
+              oldIndex,
+              item.index
+            );
+          }
+        }
+        if (existing.el.previousElementSibling !== prevEl) {
+          prevEl.after(existing.el);
+        }
+        prevEl = existing.el;
+      } else {
+        const loopEl = createElement(item, state, ctx);
+        state.lookup.set(item.key, loopEl);
+        prevEl.after(loopEl.el);
+        prevEl = loopEl.el;
+      }
+    }
+  } finally {
+    stopPeeking();
+    endBatch();
+    queueMicrotask(() => {
+      startPeeking();
+      try {
+        for (const item of data) {
+          const loopEl = state.lookup.get(item.key);
+          if (loopEl && !loopEl.el.dataset.__hyperForInitialized) {
+            apply(loopEl.el);
+            loopEl.el.dataset.__hyperForInitialized = "true";
+          }
+        }
+      } finally {
+        stopPeeking();
+      }
+    });
   }
 }
 function createElement(itemData, state, _ctx) {
   const { templateContent, sourceSignalPath, iteratorNames, isNormalized } = state;
   const clone = templateContent.cloneNode(true);
   const el = clone.firstElementChild;
-  transformElement(el, iteratorNames, itemData.index, sourceSignalPath, isNormalized, itemData.item);
+  transformElement(
+    el,
+    iteratorNames,
+    itemData.index,
+    sourceSignalPath,
+    isNormalized,
+    itemData.item
+  );
   return {
     el,
     key: itemData.key,
@@ -2979,6 +3036,10 @@ function transformElement(el, iterators, index, sourceArrayPath, isNormalized, v
   const process = (elem) => {
     Array.from(elem.attributes).forEach((attr) => {
       if (attr.name.startsWith("data-") && attr.value) {
+        const originalAttrName = `data-hyper-original-${attr.name.slice(5)}`;
+        if (!elem.hasAttribute(originalAttrName)) {
+          elem.setAttribute(originalAttrName, attr.value);
+        }
         attr.value = transformExpression(
           attr.value,
           attr.name,
@@ -2991,7 +3052,9 @@ function transformElement(el, iterators, index, sourceArrayPath, isNormalized, v
       }
     });
     if (elem instanceof HTMLTemplateElement && elem.content) {
-      Array.from(elem.content.children).forEach((child) => process(child));
+      Array.from(elem.content.children).forEach(
+        (child) => process(child)
+      );
     } else {
       Array.from(elem.children).forEach((child) => process(child));
     }
@@ -3000,15 +3063,32 @@ function transformElement(el, iterators, index, sourceArrayPath, isNormalized, v
 }
 function transformExpression(expr, attrName, iterators, index, sourceArrayPath, isNormalized, value) {
   let result = expr;
-  const isSignalName = /^(bind|ref|indicator|signals|computed)/.test(attrName.replace(/^data-/, ""));
+  const isSignalName = /^(bind|ref|indicator|signals|computed|error)/.test(
+    attrName.replace(/^data-/, "")
+  );
   const literals = [];
-  result = result.replace(/'(?:[^'\\]|\\.)*'/g, (m) => (literals.push(m), `__LIT${literals.length - 1}__`)).replace(/"(?:[^"\\]|\\.)*"/g, (m) => (literals.push(m), `__LIT${literals.length - 1}__`)).replace(/`(?:[^`\\]|\\.)*`/g, (m) => (literals.push(m), `__LIT${literals.length - 1}__`));
+  result = result.replace(
+    /'(?:[^'\\]|\\.)*'/g,
+    (m) => (literals.push(m), `__LIT${literals.length - 1}__`)
+  ).replace(
+    /"(?:[^"\\]|\\.)*"/g,
+    (m) => (literals.push(m), `__LIT${literals.length - 1}__`)
+  ).replace(
+    /`(?:[^`\\]|\\.)*`/g,
+    (m) => (literals.push(m), `__LIT${literals.length - 1}__`)
+  );
   if (iterators.index) {
-    result = result.replace(new RegExp(`\\b${esc(iterators.index)}\\b`, "g"), index.toString());
+    result = result.replace(
+      new RegExp(`\\b${esc(iterators.index)}\\b`, "g"),
+      index.toString()
+    );
   }
   if (iterators.collection) {
     const prefix = isSignalName ? "" : "$";
-    result = result.replace(new RegExp(`\\b${esc(iterators.collection)}\\b`, "g"), prefix + sourceArrayPath);
+    result = result.replace(
+      new RegExp(`\\b${esc(iterators.collection)}\\b`, "g"),
+      prefix + sourceArrayPath
+    );
   }
   if (isDestructured(iterators.item)) {
     const vars = extractVars(iterators.item);
@@ -3023,18 +3103,35 @@ function transformExpression(expr, attrName, iterators, index, sourceArrayPath, 
         varPath = isNormalized ? `${sourceArrayPath}.${v}` : `${sourceArrayPath}.${index}.${v}`;
         varValue = value && typeof value === "object" ? value[v] : value;
       }
-      result = transformVar(result, v, varPath, isSignalName, isNormalized, varValue);
+      result = transformVar(
+        result,
+        v,
+        varPath,
+        isSignalName,
+        isNormalized,
+        varValue
+      );
     });
   } else {
     const itemPath = isNormalized ? sourceArrayPath : `${sourceArrayPath}.${index}`;
-    result = transformVar(result, iterators.item, itemPath, isSignalName, isNormalized, value);
+    result = transformVar(
+      result,
+      iterators.item,
+      itemPath,
+      isSignalName,
+      isNormalized,
+      value
+    );
   }
   result = result.replace(/__LIT(\d+)__/g, (_, i) => literals[parseInt(i)]);
   return result;
 }
 function transformVar(expr, varName, arrayPath, isSignalName, isNormalized, value) {
   if (isNormalized) {
-    return expr.replace(new RegExp(`\\b${esc(varName)}\\b(?!\\.)`, "g"), JSON.stringify(value));
+    return expr.replace(
+      new RegExp(`\\b${esc(varName)}\\b(?!\\.)`, "g"),
+      JSON.stringify(value)
+    );
   }
   const prefix = isSignalName ? "" : "$";
   expr = expr.replace(
@@ -3053,7 +3150,8 @@ function shouldNormalizeData(data) {
 function normalizeData(data) {
   if (data == null) return [];
   if (Array.isArray(data)) return data;
-  if (typeof data === "number") return Array.from({ length: data }, (_, i) => i + 1);
+  if (typeof data === "number")
+    return Array.from({ length: data }, (_, i) => i + 1);
   if (typeof data === "object") return Object.entries(data);
   return [data];
 }
@@ -3096,15 +3194,26 @@ function esc(str) {
 }
 function retransformElement(el, state, oldIndex, newIndex) {
   if (oldIndex === newIndex) return;
-  const sourceArrayPath = state.sourceSignalPath;
-  const oldIndexPattern = new RegExp(
-    `(\\$?)\\b${esc(sourceArrayPath)}\\.(${oldIndex})\\b`,
-    "g"
-  );
+  const { sourceSignalPath, iteratorNames, isNormalized } = state;
+  const sourceData = getPath(sourceSignalPath);
+  const items = normalizeData(sourceData);
+  const itemValue = items[newIndex];
   const processElement = (elem) => {
     Array.from(elem.attributes).forEach((attr) => {
-      if (attr.name.startsWith("data-") && attr.value) {
-        attr.value = attr.value.replace(oldIndexPattern, `$1${sourceArrayPath}.${newIndex}`);
+      if (attr.name.startsWith("data-") && !attr.name.startsWith("data-hyper-original-")) {
+        const originalAttrName = `data-hyper-original-${attr.name.slice(5)}`;
+        const originalValue = elem.getAttribute(originalAttrName);
+        if (originalValue) {
+          attr.value = transformExpression(
+            originalValue,
+            attr.name,
+            iteratorNames,
+            newIndex,
+            sourceSignalPath,
+            isNormalized,
+            itemValue
+          );
+        }
       }
     });
     if (elem instanceof HTMLTemplateElement && elem.content) {
