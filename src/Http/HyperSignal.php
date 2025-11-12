@@ -577,6 +577,42 @@ class HyperSignal
     }
 
     /**
+     * Get original filename from Datastar RC6 signal format
+     *
+     * Extracts the original filename from RC6 format file signals. Returns null for
+     * legacy format or when signal doesn't contain file data. Useful for preserving
+     * original filenames or displaying file names in UI.
+     *
+     * RC6 Format: [{name: 'photo.jpg', contents: 'base64...', mime: 'image/jpeg'}]
+     *
+     * @param string $signalKey Signal key containing file data
+     *
+     * @return string|null Original filename if available, null otherwise
+     */
+    public function getFilename(string $signalKey): ?string
+    {
+        return $this->getFileStorage()->getFilename($signalKey);
+    }
+
+    /**
+     * Get MIME type from Datastar RC6 signal format
+     *
+     * Extracts the MIME type from RC6 format file signals without needing to decode
+     * the base64 data. Returns null when signal doesn't contain file data. Useful
+     * for validation and content-type determination.
+     *
+     * RC6 Format: [{name: 'photo.jpg', contents: 'base64...', mime: 'image/jpeg'}]
+     *
+     * @param string $signalKey Signal key containing file data
+     *
+     * @return string|null MIME type if available, null otherwise
+     */
+    public function getMimeType(string $signalKey): ?string
+    {
+        return $this->getFileStorage()->getMimeType($signalKey);
+    }
+
+    /**
      * Static helper for quick access
      *
      * @return array<string, mixed>

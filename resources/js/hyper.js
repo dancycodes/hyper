@@ -2593,7 +2593,6 @@ action({
     const opts = options || {};
     const fallback = opts.fallback || "";
     const defaultMime = opts.defaultMime || "application/octet-stream";
-    const mimeSignal = opts.mimeSignal;
     if (fileSource == null) {
       return fallback;
     }
@@ -2607,21 +2606,10 @@ action({
         if (!contents || typeof contents !== "string") {
           return fallback;
         }
-        const mimeType2 = mime || defaultMime;
-        return `data:${mimeType2};base64,${contents}`;
+        const mimeType = mime || defaultMime;
+        return `data:${mimeType};base64,${contents}`;
       }
-      const base64Content = firstItem;
-      if (!base64Content || typeof base64Content !== "string") {
-        return fallback;
-      }
-      let mimeType = defaultMime;
-      if (mimeSignal && typeof window !== "undefined") {
-        const mimeArray = (window.$ || {})[mimeSignal];
-        if (Array.isArray(mimeArray) && mimeArray.length > 0) {
-          mimeType = mimeArray[0] || defaultMime;
-        }
-      }
-      return `data:${mimeType};base64,${base64Content}`;
+      return fallback;
     }
     if (typeof fileSource === "string") {
       const trimmed = fileSource.trim();
@@ -2759,11 +2747,12 @@ attribute({
     const keyExpression = keyMod && keyMod.size > 0 ? Array.from(keyMod)[0] : null;
     const template = el;
     template.style.display = "none";
-    const templateContent = template.content.cloneNode(true);
+    const templateContent = template.content.cloneNode(
+      true
+    );
     const sourceSignalPath = parsed.items;
     const sourceData = getPath(sourceSignalPath);
     const isNormalized = shouldNormalizeData(sourceData);
-    const iterationId = `__for_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const state = {
       prevKeys: [],
       lookup: /* @__PURE__ */ new Map(),
@@ -2774,41 +2763,46 @@ attribute({
       effectCleanup: null,
       sourceSignalPath,
       isNormalized,
-      iterationId
+      isUpdating: false,
+      justCleaned: false
     };
     iterationStates.set(el, state);
     const effectCleanup = effect(() => {
-      const sourceData2 = getPath(sourceSignalPath);
-      if (Array.isArray(sourceData2)) {
-        const reactiveArray = root[sourceSignalPath];
-        if (reactiveArray && reactiveArray.length > 0) {
-          const firstItem = reactiveArray[0];
-          if (firstItem && typeof firstItem === "object" && !Array.isArray(firstItem)) {
-            for (const key in reactiveArray) {
-              const item = reactiveArray[key];
-              if (item && typeof item === "object") {
-                for (const prop in item) {
-                  void item[prop];
-                }
-              }
-            }
+      if (state.isUpdating) {
+        return;
+      }
+      state.isUpdating = true;
+      try {
+        let sourceData2 = getPath(sourceSignalPath);
+        if (Array.isArray(sourceData2)) {
+          sourceData2 = sourceData2.slice();
+        }
+        if (state.justCleaned && Array.isArray(sourceData2) && state.prevKeys.length > 0) {
+          const currentLength = sourceData2.length;
+          const expectedLength = state.prevKeys.length;
+          if (currentLength > expectedLength) {
+            state.justCleaned = false;
+            return;
           }
         }
+        state.justCleaned = false;
+        const items = normalizeData(sourceData2);
+        const newArrayWithKeys = items.map((item, index) => ({
+          item,
+          index,
+          key: evaluateKey(keyExpression, item, index)
+        }));
+        peek(() => {
+          beginBatch();
+          try {
+            diffAndUpdate(newArrayWithKeys, state, ctx);
+          } finally {
+            endBatch();
+          }
+        });
+      } finally {
+        state.isUpdating = false;
       }
-      const items = normalizeData(sourceData2);
-      const newArrayWithKeys = items.map((item, index) => ({
-        item,
-        index,
-        key: evaluateKey(keyExpression, item, index)
-      }));
-      peek(() => {
-        beginBatch();
-        try {
-          diffAndUpdate(newArrayWithKeys, state, ctx);
-        } finally {
-          endBatch();
-        }
-      });
     });
     state.effectCleanup = effectCleanup;
     return () => {
@@ -2858,29 +2852,30 @@ function diffAndUpdate(newArrayWithKeys, state, ctx) {
   const prevKeys = state.prevKeys;
   const changeType = detectChange(prevKeys, newKeys);
   if (changeType === "no-change") {
-    if (!state.isNormalized && finalArray.length > 0) {
-      const firstItem = finalArray[0].item;
-      if (firstItem && typeof firstItem === "object" && !Array.isArray(firstItem)) {
-        for (const itemData of finalArray) {
-          const loopEl = state.lookup.get(itemData.key);
-          if (loopEl) {
-            const sanitizedKey = sanitizeKey(itemData.key);
-            mergePatch({
-              [state.iterationId]: {
-                [sanitizedKey]: itemData.item
-              }
-            });
-          }
-        }
-      }
-    }
     return;
   } else if (changeType === "simple-add") {
     handleAdd(finalArray, state);
   } else if (changeType === "simple-remove") {
     handleRemove(prevKeys, newKeys, state, ctx, finalArray);
   } else {
-    handleReorder(finalArray, state);
+    handleReorder(finalArray, state, ctx);
+  }
+  const oldLength = prevKeys.length;
+  const newLength = newKeys.length;
+  if (newLength < oldLength) {
+    const arrayProxy = root[state.sourceSignalPath];
+    if (arrayProxy) {
+      startPeeking();
+      try {
+        arrayProxy.length = newLength;
+        for (let i = newLength; i < oldLength; i++) {
+          delete arrayProxy[i];
+        }
+      } finally {
+        stopPeeking();
+      }
+      state.justCleaned = true;
+    }
   }
   state.prevKeys = [...newKeys];
 }
@@ -2939,164 +2934,201 @@ function handleRemove(prevKeys, newKeys, state, _ctx, data) {
   for (const itemData of data) {
     const loopEl = state.lookup.get(itemData.key);
     if (loopEl && loopEl.index !== itemData.index) {
+      const oldIndex = loopEl.index;
       loopEl.index = itemData.index;
       if (!state.isNormalized) {
-        const sanitizedKey = sanitizeKey(itemData.key);
-        const currentData = root[state.iterationId]?.[sanitizedKey];
-        if (currentData !== void 0) {
-          mergePatch({
-            [state.iterationId]: {
-              [`${sanitizedKey}__index`]: itemData.index
-            }
-          });
-        }
+        retransformElement(loopEl.el, state, oldIndex, itemData.index);
       }
     }
   }
 }
 function handleReorder(data, state, ctx) {
   const newSet = new Set(data.map((d) => d.key));
-  for (const pk of state.prevKeys) {
-    if (!newSet.has(pk)) {
-      const loopEl = state.lookup.get(pk);
-      if (loopEl) {
-        loopEl.el.remove();
-        state.lookup.delete(pk);
-      }
-    }
-  }
-  let prevEl = state.template;
-  for (const item of data) {
-    const existing = state.lookup.get(item.key);
-    if (existing) {
-      if (existing.index !== item.index) {
-        existing.index = item.index;
-        if (!state.isNormalized) {
-          const sanitizedKey = sanitizeKey(item.key);
-          const currentData = root[state.iterationId]?.[sanitizedKey];
-          if (currentData !== void 0) {
-            mergePatch({
-              [state.iterationId]: {
-                [`${sanitizedKey}__index`]: item.index
-              }
-            });
-          }
+  beginBatch();
+  startPeeking();
+  try {
+    for (const pk of state.prevKeys) {
+      if (!newSet.has(pk)) {
+        const loopEl = state.lookup.get(pk);
+        if (loopEl) {
+          loopEl.el.remove();
+          state.lookup.delete(pk);
         }
       }
-      if (existing.el.previousElementSibling !== prevEl) {
-        prevEl.after(existing.el);
-      }
-      prevEl = existing.el;
-    } else {
-      const loopEl = createElement(item, state);
-      state.lookup.set(item.key, loopEl);
-      prevEl.after(loopEl.el);
-      prevEl = loopEl.el;
-      queueMicrotask(() => apply(loopEl.el));
     }
-  }
-}
-function createElement(itemData, state, _ctx) {
-  const { templateContent, sourceSignalPath, iteratorNames, isNormalized, iterationId } = state;
-  const clone = templateContent.cloneNode(true);
-  const el = clone.firstElementChild;
-  let signalPath = sourceSignalPath;
-  let indexSignalPath = null;
-  if (!isNormalized) {
-    const sanitizedKey = sanitizeKey(itemData.key);
-    signalPath = `${iterationId}.${sanitizedKey}`;
-    indexSignalPath = `${iterationId}.${sanitizedKey}__index`;
-    mergePatch({
-      [iterationId]: {
-        [sanitizedKey]: itemData.item,
-        [`${sanitizedKey}__index`]: itemData.index
+    let prevEl = state.template;
+    for (const item of data) {
+      const existing = state.lookup.get(item.key);
+      if (existing) {
+        if (existing.index !== item.index) {
+          const oldIndex = existing.index;
+          existing.index = item.index;
+          if (!state.isNormalized) {
+            retransformElement(
+              existing.el,
+              state,
+              oldIndex,
+              item.index
+            );
+          }
+        }
+        if (existing.el.previousElementSibling !== prevEl) {
+          prevEl.after(existing.el);
+        }
+        prevEl = existing.el;
+      } else {
+        const loopEl = createElement(item, state, ctx);
+        state.lookup.set(item.key, loopEl);
+        prevEl.after(loopEl.el);
+        prevEl = loopEl.el;
+      }
+    }
+  } finally {
+    stopPeeking();
+    endBatch();
+    queueMicrotask(() => {
+      startPeeking();
+      try {
+        for (const item of data) {
+          const loopEl = state.lookup.get(item.key);
+          if (loopEl && !loopEl.el.dataset.__hyperForInitialized) {
+            apply(loopEl.el);
+            loopEl.el.dataset.__hyperForInitialized = "true";
+          }
+        }
+      } finally {
+        stopPeeking();
       }
     });
   }
-  transformElement(el, iteratorNames, itemData.index, signalPath, indexSignalPath, isNormalized, itemData.item);
+}
+function createElement(itemData, state, _ctx) {
+  const { templateContent, sourceSignalPath, iteratorNames, isNormalized } = state;
+  const clone = templateContent.cloneNode(true);
+  const el = clone.firstElementChild;
+  transformElement(
+    el,
+    iteratorNames,
+    itemData.index,
+    sourceSignalPath,
+    isNormalized,
+    itemData.item
+  );
   return {
     el,
     key: itemData.key,
     index: itemData.index
   };
 }
-function sanitizeKey(key) {
-  return String(key).replace(/[^a-zA-Z0-9_]/g, "_");
-}
-function transformElement(el, iterators, index, signalPath, indexSignalPath, isNormalized, value) {
+function transformElement(el, iterators, index, sourceArrayPath, isNormalized, value) {
   const process = (elem) => {
     Array.from(elem.attributes).forEach((attr) => {
       if (attr.name.startsWith("data-") && attr.value) {
+        const originalAttrName = `data-hyper-original-${attr.name.slice(5)}`;
+        if (!elem.hasAttribute(originalAttrName)) {
+          elem.setAttribute(originalAttrName, attr.value);
+        }
         attr.value = transformExpression(
           attr.value,
           attr.name,
           iterators,
           index,
-          signalPath,
-          indexSignalPath,
+          sourceArrayPath,
           isNormalized,
           value
         );
       }
     });
     if (elem instanceof HTMLTemplateElement && elem.content) {
-      Array.from(elem.content.children).forEach((child) => process(child));
+      Array.from(elem.content.children).forEach(
+        (child) => process(child)
+      );
     } else {
       Array.from(elem.children).forEach((child) => process(child));
     }
   };
   process(el);
 }
-function transformExpression(expr, attrName, iterators, index, signalPath, indexSignalPath, isNormalized, value) {
+function transformExpression(expr, attrName, iterators, index, sourceArrayPath, isNormalized, value) {
   let result = expr;
-  const isSignalName = /^(bind|ref|indicator|signals|computed)/.test(attrName.replace(/^data-/, ""));
+  const isSignalName = /^(bind|ref|indicator|signals|computed|error)/.test(
+    attrName.replace(/^data-/, "")
+  );
   const literals = [];
-  result = result.replace(/'(?:[^'\\]|\\.)*'/g, (m) => (literals.push(m), `__LIT${literals.length - 1}__`)).replace(/"(?:[^"\\]|\\.)*"/g, (m) => (literals.push(m), `__LIT${literals.length - 1}__`)).replace(/`(?:[^`\\]|\\.)*`/g, (m) => (literals.push(m), `__LIT${literals.length - 1}__`));
+  result = result.replace(
+    /'(?:[^'\\]|\\.)*'/g,
+    (m) => (literals.push(m), `__LIT${literals.length - 1}__`)
+  ).replace(
+    /"(?:[^"\\]|\\.)*"/g,
+    (m) => (literals.push(m), `__LIT${literals.length - 1}__`)
+  ).replace(
+    /`(?:[^`\\]|\\.)*`/g,
+    (m) => (literals.push(m), `__LIT${literals.length - 1}__`)
+  );
   if (iterators.index) {
-    if (indexSignalPath && !isNormalized) {
-      const prefix = isSignalName ? "" : "$";
-      result = result.replace(new RegExp(`\\b${esc(iterators.index)}\\b`, "g"), prefix + indexSignalPath);
-    } else {
-      result = result.replace(new RegExp(`\\b${esc(iterators.index)}\\b`, "g"), index.toString());
-    }
+    result = result.replace(
+      new RegExp(`\\b${esc(iterators.index)}\\b`, "g"),
+      index.toString()
+    );
   }
   if (iterators.collection) {
     const prefix = isSignalName ? "" : "$";
-    result = result.replace(new RegExp(`\\b${esc(iterators.collection)}\\b`, "g"), prefix + signalPath);
+    result = result.replace(
+      new RegExp(`\\b${esc(iterators.collection)}\\b`, "g"),
+      prefix + sourceArrayPath
+    );
   }
   if (isDestructured(iterators.item)) {
     const vars = extractVars(iterators.item);
     const isArrayDestructuring = iterators.item.trim().startsWith("[");
     vars.forEach((v, idx) => {
-      let varSignalPath;
+      let varPath;
       let varValue;
       if (isArrayDestructuring) {
-        varSignalPath = `${signalPath}.${idx}`;
+        varPath = isNormalized ? `${sourceArrayPath}.${idx}` : `${sourceArrayPath}.${index}.${idx}`;
         varValue = Array.isArray(value) ? value[idx] : value;
       } else {
-        varSignalPath = `${signalPath}.${v}`;
+        varPath = isNormalized ? `${sourceArrayPath}.${v}` : `${sourceArrayPath}.${index}.${v}`;
         varValue = value && typeof value === "object" ? value[v] : value;
       }
-      result = transformVar(result, v, varSignalPath, isSignalName, isNormalized, varValue);
+      result = transformVar(
+        result,
+        v,
+        varPath,
+        isSignalName,
+        isNormalized,
+        varValue
+      );
     });
   } else {
-    result = transformVar(result, iterators.item, signalPath, isSignalName, isNormalized, value);
+    const itemPath = isNormalized ? sourceArrayPath : `${sourceArrayPath}.${index}`;
+    result = transformVar(
+      result,
+      iterators.item,
+      itemPath,
+      isSignalName,
+      isNormalized,
+      value
+    );
   }
   result = result.replace(/__LIT(\d+)__/g, (_, i) => literals[parseInt(i)]);
   return result;
 }
-function transformVar(expr, varName, signalPath, isSignalName, isNormalized, value, _iterators) {
+function transformVar(expr, varName, arrayPath, isSignalName, isNormalized, value) {
   if (isNormalized) {
-    return expr.replace(new RegExp(`\\b${esc(varName)}\\b(?!\\.)`, "g"), JSON.stringify(value));
+    return expr.replace(
+      new RegExp(`\\b${esc(varName)}\\b(?!\\.)`, "g"),
+      JSON.stringify(value)
+    );
   }
   const prefix = isSignalName ? "" : "$";
   expr = expr.replace(
     new RegExp(`\\b${esc(varName)}\\.([a-zA-Z_][a-zA-Z0-9_.]*)\\b`, "g"),
-    `${prefix}${signalPath}.$1`
+    `${prefix}${arrayPath}.$1`
   );
   expr = expr.replace(
     new RegExp(`\\b${esc(varName)}\\b(?!\\.)`, "g"),
-    prefix + signalPath
+    prefix + arrayPath
   );
   return expr;
 }
@@ -3106,7 +3138,8 @@ function shouldNormalizeData(data) {
 function normalizeData(data) {
   if (data == null) return [];
   if (Array.isArray(data)) return data;
-  if (typeof data === "number") return Array.from({ length: data }, (_, i) => i + 1);
+  if (typeof data === "number")
+    return Array.from({ length: data }, (_, i) => i + 1);
   if (typeof data === "object") return Object.entries(data);
   return [data];
 }
@@ -3146,6 +3179,51 @@ function extractVars(item) {
 }
 function esc(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function retransformElement(el, state, oldIndex, newIndex) {
+  if (oldIndex === newIndex) return;
+  const { sourceSignalPath, iteratorNames, isNormalized } = state;
+  const sourceData = getPath(sourceSignalPath);
+  const items = normalizeData(sourceData);
+  const itemValue = items[newIndex];
+  const processElement = (elem) => {
+    Array.from(elem.attributes).forEach((attr) => {
+      if (attr.name.startsWith("data-") && !attr.name.startsWith("data-hyper-original-")) {
+        const originalAttrName = `data-hyper-original-${attr.name.slice(5)}`;
+        const originalValue = elem.getAttribute(originalAttrName);
+        if (originalValue) {
+          attr.value = transformExpression(
+            originalValue,
+            attr.name,
+            iteratorNames,
+            newIndex,
+            sourceSignalPath,
+            isNormalized,
+            itemValue
+          );
+        }
+      }
+    });
+    if (elem instanceof HTMLTemplateElement && elem.content) {
+      Array.from(elem.content.children).forEach((child) => {
+        if (!child.hasAttribute("data-for")) {
+          processElement(child);
+        }
+      });
+    } else {
+      Array.from(elem.children).forEach((child) => {
+        if (!child.hasAttribute("data-for")) {
+          processElement(child);
+        }
+      });
+    }
+  };
+  processElement(el);
+  queueMicrotask(() => {
+    peek(() => {
+      apply(el);
+    });
+  });
 }
 function cleanup(state) {
   if (state.effectCleanup) {

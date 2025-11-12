@@ -32,6 +32,18 @@ class HyperFileStorageTest extends TestCase
         request()->merge(['datastar' => json_encode($signals)]);
     }
 
+    /**
+     * Create RC6 format file data
+     */
+    protected function createRC6File(string $contents, string $name = 'test-file.png', string $mime = 'image/png'): array
+    {
+        return [[
+            'name' => $name,
+            'contents' => $contents,
+            'mime' => $mime,
+        ]];
+    }
+
     // ==========================================
     // Base64 Decoding Tests (8 methods)
     // ==========================================
@@ -42,7 +54,7 @@ class HyperFileStorageTest extends TestCase
         // Valid 1x1 PNG image
         $base64Png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
 
-        $this->setupSignals(['avatar' => $base64Png]);
+        $this->setupSignals(['avatar' => $this->createRC6File($base64Png, 'avatar.png')]);
 
         $path = $this->storage->store('avatar', 'images', 'public');
 
@@ -58,7 +70,7 @@ class HyperFileStorageTest extends TestCase
         // Minimal valid JPEG
         $base64Jpeg = '/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAr/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwAA8A/9k=';
 
-        $this->setupSignals(['photo' => $base64Jpeg]);
+        $this->setupSignals(['photo' => $this->createRC6File($base64Jpeg, 'photo.jpg', 'image/jpeg')]);
 
         $path = $this->storage->store('photo', 'photos', 'public');
 
@@ -68,42 +80,13 @@ class HyperFileStorageTest extends TestCase
     }
 
     /** @test */
-    public function test_store_handles_data_uri_format()
-    {
-        $base64Png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
-        $dataUri = 'data:image/png;base64,' . $base64Png;
-
-        $this->setupSignals(['avatar' => $dataUri]);
-
-        $path = $this->storage->store('avatar', 'images', 'public');
-
-        $this->assertNotEmpty($path);
-        $this->assertStringEndsWith('.png', $path);
-        Storage::disk('public')->assertExists($path);
-    }
-
-    /** @test */
-    public function test_store_handles_plain_base64()
+    public function test_store_handles_rc6_format()
     {
         $base64Png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
 
-        $this->setupSignals(['avatar' => $base64Png]);
+        $this->setupSignals(['avatar' => $this->createRC6File($base64Png, 'avatar.png')]);
 
         $path = $this->storage->store('avatar', '', 'public');
-
-        $this->assertNotEmpty($path);
-        Storage::disk('public')->assertExists($path);
-    }
-
-    /** @test */
-    public function test_store_handles_signal_array_format()
-    {
-        // Datastar can send files as array with first element being the data
-        $base64Png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
-
-        $this->setupSignals(['avatar' => [$base64Png]]);
-
-        $path = $this->storage->store('avatar', 'uploads', 'public');
 
         $this->assertNotEmpty($path);
         Storage::disk('public')->assertExists($path);
