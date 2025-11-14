@@ -118,6 +118,13 @@ abstract class Element implements Renderable, Stringable
     protected ?string $rawHtml = null;
 
     /**
+     * Signal validation rules for reactive signal state
+     *
+     * @var array<string, array{rules: string, messages: array<string, string>, attributes: array<string, string>}>
+     */
+    protected array $signalValidationRules = [];
+
+    /**
      * Cache for class merging results (performance optimization)
      * Key: serialized classes array, Value: merged classes array
      *
@@ -497,6 +504,52 @@ abstract class Element implements Renderable, Stringable
     abstract public function toHtml(): string;
 
     /**
+     * Register validation rules for signals on this element
+     *
+     * Enables validation-anywhere: attach validation to any element with signals,
+     * not just form inputs. Rules are registered with SignalValidator during render.
+     *
+     * @param array<string, string> $rules Validation rules indexed by signal path
+     * @param array<string, string> $messages Custom error messages
+     * @param array<string, string> $attributes Custom attribute names
+     */
+    public function signalValidation(array $rules, array $messages = [], array $attributes = []): static
+    {
+        foreach ($rules as $signalPath => $ruleString) {
+            $this->signalValidationRules[$signalPath] = [
+                'rules' => $ruleString,
+                'messages' => $messages,
+                'attributes' => $attributes,
+            ];
+        }
+
+        return $this;
+    }
+
+    /**
+     * Register signal validation rules with SignalValidator
+     *
+     * Called during render to make rules available for backend validation.
+     */
+    protected function registerSignalValidationRules(): void
+    {
+        if (empty($this->signalValidationRules)) {
+            return;
+        }
+
+        $validator = app(\Dancycodes\Hyper\Validation\SignalValidator::class);
+
+        foreach ($this->signalValidationRules as $signalPath => $data) {
+            $validator->register(
+                $signalPath,
+                $data['rules'],
+                $data['messages'],
+                $data['attributes']
+            );
+        }
+    }
+
+    /**
      * Render the element with optional layout wrapper
      *
      * @param mixed $layout Blade view name for layout wrapper
@@ -505,6 +558,9 @@ abstract class Element implements Renderable, Stringable
      */
     public function render(mixed $layout = null): mixed
     {
+        // Register signal validation rules before rendering
+        $this->registerSignalValidationRules();
+
         // Generate the HTML
         $html = $this->toHtml();
 

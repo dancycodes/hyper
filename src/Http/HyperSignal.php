@@ -502,9 +502,12 @@ class HyperSignal
     }
 
     /**
-     * Validate signals using Laravel's validation system
+     * Validate signals using explicit Laravel validation rules
      *
-     * @param array<string, mixed> $rules
+     * Original behavior: provide explicit rules, validate all signal data.
+     * Explicit rules always override any HTML-registered rules.
+     *
+     * @param array<string, string|array<mixed>> $rules
      * @param array<string, string> $messages
      * @param array<string, string> $attributes
      *
@@ -512,6 +515,13 @@ class HyperSignal
      */
     public function validate(array $rules, array $messages = [], array $attributes = []): array
     {
+        $signalValidator = app(\Dancycodes\Hyper\Validation\SignalValidator::class);
+
+        // Explicit rules override registered rules - unregister them
+        foreach (array_keys($rules) as $signalPath) {
+            $signalValidator->unregister($signalPath);
+        }
+
         $data = $this->all();
 
         /** @var array<string, array<int, string>> $errors */
@@ -534,6 +544,74 @@ class HyperSignal
         hyper()->signals(['errors' => $errors]);
 
         return $validator->validated();
+    }
+
+    /**
+     * Validate and return signal value(s) using HTML-registered rules
+     *
+     * Opt-in validation: validates signals that have rules registered in HTML,
+     * or just returns value if no rules exist (forgiving behavior).
+     *
+     * @param string|array<int, string>|null $signalPaths Signal path(s) to validate
+     *
+     * @throws HyperValidationException If validation fails
+     *
+     * @return mixed Single value if string, array if array/null
+     */
+    public function validated(string|array|null $signalPaths = null): mixed
+    {
+        $signalValidator = app(\Dancycodes\Hyper\Validation\SignalValidator::class);
+
+        // Case 1: null → validate all signals with rules, return array
+        if ($signalPaths === null) {
+            $validated = $signalValidator->validateAllRegistered($this);
+
+            return $validated ?: [];
+        }
+
+        // Case 2: string → validate single signal, return value
+        if (is_string($signalPaths)) {
+            // If no rules exist, just return the value (forgiving)
+            if (!$signalValidator->hasRulesFor($signalPaths)) {
+                return $this->get($signalPaths);
+            }
+
+            $validated = $signalValidator->validateRegistered([$signalPaths], $this);
+
+            return $validated[$signalPaths] ?? null;
+        }
+
+        // Case 3: array → validate multiple signals, return array
+        $result = [];
+
+        foreach ($signalPaths as $signalPath) {
+            // If no rules, just get value
+            if (!$signalValidator->hasRulesFor($signalPath)) {
+                $result[$signalPath] = $this->get($signalPath);
+
+                continue;
+            }
+
+            // Validate this signal
+            $validated = $signalValidator->validateRegistered([$signalPath], $this);
+            $result[$signalPath] = $validated[$signalPath] ?? null;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Check if array is associative (has string keys)
+     *
+     * @param array<mixed> $array
+     */
+    protected function isAssociativeArray(array $array): bool
+    {
+        if ($array === []) {
+            return false;
+        }
+
+        return array_keys($array) !== range(0, count($array) - 1);
     }
 
     /**

@@ -88,11 +88,39 @@ class SignalValidator
     protected array $attributes = [];
 
     /**
-     * Initialize validator and load rules from session
+     * Whether this is the first call in request lifecycle
+     */
+    protected bool $isFirstCall = false;
+
+    /**
+     * Initialize validator with lifecycle detection
+     *
+     * Detects if this is a fresh page load (first call) or subsequent AJAX request.
+     * On first call, clears all previous rules. On subsequent calls, loads from session.
      */
     public function __construct()
     {
-        $this->loadFromSession();
+        $this->detectFirstCall();
+
+        if ($this->isFirstCall) {
+            $this->clearAll();
+        } else {
+            $this->loadFromSession();
+        }
+    }
+
+    /**
+     * Determine if this is the first call in the request lifecycle
+     *
+     * First call is identified when validation rules session data does not exist or when
+     * the request is not a Hyper request (indicating initial page load). This distinction
+     * affects rule storage behavior: first calls clear existing rules before storing new ones,
+     * while subsequent calls merge with existing data.
+     */
+    protected function detectFirstCall(): void
+    {
+        $this->isFirstCall = !session()->has($this->sessionKey) ||
+            !request()->hasHeader('Datastar-Request');
     }
 
     /**
@@ -249,6 +277,178 @@ class SignalValidator
     }
 
     /**
+     * Validate all signals that have registered rules
+     *
+     * Only validates signals that are present in the incoming signal data
+     * and have rules registered. Useful for automatic validation.
+     *
+     * @param HyperSignal $signals Current signal state
+     *
+     * @throws HyperValidationException If validation fails
+     *
+     * @return array<string, mixed> Validated data
+     */
+    public function validateAllRegistered(HyperSignal $signals): array
+    {
+        if (empty($this->rules)) {
+            return [];
+        }
+
+        $data = [];
+        $validationRules = [];
+        $validationMessages = [];
+        $validationAttributes = [];
+
+        // Only validate signals that have rules AND are present in request
+        foreach ($this->rules as $signalPath => $rules) {
+            $value = $this->getSignalValue($signals, $signalPath);
+
+            // Skip if signal not present (null and not explicitly set)
+            if ($value === null && !$signals->has($signalPath)) {
+                continue;
+            }
+
+            // Build nested data structure for Laravel validator
+            data_set($data, $signalPath, $value);
+            $validationRules[$signalPath] = $rules;
+
+            // Add custom messages
+            if (isset($this->messages[$signalPath])) {
+                foreach ($this->messages[$signalPath] as $rule => $message) {
+                    $validationMessages["{$signalPath}.{$rule}"] = $message;
+                }
+            }
+
+            // Add custom attributes
+            if (isset($this->attributes[$signalPath])) {
+                $validationAttributes = array_merge($validationAttributes, $this->attributes[$signalPath]);
+            }
+        }
+
+        if (empty($validationRules)) {
+            return [];
+        }
+
+        // Validate
+        /** @var array<string, mixed> $data */
+        $validator = Validator::make($data, $validationRules, $validationMessages, $validationAttributes);
+
+        if ($validator->fails()) {
+            throw new HyperValidationException($validator);
+        }
+
+        // Return validated data with signal paths as keys
+        $validated = [];
+        foreach ($validationRules as $signalPath => $rules) {
+            $validated[$signalPath] = data_get($data, $signalPath);
+        }
+
+        return $validated;
+    }
+
+    /**
+     * Validate specific signals using their registered rules
+     *
+     * @param array<int, string> $signalPaths Signal paths to validate
+     * @param HyperSignal $signals Current signal state
+     *
+     * @throws HyperValidationException If validation fails
+     * @throws \RuntimeException If signal path not registered
+     *
+     * @return array<string, mixed> Validated data
+     */
+    public function validateRegistered(array $signalPaths, HyperSignal $signals): array
+    {
+        $data = [];
+        $validationRules = [];
+        $validationMessages = [];
+        $validationAttributes = [];
+
+        foreach ($signalPaths as $signalPath) {
+            // Check if rules exist
+            if (!isset($this->rules[$signalPath])) {
+                throw new \RuntimeException(
+                    "Signal path '{$signalPath}' is not registered for validation. " .
+                    'Add validation rules via ->validate() or ->signalValidation().'
+                );
+            }
+
+            $value = $this->getSignalValue($signals, $signalPath);
+
+            // Build nested data structure
+            data_set($data, $signalPath, $value);
+            $validationRules[$signalPath] = $this->rules[$signalPath];
+
+            // Add custom messages
+            if (isset($this->messages[$signalPath])) {
+                foreach ($this->messages[$signalPath] as $rule => $message) {
+                    $validationMessages["{$signalPath}.{$rule}"] = $message;
+                }
+            }
+
+            // Add custom attributes
+            if (isset($this->attributes[$signalPath])) {
+                $validationAttributes = array_merge($validationAttributes, $this->attributes[$signalPath]);
+            }
+        }
+
+        // Validate
+        /** @var array<string, mixed> $data */
+        $validator = Validator::make($data, $validationRules, $validationMessages, $validationAttributes);
+
+        if ($validator->fails()) {
+            throw new HyperValidationException($validator);
+        }
+
+        // Return validated data with signal paths as keys
+        $validated = [];
+        foreach ($validationRules as $signalPath => $rules) {
+            $validated[$signalPath] = data_get($data, $signalPath);
+        }
+
+        return $validated;
+    }
+
+    /**
+     * Check if validation rules exist for a signal path
+     *
+     * @param string $signalPath Signal path to check
+     *
+     * @return bool True if rules exist
+     */
+    public function hasRulesFor(string $signalPath): bool
+    {
+        return isset($this->rules[$signalPath]);
+    }
+
+    /**
+     * Check if any validation rules are registered
+     *
+     * @return bool True if any rules exist
+     */
+    public function hasRegisteredRules(): bool
+    {
+        return !empty($this->rules);
+    }
+
+    /**
+     * Unregister validation rules for a signal path
+     *
+     * Used when explicit rules override registered rules.
+     *
+     * @param string $signalPath Signal path to unregister
+     */
+    public function unregister(string $signalPath): void
+    {
+        unset($this->rules[$signalPath]);
+        unset($this->messages[$signalPath]);
+        unset($this->attributes[$signalPath]);
+
+        // Update session
+        $this->storeInSession();
+    }
+
+    /**
      * Get validation rules for a specific signal path
      *
      * @param string $signalPath Signal path
@@ -288,8 +488,19 @@ class SignalValidator
      * Clear all registered validation data
      *
      * Clears both memory and session storage.
+     * Alias for clearAll() for backward compatibility.
      */
     public function clear(): void
+    {
+        $this->clearAll();
+    }
+
+    /**
+     * Clear all validation rules from memory and session
+     *
+     * Called on first request (page load) to ensure clean state.
+     */
+    protected function clearAll(): void
     {
         $this->rules = [];
         $this->messages = [];
