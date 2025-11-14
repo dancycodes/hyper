@@ -6,20 +6,30 @@ use Closure;
 use Dancycodes\Hyper\Html\Concerns\Attributes\Form\HasValidation;
 
 /**
- * Form-level validation management
+ * Form-level Signal Validation Management
  *
- * Provides orchestration for multi-field validation, auto-generation
+ * Provides orchestration for multi-signal validation, auto-generation
  * of error displays, signal initialization, and validation groups for
  * multi-step forms.
  *
- * @example
+ * SIGNAL-CENTRIC APPROACH: Manages validation for signals, not form fields.
+ *
+ * @example Basic form with signal validation
+ * Html::form()
+ *     ->withSignals()  // Auto-injects errors signal + validated signal paths
+ *     ->withErrors()   // Auto-generates error divs for all validated inputs
+ *     ->postx('/submit')
+ *     ->content(
+ *         Html::input()->name('email')->dataBind('email')->validate('required|email'),
+ *         Html::input()->name('password')->dataBind('password')->validate('required|min:8')
+ *     );
+ * @example Nested signals
  * Html::form()
  *     ->withSignals()
  *     ->withErrors()
- *     ->postx('/submit')
  *     ->content(
- *         Html::input()->name('email')->validate('required|email'),
- *         Html::input()->name('password')->validate('required|min:8')
+ *         Html::input()->dataBind('user.email')->validate('required|email'),
+ *         Html::input()->dataBind('user.profile.bio')->validate('max:500')
  *     );
  */
 trait ManagesValidation
@@ -32,12 +42,14 @@ trait ManagesValidation
     protected bool $autoGenerateErrors = false;
 
     /**
-     * Whether to auto-inject @signals with errors array
+     * Whether to auto-inject @signals with errors array and validated signal paths
      */
     protected bool $autoGenerateSignals = false;
 
     /**
      * Validation groups for multi-step forms
+     *
+     * Maps group names to signal paths (not field names).
      *
      * @var array<string, array<int, string>>
      */
@@ -46,7 +58,7 @@ trait ManagesValidation
     /**
      * Auto-generate error display elements for all validated inputs
      *
-     * @param  string|array|Closure  $class  CSS classes for error divs
+     * @param string|array|Closure $class CSS classes for error divs
      */
     public function withErrors(string|array|Closure $class = 'text-red-500 text-sm mt-1'): static
     {
@@ -57,11 +69,18 @@ trait ManagesValidation
     }
 
     /**
-     * Auto-inject @signals with errors array and validated field signals
+     * Auto-inject @signals with errors array and validated signal paths
+     *
+     * SIGNAL-CENTRIC: Creates signals for signal paths, not field names.
      *
      * Automatically creates signals for:
      * - errors: [] (for storing validation errors)
-     * - Each validated field: '' (empty string initial value)
+     * - Each validated signal path: '' (empty string initial value)
+     *
+     * Examples:
+     * - 'email' signal for simple input
+     * - 'user.email' signal for nested input
+     * - 'userId_' signal for locked input (NOT '_tempEdit' - local signals rejected)
      */
     public function withSignals(): static
     {
@@ -73,12 +92,18 @@ trait ManagesValidation
     /**
      * Define validation group for multi-step forms
      *
-     * @param  string  $name  Group name (e.g., 'step1', 'personalInfo')
-     * @param  array<int, string>  $fieldNames  Field names in this group
+     * SIGNAL-CENTRIC: Groups are indexed by signal paths, not field names.
+     *
+     * @param string $name Group name (e.g., 'step1', 'personalInfo')
+     * @param array<int, string> $signalPaths Signal paths in this group
+     *
+     * @example
+     * ->validationGroup('step1', ['email', 'name'])
+     * ->validationGroup('step2', ['user.profile.bio', 'userId_'])
      */
-    public function validationGroup(string $name, array $fieldNames): static
+    public function validationGroup(string $name, array $signalPaths): static
     {
-        $this->validationGroups[$name] = $fieldNames;
+        $this->validationGroups[$name] = $signalPaths;
 
         return $this;
     }
@@ -86,15 +111,18 @@ trait ManagesValidation
     /**
      * Get validation rules (optionally filtered by group)
      *
-     * @param  string|null  $group  Get rules for specific group only
-     * @return array<string, string>
+     * Returns rules indexed by SIGNAL PATH, not field name.
+     *
+     * @param string|null $group Get rules for specific group only
+     *
+     * @return array<string, string> Rules indexed by signal path
      */
     public function getValidationRules(?string $group = null): array
     {
         $allData = $this->collectValidationData();
 
         if ($group !== null && isset($this->validationGroups[$group])) {
-            // Filter by group
+            // Filter by group (signal paths)
             return array_intersect_key(
                 $allData['rules'],
                 array_flip($this->validationGroups[$group])
@@ -126,17 +154,24 @@ trait ManagesValidation
     /**
      * Inject validation signals (@signals attribute)
      *
+     * SIGNAL-CENTRIC: Creates signals for signal paths, not field names.
+     *
      * Creates signals for:
      * - errors: [] (validation error storage)
-     * - Each validated field: '' (field value storage)
+     * - Each validated signal path: '' (signal value storage)
+     *
+     * Examples:
+     * - 'email' => ''
+     * - 'user.email' => '' (nested signal created automatically)
+     * - 'userId_' => '' (locked signal)
      */
     protected function injectValidationSignals(): void
     {
         $signals = ['errors' => []];
 
-        // Add empty signal for each validated field
-        foreach ($this->getValidationRules() as $fieldName => $rules) {
-            $signals[$fieldName] = '';
+        // Add empty signal for each validated signal path
+        foreach ($this->getValidationRules() as $signalPath => $rules) {
+            $signals[$signalPath] = '';
         }
 
         $this->dataSignals($signals);
@@ -150,7 +185,7 @@ trait ManagesValidation
     protected function injectErrorDivs(): void
     {
         $this->walkChildren(function ($child) {
-            if (method_exists($child, 'validate') && ! empty($child->getValidationRules())) {
+            if (method_exists($child, 'validate') && !empty($child->getValidationRules())) {
                 $child->withError($this->errorDivClass);
             }
         });
@@ -159,11 +194,11 @@ trait ManagesValidation
     /**
      * Walk children recursively and apply callback
      *
-     * @param  Closure  $callback  Callback to apply to each child
+     * @param Closure $callback Callback to apply to each child
      */
     protected function walkChildren(Closure $callback): void
     {
-        if (! method_exists($this, 'getChildren')) {
+        if (!method_exists($this, 'getChildren')) {
             return;
         }
 

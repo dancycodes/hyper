@@ -4,32 +4,59 @@ namespace Dancycodes\Hyper\Html\Concerns\Attributes\Form;
 
 use Closure;
 use Dancycodes\Hyper\Html\Html;
-use Dancycodes\Hyper\Html\Services\FormValidationRegistry;
 use Dancycodes\Hyper\Html\Services\ValidationRuleTransformer;
+use Dancycodes\Hyper\Validation\SignalValidator;
 
 /**
- * Validation attributes and Laravel validation integration
+ * Signal-Centric Validation System
  *
- * Provides fluent API for attaching Laravel validation rules to HTML elements
- * with automatic error display, HTML5 attribute generation, and real-time validation.
+ * Provides fluent API for validating SIGNALS (reactive state), not form fields.
+ * This is a fundamental shift from form-centric to signal-centric validation.
  *
- * Compatible with Laravel's validate() signature:
- * - validate($rules, $messages, $attributes)
+ * Key Concepts:
+ * - Validates signal paths inferred from data-bind attribute
+ * - Falls back to name attribute if no data-bind
+ * - Supports nested signals ('user.email', 'profile.phone')
+ * - Enforces security for locked signals ('userId_')
+ * - Rejects local signals ('_tempEdit') from server validation
  *
- * Plus HTML builder extensions:
- * - clientSide: Generate HTML5 validation attributes
- * - live: Enable real-time validation on input change
+ * Signal Path Inference:
+ * 1. Priority 1: data-bind="user.email" → validates signal 'user.email'
+ * 2. Priority 2: name="email" → validates signal 'email'
  *
- * @example
+ * Signal Types:
+ * - Regular: 'email', 'user.email' → Normal validation
+ * - Locked: 'userId_' → Tamper-proof, encrypted in session
+ * - Local: '_tempEdit' → Client-only, THROWS EXCEPTION if validated
+ *
+ * @example Basic signal validation
  * Html::input()
  *     ->name('email')
+ *     ->dataBind('email')
  *     ->validate('required|email', clientSide: true, live: true)
+ *     ->withError();
+ * @example Nested signal validation
+ * Html::input()
+ *     ->name('email')
+ *     ->dataBind('user.email')
+ *     ->validate('required|email|max:255')
+ *     ->withError();
+ * @example Locked signal validation
+ * Html::input()
+ *     ->name('user_id')
+ *     ->dataBind('userId_')
+ *     ->validate('required|integer')
  *     ->withError();
  */
 trait HasValidation
 {
     /**
-     * Validation rules indexed by field name
+     * Validation rules indexed by SIGNAL PATH (not field name)
+     *
+     * Examples:
+     * - 'email' => 'required|email'
+     * - 'user.email' => 'required|email|max:255'
+     * - 'userId_' => 'required|integer'
      *
      * @var array<string, string>
      */
@@ -48,6 +75,12 @@ trait HasValidation
      * @var array<string, string>
      */
     protected array $validationAttributes = [];
+
+    /**
+     * The inferred signal path for this element
+     * Cached to avoid re-inference
+     */
+    protected ?string $validatedSignalPath = null;
 
     /**
      * Whether to generate HTML5 validation attributes
@@ -70,22 +103,22 @@ trait HasValidation
     protected string|array|Closure $errorDivClass = 'text-red-500 text-sm mt-1';
 
     /**
-     * Attach Laravel validation rules to this element
+     * Attach validation rules to the SIGNAL bound to this element
      *
-     * Signature compatible with Laravel's validate() and signals()->validate():
-     * - $rules: Validation rules (string for single field, array for multiple)
-     * - $messages: Custom error messages
-     * - $attributes: Custom attribute names for error messages
+     * REVOLUTIONARY CHANGE: Validates the SIGNAL, not the form field!
      *
-     * Plus HTML builder extensions:
-     * - clientSide: Generate HTML5 validation attributes (required, pattern, etc.)
-     * - live: Enable real-time validation on input change
+     * Signal path is inferred from:
+     * 1. data-bind attribute (priority 1) → 'user.email'
+     * 2. name attribute (priority 2) → 'email'
      *
-     * @param  string|array|Closure  $rules  Laravel validation rules
-     * @param  array|Closure  $messages  Custom error messages
-     * @param  array|Closure  $attributes  Custom attribute names
-     * @param  bool  $clientSide  Generate HTML5 validation attributes?
-     * @param  bool  $live  Enable real-time validation?
+     * @param string|array|Closure $rules Laravel validation rules
+     * @param array|Closure $messages Custom error messages
+     * @param array|Closure $attributes Custom attribute names
+     * @param bool $clientSide Generate HTML5 validation attributes?
+     * @param bool $live Enable real-time validation via SignalValidator?
+     *
+     * @throws \RuntimeException If no data-bind or name attribute exists
+     * @throws \RuntimeException If attempting to validate local signal (starts with _)
      */
     public function validate(
         string|array|Closure $rules,
@@ -94,20 +127,28 @@ trait HasValidation
         bool $clientSide = false,
         bool $live = false
     ): static {
-        // Evaluate closures (follows Hyper's EvaluatesClosures pattern)
+        // Evaluate closures
         $rules = $this->evaluate($rules);
         $messages = $this->evaluate($messages);
         $attributes = $this->evaluate($attributes);
 
-        // Get field name from 'name' attribute
-        $fieldName = $this->attributes['name'] ?? null;
+        // CRITICAL: Infer SIGNAL PATH from data-bind or name
+        $signalPath = $this->inferSignalPath();
 
-        // Store validation data
-        if (is_string($rules) && $fieldName) {
-            // Single field validation (string rules)
-            $this->validationRules[$fieldName] = $rules;
+        if (!$signalPath) {
+            throw new \RuntimeException(
+                'Cannot validate without data-bind or name attribute. ' .
+                'Add dataBind() or name() before calling validate().'
+            );
+        }
+
+        // Store the inferred signal path
+        $this->validatedSignalPath = $signalPath;
+
+        // Store validation data indexed by SIGNAL PATH
+        if (is_string($rules)) {
+            $this->validationRules[$signalPath] = $rules;
         } elseif (is_array($rules)) {
-            // Multiple field validation (array rules)
             $this->validationRules = array_merge($this->validationRules, $rules);
         }
 
@@ -120,12 +161,23 @@ trait HasValidation
     }
 
     /**
-     * Auto-generate error display element after this element
+     * Auto-generate error display element for the validated signal
      *
-     * @param  string|array|Closure  $class  CSS classes for error div
+     * CRITICAL: Uses the SIGNAL PATH for data-error, not the field name!
+     *
+     * @param string|array|Closure $class CSS classes for error div
+     *
+     * @throws \RuntimeException If validate() not called first
      */
     public function withError(string|array|Closure $class = 'text-red-500 text-sm mt-1'): static
     {
+        if (!$this->validatedSignalPath) {
+            throw new \RuntimeException(
+                'Call validate() before withError() to specify signal path. ' .
+                'Example: ->validate(...)->withError()'
+            );
+        }
+
         $this->shouldGenerateErrorDiv = true;
         $this->errorDivClass = $class;
 
@@ -133,7 +185,38 @@ trait HasValidation
     }
 
     /**
+     * Infer signal path from data-bind or name attribute
+     *
+     * This is the CRITICAL METHOD that makes signal-centric validation work.
+     *
+     * Priority:
+     * 1. data-bind="user.email" → returns 'user.email'
+     * 2. name="email" → returns 'email'
+     *
+     * @return string|null Signal path or null if no binding found
+     */
+    protected function inferSignalPath(): ?string
+    {
+        // Priority 1: data-bind attribute (explicit signal binding)
+        if (isset($this->attributes['data-bind'])) {
+            $bind = $this->attributes['data-bind'];
+
+            // Remove $ prefix if present: '$email' → 'email'
+            return ltrim($bind, '$');
+        }
+
+        // Priority 2: name attribute (implicit signal binding)
+        if (isset($this->attributes['name'])) {
+            return $this->attributes['name'];
+        }
+
+        return null;
+    }
+
+    /**
      * Get validation rules for this element
+     *
+     * Returns rules indexed by SIGNAL PATH, not field name.
      *
      * @return array<string, string>
      */
@@ -163,7 +246,15 @@ trait HasValidation
     }
 
     /**
-     * Get complete validation data (Laravel-compatible)
+     * Get the inferred signal path for this element
+     */
+    public function getValidatedSignalPath(): ?string
+    {
+        return $this->validatedSignalPath;
+    }
+
+    /**
+     * Get complete validation data (signal-centric)
      *
      * @return array{rules: array<string, string>, messages: array<string, string>, attributes: array<string, string>}
      */
@@ -179,8 +270,7 @@ trait HasValidation
     /**
      * Collect validation data recursively from element tree
      *
-     * Called by Form to gather all validation rules from children.
-     * Follows the DOM inspection pattern from HasIcons trait.
+     * Gathers all signal validation rules from children.
      *
      * @return array{rules: array<string, string>, messages: array<string, string>, attributes: array<string, string>}
      */
@@ -188,7 +278,7 @@ trait HasValidation
     {
         $data = $this->getValidationData();
 
-        // Recursively collect from children (follows HasIcons pattern)
+        // Recursively collect from children
         if (method_exists($this, 'getChildren')) {
             foreach ($this->getChildren() as $child) {
                 if (method_exists($child, 'collectValidationData')) {
@@ -206,26 +296,25 @@ trait HasValidation
     /**
      * Apply HTML5 validation attributes if clientSide enabled
      *
-     * Called during rendering (follows injectIcons pattern from HasIcons).
      * Transforms Laravel validation rules into HTML5 attributes.
+     * Uses the SIGNAL PATH to find rules, not field name.
      */
     protected function applyHtml5ValidationAttributes(): void
     {
-        if (! $this->clientSideValidation) {
+        if (!$this->clientSideValidation || !$this->validatedSignalPath) {
             return;
         }
 
-        $fieldName = $this->attributes['name'] ?? null;
-        if (! $fieldName || ! isset($this->validationRules[$fieldName])) {
+        if (!isset($this->validationRules[$this->validatedSignalPath])) {
             return;
         }
 
-        $rules = $this->validationRules[$fieldName];
+        $rules = $this->validationRules[$this->validatedSignalPath];
         $html5Attrs = ValidationRuleTransformer::toHtml5Attributes($rules);
 
         foreach ($html5Attrs as $attr => $value) {
             // Don't override existing attributes
-            if (! isset($this->attributes[$attr])) {
+            if (!isset($this->attributes[$attr])) {
                 $this->attr($attr, $value);
             }
         }
@@ -234,58 +323,55 @@ trait HasValidation
     /**
      * Apply live validation if enabled
      *
-     * Automatically attaches debounced validation action and registers
-     * with FormValidationRegistry for auto-route handling.
+     * Registers signal path with SignalValidator and attaches
+     * debounced validation action.
      */
     protected function applyLiveValidation(): void
     {
-        if (! $this->liveValidation) {
+        if (!$this->liveValidation || !$this->validatedSignalPath) {
             return;
         }
 
-        $fieldName = $this->attributes['name'] ?? null;
-        if (! $fieldName || ! isset($this->validationRules[$fieldName])) {
+        if (!isset($this->validationRules[$this->validatedSignalPath])) {
             return;
         }
 
-        // Register with FormValidationRegistry (for auto-route)
-        app(FormValidationRegistry::class)->register(
-            $fieldName,
-            $this->validationRules[$fieldName],
+        // Register with SignalValidator (for signal-based auto-route)
+        app(SignalValidator::class)->register(
+            $this->validatedSignalPath,
+            $this->validationRules[$this->validatedSignalPath],
             $this->validationMessages,
             $this->validationAttributes
         );
 
-        // Attach debounced validation action (follows smart event detection from HasActionMethods)
+        // Attach debounced validation action
         $event = method_exists($this, 'getDefaultEvent') ? $this->getDefaultEvent() : 'input';
 
-        // Add data-on:{event}__debounce.300ms="@patchx('/validate/{field}')"
+        // CRITICAL: Use signal path in route, URL-encoded for nested paths
+        $encodedPath = str_replace('.', '%2E', $this->validatedSignalPath);
+
+        // Add data-on:{event}__debounce.300ms="@patchx('/validate-signal/{path}')"
         $this->dataOn(
-            $event.'__debounce.300ms',
-            "@patchx('/validate/{$fieldName}')"
+            $event . '__debounce.300ms',
+            "@patchx('/validate-signal/{$encodedPath}')"
         );
     }
 
     /**
-     * Generate error div element
+     * Generate error div element with SIGNAL PATH for data-error
      *
-     * Creates a div with data-error attribute for displaying validation errors.
+     * CRITICAL: Uses signal path, not field name!
      */
     protected function generateErrorDiv(): ?\Dancycodes\Hyper\Html\Elements\Base\Element
     {
-        if (! $this->shouldGenerateErrorDiv) {
-            return null;
-        }
-
-        $fieldName = $this->attributes['name'] ?? null;
-        if (! $fieldName) {
+        if (!$this->shouldGenerateErrorDiv || !$this->validatedSignalPath) {
             return null;
         }
 
         $class = $this->evaluate($this->errorDivClass);
 
         return Html::div()
-            ->dataError($fieldName)
+            ->dataError($this->validatedSignalPath)  // Uses SIGNAL PATH!
             ->class($class);
     }
 }

@@ -2,12 +2,12 @@
 
 namespace Dancycodes\Hyper;
 
-use Dancycodes\Hyper\Html\Services\FormValidationRegistry;
 use Dancycodes\Hyper\Html\Services\IconManager;
 use Dancycodes\Hyper\Http\HyperRedirect;
 use Dancycodes\Hyper\Http\HyperSignal;
 use Dancycodes\Hyper\Services\HyperFileStorage;
 use Dancycodes\Hyper\Services\HyperUrlManager;
+use Dancycodes\Hyper\Validation\SignalValidator;
 use Dancycodes\Hyper\View\Fragment\BladeFragment;
 use Illuminate\Http\Request;
 use Illuminate\Routing\ResponseFactory;
@@ -62,7 +62,7 @@ class HyperServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        require_once __DIR__.'/helpers.php';
+        require_once __DIR__ . '/helpers.php';
 
         $this->app->singleton(HyperSignal::class, function ($app) {
             return new HyperSignal($app['request']);
@@ -84,11 +84,12 @@ class HyperServiceProvider extends ServiceProvider
         $this->app->singleton(IconManager::class);
         $this->app->alias(IconManager::class, 'hyper.icons');
 
-        $this->app->singleton(FormValidationRegistry::class);
-        $this->app->alias(FormValidationRegistry::class, 'hyper.validation');
+        // SIGNAL-CENTRIC VALIDATION: Register SignalValidator singleton
+        $this->app->singleton(SignalValidator::class);
+        $this->app->alias(SignalValidator::class, 'hyper.validation');
 
         $this->mergeConfigFrom(
-            __DIR__.'/../config/hyper.php',
+            __DIR__ . '/../config/hyper.php',
             'hyper'
         );
 
@@ -113,11 +114,11 @@ class HyperServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->publishes([
-            __DIR__.'/../resources/js' => public_path('vendor/hyper/js'),
+            __DIR__ . '/../resources/js' => public_path('vendor/hyper/js'),
         ], 'hyper-assets');
 
         $this->publishes([
-            __DIR__.'/../config/hyper.php' => config_path('hyper.php'),
+            __DIR__ . '/../config/hyper.php' => config_path('hyper.php'),
         ], 'hyper-config');
 
         $this->registerBladeDirectives();
@@ -200,7 +201,7 @@ class HyperServiceProvider extends ServiceProvider
     {
         $registerDirectives = function (BladeCompiler $blade) {
             // Only register if not already registered (prevents double registration)
-            if (! isset($blade->getCustomDirectives()['fragment'])) {
+            if (!isset($blade->getCustomDirectives()['fragment'])) {
                 $blade->directive('fragment', static fn () => '');
                 $blade->directive('endfragment', static fn () => '');
             }
@@ -281,7 +282,7 @@ class HyperServiceProvider extends ServiceProvider
         // Check if request is a Hyper navigate request
         Request::macro('isHyperNavigate', function (string|array|null $key = null) {
             // First check if this is a navigate request at all
-            if (! $this->hasHeader('HYPER-NAVIGATE')) {
+            if (!$this->hasHeader('HYPER-NAVIGATE')) {
                 return false;
             }
 
@@ -302,7 +303,7 @@ class HyperServiceProvider extends ServiceProvider
 
             // Handle array of keys to check
             if (is_array($key)) {
-                return ! empty(array_intersect($key, $navigateKeys));
+                return !empty(array_intersect($key, $navigateKeys));
             }
 
             // Handle single key
@@ -366,7 +367,7 @@ class HyperServiceProvider extends ServiceProvider
             return;
         }
 
-        if (! config('hyper.route_discovery.enabled', false)) {
+        if (!config('hyper.route_discovery.enabled', false)) {
             return;
         }
 
@@ -652,18 +653,25 @@ class HyperServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register live validation route
+     * Register signal validation route
      *
-     * Registers a catch-all route that handles real-time field validation
+     * SIGNAL-CENTRIC: Validates SIGNALS, not form fields!
+     *
+     * Registers a catch-all route that handles real-time signal validation
      * for inputs with live: true enabled. The route validates individual
-     * fields and returns validation errors via SSE.
+     * signal paths and returns validation errors via SSE.
      *
-     * Route: PATCH /validate/{field}
+     * Route: PATCH /validate-signal/{signalPath}
+     *
+     * Supports:
+     * - Simple signals: /validate-signal/email
+     * - Nested signals: /validate-signal/user%2Eemail (URL-encoded dot)
+     * - Locked signals: /validate-signal/userId_
      *
      * This route is automatically registered when the package boots and
-     * works in conjunction with the FormValidationRegistry service.
+     * works in conjunction with the SignalValidator service.
      *
-     * @see \Dancycodes\Hyper\Html\Services\FormValidationRegistry
+     * @see \Dancycodes\Hyper\Validation\SignalValidator
      */
     protected function registerLiveValidationRoute(): void
     {
@@ -671,29 +679,29 @@ class HyperServiceProvider extends ServiceProvider
             return Route::patch($uri, $action);
         });
 
-        Route::patchx('/validate/{field}', function (string $field) {
-            $registry = app(FormValidationRegistry::class);
+        // Signal validation route with wildcard to support nested paths
+        Route::middleware('web')->group(function () {
+            // @phpstan-ignore staticMethod.notFound (patchx macro defined above)
+            Route::patchx('/validate-signal/{signalPath}', function (string $signalPath) {
+                // Decode URL-encoded dots for nested signals
+                $signalPath = str_replace('%2E', '.', $signalPath);
 
-            $rules = $registry->getRulesForField($field);
-            if (! $rules) {
-                return hyper()->signals(['errors' => [$field => []]]);
-            }
+                $validator = app(\Dancycodes\Hyper\Validation\SignalValidator::class);
 
-            $messages = $registry->getMessagesForField($field);
-            $attributes = $registry->getAttributesForField($field);
+                try {
+                    // Validate single signal path
+                    /** @var \Dancycodes\Hyper\Http\HyperSignal $hyperSignal */
+                    $hyperSignal = signals();
+                    $validator->validateSingle($signalPath, $hyperSignal);
 
-            try {
-                signals()->validate(
-                    [$field => $rules],
-                    $messages,
-                    $attributes
-                );
-
-                return hyper()->signals(['errors' => [$field => []]]);
-            } catch (\Dancycodes\Hyper\Exceptions\HyperValidationException $e) {
-                // Errors automatically sent to frontend
-                return null;
-            }
+                    // Validation passed - clear errors for this signal
+                    return hyper()->signals(['errors' => [$signalPath => []]]);
+                } catch (\Dancycodes\Hyper\Exceptions\HyperValidationException $e) {
+                    // Exception auto-renders error response via render() method
+                    // Frontend receives: { errors: { signalPath: ['error message'] } }
+                    return $e->render(request());
+                }
+            })->where('signalPath', '.*');  // Allow dots in signal path
         });
     }
 }
