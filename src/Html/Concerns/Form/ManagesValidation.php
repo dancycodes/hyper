@@ -121,7 +121,12 @@ trait ManagesValidation
     {
         $allData = $this->collectValidationData();
 
-        if ($group !== null && isset($this->validationGroups[$group])) {
+        if ($group !== null) {
+            // If group is specified but doesn't exist, return empty array
+            if (! isset($this->validationGroups[$group])) {
+                return [];
+            }
+
             // Filter by group (signal paths)
             return array_intersect_key(
                 $allData['rules'],

@@ -5,6 +5,7 @@ namespace Dancycodes\Hyper\Html\Elements\Base;
 use Closure;
 use Dancycodes\Hyper\Html\Concerns\Actions\HasActionMethods;
 use Dancycodes\Hyper\Html\Concerns\Assets\ManagesAssets;
+use Dancycodes\Hyper\Html\Concerns\Attributes\Form\HasValidation;
 use Dancycodes\Hyper\Html\Concerns\Visual\HasIcons;
 use Dancycodes\Hyper\Html\Contracts\Structure\HasChildren;
 
@@ -188,6 +189,7 @@ abstract class ContainerElement extends TextElement implements HasChildren
 {
     use HasActionMethods;
     use HasIcons;
+    use HasValidation;
     use ManagesAssets;
 
     protected array $children = [];
@@ -340,6 +342,16 @@ abstract class ContainerElement extends TextElement implements HasChildren
     public function children(array $children): static
     {
         return $this->content(...$children);
+    }
+
+    /**
+     * Get the children of this container element
+     *
+     * @return array
+     */
+    public function getChildren(): array
+    {
+        return $this->children;
     }
 
     /**

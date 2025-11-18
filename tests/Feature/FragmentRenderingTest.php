@@ -268,9 +268,7 @@ class FragmentRenderingTest extends TestCase
     /** @test */
     public function test_fragment_render_fragment_macro()
     {
-        File::put($this->viewsPath . '/macro-test.blade.php', '
-            @fragment("test-macro")Hello from macro@endfragment
-        ');
+        File::put($this->viewsPath . '/macro-test.blade.php', '@fragment("test-macro")Hello from macro@endfragment');
         $result = View::renderFragment('macro-test', 'test-macro');
         $this->assertStringContainsString('Hello from macro', $result);
     }

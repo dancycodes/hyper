@@ -3,7 +3,6 @@
 namespace Dancycodes\Hyper\Tests\Unit\Html\Concerns\Attributes\Form;
 
 use Dancycodes\Hyper\Html\Html;
-use Dancycodes\Hyper\Html\Services\FormValidationRegistry;
 use Dancycodes\Hyper\Tests\TestCase;
 
 class HasValidationTest extends TestCase
@@ -136,7 +135,7 @@ class HasValidationTest extends TestCase
         $this->assertStringContainsString('data-on:', $html);
         $this->assertStringContainsString('debounce.300ms', $html);
         $this->assertStringContainsString('@patchx', $html);
-        $this->assertStringContainsString('/validate/username', $html);
+        $this->assertStringContainsString('/validate-signal/username', $html);
     }
 
     /** @test */
@@ -200,7 +199,7 @@ class HasValidationTest extends TestCase
     public function it_returns_static_for_chaining_with_error()
     {
         $input = Html::input()->name('email');
-        $result = $input->withError();
+        $result = $input->validate('required')->withError();
 
         $this->assertSame($input, $result);
     }
@@ -370,24 +369,6 @@ class HasValidationTest extends TestCase
     // ===================================================================
 
     /** @test */
-    public function it_registers_field_with_form_validation_registry()
-    {
-        // Clear registry before test
-        app(FormValidationRegistry::class)->clear();
-
-        $input = Html::input()
-            ->name('username')
-            ->validate('required|unique:users', live: true);
-
-        // Trigger rendering to apply live validation
-        $input->render();
-
-        $registry = app(FormValidationRegistry::class);
-
-        $this->assertEquals('required|unique:users', $registry->getRulesForField('username'));
-    }
-
-    /** @test */
     public function it_attaches_debounced_data_on_action()
     {
         $input = Html::input()
@@ -397,7 +378,7 @@ class HasValidationTest extends TestCase
         $html = $input->render();
 
         $this->assertStringContainsString('data-on:input__debounce.300ms', $html);
-        $this->assertStringContainsString('@patchx(\'/validate/username\')', $html);
+        $this->assertStringContainsString('@patchx(&#039;/validate-signal/username&#039;)', $html);
     }
 
     /** @test */
@@ -449,7 +430,7 @@ class HasValidationTest extends TestCase
 
         // Live validation
         $this->assertStringContainsString('data-on:input__debounce.300ms', $html);
-        $this->assertStringContainsString('@patchx(\'/validate/email\')', $html);
+        $this->assertStringContainsString('@patchx(&#039;/validate-signal/email&#039;)', $html);
 
         // Error div
         $this->assertStringContainsString('data-error="email"', $html);

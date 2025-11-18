@@ -1,0 +1,20 @@
+PHP Warning:  Cannot change opcache.jit setting at run-time (JIT is disabled) in C:\Users\pc\Herd\hyper-apps\packages\dancycodes\hyper\vendor\phpunit\phpunit\src\TextUI\Configuration\PhpHandler.php on line 71
+
+Warning: Cannot change opcache.jit setting at run-time (JIT is disabled) in C:\Users\pc\Herd\hyper-apps\packages\dancycodes\hyper\vendor\phpunit\phpunit\src\TextUI\Configuration\PhpHandler.php on line 71
+
+
+An error occurred inside PHPUnit.
+
+Message:  Call to undefined function describe()
+Location: C:\Users\pc\Herd\hyper-apps\packages\dancycodes\hyper\tests\Unit\Html\Concerns\ActionMethodsTest.php:14
+
+#0 C:\Users\pc\Herd\hyper-apps\packages\dancycodes\hyper\vendor\phpunit\phpunit\src\Runner\TestSuiteLoader.php(116): require_once()
+#1 C:\Users\pc\Herd\hyper-apps\packages\dancycodes\hyper\vendor\phpunit\phpunit\src\Runner\TestSuiteLoader.php(49): PHPUnit\Runner\TestSuiteLoader->loadSuiteClassFile('C:\\Users\\pc\\Her...')
+#2 C:\Users\pc\Herd\hyper-apps\packages\dancycodes\hyper\vendor\phpunit\phpunit\src\Framework\TestSuite.php(231): PHPUnit\Runner\TestSuiteLoader->load('C:\\Users\\pc\\Her...')
+#3 C:\Users\pc\Herd\hyper-apps\packages\dancycodes\hyper\vendor\phpunit\phpunit\src\TextUI\Configuration\Xml\TestSuiteMapper.php(105): PHPUnit\Framework\TestSuite->addTestFile('C:\\Users\\pc\\Her...', Array)
+#4 C:\Users\pc\Herd\hyper-apps\packages\dancycodes\hyper\vendor\phpunit\phpunit\src\TextUI\Configuration\TestSuiteBuilder.php(75): PHPUnit\TextUI\XmlConfiguration\TestSuiteMapper->map('C:\\Users\\pc\\Her...', Object(PHPUnit\TextUI\Configuration\TestSuiteCollection), '', '')
+#5 C:\Users\pc\Herd\hyper-apps\packages\dancycodes\hyper\vendor\phpunit\phpunit\src\TextUI\Application.php(412): PHPUnit\TextUI\Configuration\TestSuiteBuilder->build(Object(PHPUnit\TextUI\Configuration\Configuration))
+#6 C:\Users\pc\Herd\hyper-apps\packages\dancycodes\hyper\vendor\phpunit\phpunit\src\TextUI\Application.php(182): PHPUnit\TextUI\Application->buildTestSuite(Object(PHPUnit\TextUI\Configuration\Configuration))
+#7 C:\Users\pc\Herd\hyper-apps\packages\dancycodes\hyper\vendor\phpunit\phpunit\phpunit(104): PHPUnit\TextUI\Application->run(Array)
+#8 C:\Users\pc\Herd\hyper-apps\packages\dancycodes\hyper\vendor\bin\phpunit(122): include('C:\\Users\\pc\\Her...')
+#9 {main}

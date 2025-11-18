@@ -79,17 +79,8 @@ class BladeFragmentParser
 
         /** @var array<int, OpenFragmentElement|CloseFragmentElement|null> $nodes */
         $nodes = array_map(function (array $match) use ($content, &$lastOffset) {
+            // Use regex byte offset directly (already correct for normalized content)
             $offset = $match[0][1];
-
-            if ($offset !== 0) {
-                $offset = mb_strpos($content, $match[0][0], $lastOffset + 1);
-            }
-
-            if ($offset === false) {
-                $offset = $match[0][1];
-            }
-
-            $lastOffset = $offset + 1;
 
             if (str_starts_with($match[0][0], sprintf('@%s', $this->openDirective))) {
                 $openElement = new OpenFragmentElement;

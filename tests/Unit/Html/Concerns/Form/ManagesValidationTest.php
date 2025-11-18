@@ -40,7 +40,7 @@ class ManagesValidationTest extends TestCase
 
         $html = $form->render();
 
-        $this->assertStringContainsString('"email":""', $html);
+        $this->assertStringContainsString('&quot;email&quot;:&quot;&quot;', $html);
     }
 
     /** @test */
@@ -54,7 +54,7 @@ class ManagesValidationTest extends TestCase
 
         $html = $form->render();
 
-        $this->assertStringContainsString('"errors":[]', $html);
+        $this->assertStringContainsString('&quot;errors&quot;:[]', $html);
     }
 
     /** @test */
@@ -280,9 +280,9 @@ class ManagesValidationTest extends TestCase
 
         // Has signals
         $this->assertStringContainsString('data-signals', $html);
-        $this->assertStringContainsString('"email":""', $html);
-        $this->assertStringContainsString('"password":""', $html);
-        $this->assertStringContainsString('"errors":[]', $html);
+        $this->assertStringContainsString('&quot;email&quot;:&quot;&quot;', $html);
+        $this->assertStringContainsString('&quot;password&quot;:&quot;&quot;', $html);
+        $this->assertStringContainsString('&quot;errors&quot;:[]', $html);
 
         // Has error divs
         $this->assertStringContainsString('data-error="email"', $html);
@@ -290,7 +290,7 @@ class ManagesValidationTest extends TestCase
 
         // Has action
         $this->assertStringContainsString('data-on:submit__prevent', $html);
-        $this->assertStringContainsString('@postx(\'/submit\')', $html);
+        $this->assertStringContainsString('@postx(&#039;/submit&#039;)', $html);
     }
 
     /** @test */
@@ -339,7 +339,7 @@ class ManagesValidationTest extends TestCase
 
         // Live validation
         $this->assertStringContainsString('data-on:input__debounce.300ms', $html);
-        $this->assertStringContainsString('@patchx(\'/validate/username\')', $html);
+        $this->assertStringContainsString('@patchx(&#039;/validate-signal/username&#039;)', $html);
 
         // Error divs
         $this->assertStringContainsString('data-error="username"', $html);
