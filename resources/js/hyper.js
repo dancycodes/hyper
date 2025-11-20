@@ -1901,7 +1901,7 @@ attribute({
     };
   }
 });
-const once = /* @__PURE__ */ new WeakSet();
+const once$1 = /* @__PURE__ */ new WeakSet();
 attribute({
   name: "on-intersect",
   requirement: {
@@ -1927,7 +1927,7 @@ attribute({
         for (const entry of entries) {
           if (entry.isIntersecting) {
             callback();
-            if (observer && once.has(el)) {
+            if (observer && once$1.has(el)) {
               observer.disconnect();
             }
           }
@@ -1937,11 +1937,11 @@ attribute({
     );
     observer.observe(el);
     if (mods.has("once")) {
-      once.add(el);
+      once$1.add(el);
     }
     return () => {
       if (!mods.has("once")) {
-        once.delete(el);
+        once$1.delete(el);
       }
       if (observer) {
         observer.disconnect();
@@ -2043,8 +2043,8 @@ attribute({
     mergePaths([[signalName, el]]);
   }
 });
-const NONE = "none";
-const DISPLAY = "display";
+const NONE$1 = "none";
+const DISPLAY$1 = "display";
 attribute({
   name: "show",
   requirement: {
@@ -2057,9 +2057,9 @@ attribute({
       observer.disconnect();
       const shouldShow = rx();
       if (shouldShow) {
-        if (el.style.display === NONE) el.style.removeProperty(DISPLAY);
+        if (el.style.display === NONE$1) el.style.removeProperty(DISPLAY$1);
       } else {
-        el.style.setProperty(DISPLAY, NONE);
+        el.style.setProperty(DISPLAY$1, NONE$1);
       }
       observer.observe(el, { attributeFilter: ["style"] });
     };
@@ -3641,6 +3641,264 @@ attribute({
     };
   }
 });
+function setStyles(el, value) {
+  if (typeof value === "object" && value !== null) {
+    return setStylesFromObject(el, value);
+  }
+  return setStylesFromString(el, value);
+}
+function setStylesFromObject(el, value) {
+  const previousStyles = {};
+  Object.entries(value).forEach(([key, value2]) => {
+    previousStyles[key] = el.style[key];
+    let propertyKey = key;
+    if (!key.startsWith("--")) {
+      propertyKey = kebabCase(key);
+    }
+    el.style.setProperty(propertyKey, value2);
+  });
+  setTimeout(() => {
+    if (el.style.length === 0) {
+      el.removeAttribute("style");
+    }
+  });
+  return () => {
+    setStyles(el, previousStyles);
+  };
+}
+function setStylesFromString(el, value) {
+  const cache = el.getAttribute("style") || "";
+  el.setAttribute("style", value);
+  return () => {
+    el.setAttribute("style", cache);
+  };
+}
+function kebabCase(subject) {
+  return subject.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
+}
+function once(callback, fallback = () => {
+}) {
+  let called = false;
+  return function(...args) {
+    if (!called) {
+      called = true;
+      callback.apply(this, args);
+    } else {
+      fallback.apply(this, args);
+    }
+  };
+}
+function transition(el, setFunction, {
+  during,
+  start,
+  end
+} = { during: {}, start: {}, end: {} }, before = () => {
+}, after = () => {
+}) {
+  if (el._ds_transitioning) {
+    el._ds_transitioning.cancel();
+  }
+  if (Object.keys(during).length === 0 && Object.keys(start).length === 0 && Object.keys(end).length === 0) {
+    before();
+    after();
+    return;
+  }
+  let undoStart;
+  let undoDuring;
+  let undoEnd;
+  performTransition(el, {
+    start() {
+      undoStart = setFunction(el, start);
+    },
+    during() {
+      undoDuring = setFunction(el, during);
+    },
+    before,
+    end() {
+      if (undoStart) undoStart();
+      undoEnd = setFunction(el, end);
+    },
+    after,
+    cleanup() {
+      if (undoDuring) undoDuring();
+      if (undoEnd) undoEnd();
+    }
+  });
+}
+function performTransition(el, stages) {
+  let interrupted = false;
+  let reachedBefore = false;
+  let reachedEnd = false;
+  const finish = once(() => {
+    interrupted = true;
+    if (!reachedBefore) stages.before();
+    if (!reachedEnd) {
+      stages.end();
+    }
+    stages.after();
+    if (el.isConnected) {
+      stages.cleanup();
+    }
+    delete el._ds_transitioning;
+  });
+  el._ds_transitioning = {
+    beforeCancels: [],
+    beforeCancel(callback) {
+      this.beforeCancels.push(callback);
+    },
+    cancel: once(function() {
+      while (this.beforeCancels.length) {
+        this.beforeCancels.shift()();
+      }
+      finish();
+    }),
+    finish
+  };
+  stages.start();
+  stages.during();
+  requestAnimationFrame(() => {
+    if (interrupted) return;
+    let duration = Number(
+      getComputedStyle(el).transitionDuration.replace(/,.*/, "").replace("s", "")
+    ) * 1e3;
+    let delay2 = Number(
+      getComputedStyle(el).transitionDelay.replace(/,.*/, "").replace("s", "")
+    ) * 1e3;
+    if (duration === 0) {
+      duration = Number(getComputedStyle(el).animationDuration.replace("s", "")) * 1e3;
+    }
+    stages.before();
+    reachedBefore = true;
+    requestAnimationFrame(() => {
+      if (interrupted) return;
+      stages.end();
+      reachedEnd = true;
+      setTimeout(el._ds_transitioning.finish, duration + delay2);
+    });
+  });
+}
+function modifierValue(modifiers, key, fallback) {
+  const modArray = Array.from(modifiers.keys());
+  const keyIndex = modArray.indexOf(key);
+  if (keyIndex === -1) return fallback;
+  const rawValue = modArray[keyIndex + 1];
+  if (!rawValue) return fallback;
+  if (key === "scale") {
+    if (isNaN(Number(rawValue))) return fallback;
+  }
+  if (key === "duration" || key === "delay") {
+    const match = rawValue.match(/([0-9]+)ms/);
+    if (match) return Number(match[1]);
+  }
+  if (key === "origin") {
+    const nextValue = modArray[keyIndex + 2];
+    if (nextValue && ["top", "right", "left", "center", "bottom"].includes(nextValue)) {
+      return [rawValue, nextValue].join(" ");
+    }
+  }
+  return rawValue;
+}
+attribute({
+  name: "transition",
+  requirement: {
+    key: "denied",
+    value: "denied"
+  },
+  apply({ el, mods }) {
+    registerTransitionsFromHelper(el, mods);
+    return () => {
+    };
+  }
+});
+function registerTransitionsFromHelper(el, mods) {
+  registerTransitionObject(el, setStyles);
+  const doesntSpecify = !mods.has("in") && !mods.has("out");
+  const transitioningIn = doesntSpecify || mods.has("in");
+  const transitioningOut = doesntSpecify || mods.has("out");
+  const wantsAll = !mods.has("opacity") && !mods.has("scale");
+  const wantsOpacity = wantsAll || mods.has("opacity");
+  const wantsScale = wantsAll || mods.has("scale");
+  const opacityValue = wantsOpacity ? 0 : 1;
+  const scaleValue = wantsScale ? modifierValue(mods, "scale", 95) / 100 : 1;
+  const delay2 = modifierValue(mods, "delay", 0) / 1e3;
+  const origin = modifierValue(mods, "origin", "center");
+  const property = "opacity, transform";
+  const durationIn = modifierValue(mods, "duration", 150) / 1e3;
+  const durationOut = modifierValue(mods, "duration", 75) / 1e3;
+  const easing = "cubic-bezier(0.4, 0.0, 0.2, 1)";
+  if (transitioningIn) {
+    el._ds_transition.enter.during = {
+      transformOrigin: origin,
+      transitionDelay: `${delay2}s`,
+      transitionProperty: property,
+      transitionDuration: `${durationIn}s`,
+      transitionTimingFunction: easing
+    };
+    el._ds_transition.enter.start = {
+      opacity: String(opacityValue),
+      transform: `scale(${scaleValue})`
+    };
+    el._ds_transition.enter.end = {
+      opacity: "1",
+      transform: "scale(1)"
+    };
+  }
+  if (transitioningOut) {
+    el._ds_transition.leave.during = {
+      transformOrigin: origin,
+      transitionDelay: `${delay2}s`,
+      transitionProperty: property,
+      transitionDuration: `${durationOut}s`,
+      transitionTimingFunction: easing
+    };
+    el._ds_transition.leave.start = {
+      opacity: "1",
+      transform: "scale(1)"
+    };
+    el._ds_transition.leave.end = {
+      opacity: String(opacityValue),
+      transform: `scale(${scaleValue})`
+    };
+  }
+}
+function registerTransitionObject(el, setFunction, defaultValue = {}) {
+  if (!el._ds_transition) {
+    el._ds_transition = {
+      enter: { during: defaultValue, start: defaultValue, end: defaultValue },
+      leave: { during: defaultValue, start: defaultValue, end: defaultValue },
+      in(before = () => {
+      }, after = () => {
+      }) {
+        transition(
+          el,
+          setFunction,
+          {
+            during: this.enter.during,
+            start: this.enter.start,
+            end: this.enter.end
+          },
+          before,
+          after
+        );
+      },
+      out(before = () => {
+      }, after = () => {
+      }) {
+        transition(
+          el,
+          setFunction,
+          {
+            during: this.leave.during,
+            start: this.leave.start,
+            end: this.leave.end
+          },
+          before,
+          after
+        );
+      }
+    };
+  }
+}
 const KEY_MAP = {
   // Special keys
   enter: "Enter",
@@ -3759,6 +4017,92 @@ attribute({
     };
   }
 });
+const NONE = "none";
+const DISPLAY = "display";
+attribute({
+  name: "show",
+  requirement: {
+    key: "denied",
+    value: "must"
+  },
+  returnsValue: true,
+  apply({ el, rx }) {
+    const htmlEl = el;
+    let oldValue;
+    let firstTime = true;
+    const update2 = () => {
+      observer.disconnect();
+      const shouldShow = rx();
+      if (firstTime || shouldShow === oldValue) {
+        if (shouldShow) {
+          if (htmlEl.style.display === NONE) {
+            htmlEl.style.removeProperty(DISPLAY);
+          }
+        } else {
+          htmlEl.style.setProperty(DISPLAY, NONE);
+        }
+      } else {
+        toggleWithTransition(htmlEl, shouldShow);
+      }
+      oldValue = shouldShow;
+      firstTime = false;
+      observer.observe(el, { attributeFilter: ["style"] });
+    };
+    const observer = new MutationObserver(update2);
+    const cleanup2 = effect(update2);
+    return () => {
+      observer.disconnect();
+      cleanup2();
+    };
+  }
+});
+function toggleWithTransition(el, shouldShow) {
+  if (!el._ds_transition) {
+    if (shouldShow) {
+      show(el);
+    } else {
+      hide(el);
+    }
+    return;
+  }
+  if (shouldShow) {
+    const enterConfig = el._ds_transition.enter;
+    const hasEnter = typeof enterConfig.during === "object" && Object.keys(enterConfig.during).length > 0 || typeof enterConfig.start === "object" && Object.keys(enterConfig.start).length > 0 || typeof enterConfig.end === "object" && Object.keys(enterConfig.end).length > 0;
+    if (hasEnter) {
+      el._ds_transition.in(
+        () => show(el),
+        // before: make visible first
+        () => {
+        }
+        // after: transition complete
+      );
+    } else {
+      show(el);
+    }
+  } else {
+    const leaveConfig = el._ds_transition.leave;
+    const hasLeave = typeof leaveConfig.during === "object" && Object.keys(leaveConfig.during).length > 0 || typeof leaveConfig.start === "object" && Object.keys(leaveConfig.start).length > 0 || typeof leaveConfig.end === "object" && Object.keys(leaveConfig.end).length > 0;
+    if (hasLeave) {
+      el._ds_transition.out(
+        () => {
+        },
+        // before: start hidden styles
+        () => hide(el)
+        // after: actually hide
+      );
+    } else {
+      hide(el);
+    }
+  }
+}
+function show(el) {
+  if (el.style.display === NONE) {
+    el.style.removeProperty(DISPLAY);
+  }
+}
+function hide(el) {
+  el.style.setProperty(DISPLAY, NONE);
+}
 function getCSRFToken() {
   const metaTag = document.querySelector('meta[name="csrf-token"]');
   return metaTag?.getAttribute("content") || null;
