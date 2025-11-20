@@ -1840,9 +1840,9 @@ const modifyTiming = (callback, mods) => {
   }
   return callback;
 };
-const supportsViewTransitions$1 = !!document.startViewTransition;
+const supportsViewTransitions = !!document.startViewTransition;
 const modifyViewTransition = (callback, mods) => {
-  if (mods.has("viewtransition") && supportsViewTransitions$1) {
+  if (mods.has("viewtransition") && supportsViewTransitions) {
     const cb = callback;
     callback = (...args) => document.startViewTransition(() => cb(...args));
   }
@@ -2416,7 +2416,7 @@ watcher({
       elements,
       useViewTransition: useViewTransition?.trim() === "true"
     };
-    if (supportsViewTransitions$1 && useViewTransition) {
+    if (supportsViewTransitions && useViewTransition) {
       document.startViewTransition(() => onPatchElements(ctx, args2));
     } else {
       onPatchElements(ctx, args2);
@@ -3422,9 +3422,6 @@ function parseNavigateModifiers(mods, value) {
       case "delay":
         config.timing = parseTimingModifier("delay", modTags);
         break;
-      case "viewtransition":
-        config.viewtransition = true;
-        break;
     }
   }
   if (config.only && config.except) {
@@ -3533,16 +3530,7 @@ function handleNavigation(ctx, url2, config) {
     if (config.except) {
       navigateOptions.except = config.except;
     }
-    const supportsViewTransitions2 = !!document.startViewTransition;
-    const shouldUseViewTransitions = config.viewtransition && supportsViewTransitions2;
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (shouldUseViewTransitions && !prefersReducedMotion) {
-      document.startViewTransition(() => {
-        navigateAction(ctx, finalUrl, config.key, navigateOptions);
-      });
-    } else {
-      navigateAction(ctx, finalUrl, config.key, navigateOptions);
-    }
+    navigateAction(ctx, finalUrl, config.key, navigateOptions);
   } catch (error2) {
     console.error("Navigation failed:", error2);
     window.location.href = url2;
@@ -3993,38 +3981,6 @@ function registerTransitionObject(el, setFunction, defaultValue = {}) {
     };
   }
 }
-const supportsViewTransitions = !!document.startViewTransition;
-attribute({
-  name: "view-transition",
-  requirement: {
-    key: "denied",
-    value: "must"
-  },
-  returnsValue: true,
-  apply({ el, rx }) {
-    const htmlEl = el;
-    let transitionName = rx();
-    if (transitionName === "auto") {
-      if (!htmlEl.id) {
-        console.warn(
-          '[data-view-transition="auto"] requires an id attribute on the element',
-          htmlEl
-        );
-        return () => {
-        };
-      }
-      transitionName = htmlEl.id;
-    }
-    if (supportsViewTransitions) {
-      htmlEl.style.viewTransitionName = transitionName;
-    }
-    return () => {
-      if (supportsViewTransitions) {
-        htmlEl.style.viewTransitionName = "";
-      }
-    };
-  }
-});
 const KEY_MAP = {
   // Special keys
   enter: "Enter",
