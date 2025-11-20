@@ -1840,9 +1840,9 @@ const modifyTiming = (callback, mods) => {
   }
   return callback;
 };
-const supportsViewTransitions = !!document.startViewTransition;
+const supportsViewTransitions$1 = !!document.startViewTransition;
 const modifyViewTransition = (callback, mods) => {
-  if (mods.has("viewtransition") && supportsViewTransitions) {
+  if (mods.has("viewtransition") && supportsViewTransitions$1) {
     const cb = callback;
     callback = (...args) => document.startViewTransition(() => cb(...args));
   }
@@ -2416,7 +2416,7 @@ watcher({
       elements,
       useViewTransition: useViewTransition?.trim() === "true"
     };
-    if (supportsViewTransitions && useViewTransition) {
+    if (supportsViewTransitions$1 && useViewTransition) {
       document.startViewTransition(() => onPatchElements(ctx, args2));
     } else {
       onPatchElements(ctx, args2);
@@ -3422,6 +3422,9 @@ function parseNavigateModifiers(mods, value) {
       case "delay":
         config.timing = parseTimingModifier("delay", modTags);
         break;
+      case "viewtransition":
+        config.viewtransition = true;
+        break;
     }
   }
   if (config.only && config.except) {
@@ -3530,7 +3533,16 @@ function handleNavigation(ctx, url2, config) {
     if (config.except) {
       navigateOptions.except = config.except;
     }
-    navigateAction(ctx, finalUrl, config.key, navigateOptions);
+    const supportsViewTransitions2 = !!document.startViewTransition;
+    const shouldUseViewTransitions = config.viewtransition && supportsViewTransitions2;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (shouldUseViewTransitions && !prefersReducedMotion) {
+      document.startViewTransition(() => {
+        navigateAction(ctx, finalUrl, config.key, navigateOptions);
+      });
+    } else {
+      navigateAction(ctx, finalUrl, config.key, navigateOptions);
+    }
   } catch (error2) {
     console.error("Navigation failed:", error2);
     window.location.href = url2;
@@ -3676,6 +3688,50 @@ function setStylesFromString(el, value) {
 function kebabCase(subject) {
   return subject.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
 }
+function setClasses(el, value) {
+  if (Array.isArray(value)) {
+    return setClassesFromString(el, value.join(" "));
+  } else if (typeof value === "object" && value !== null) {
+    return setClassesFromObject(el, value);
+  } else if (typeof value === "function") {
+    return setClasses(el, value());
+  }
+  return setClassesFromString(el, value);
+}
+function setClassesFromString(el, classString) {
+  const missingClasses = (str) => str.split(" ").filter((i) => !el.classList.contains(i)).filter(Boolean);
+  const addClassesAndReturnUndo = (classes) => {
+    el.classList.add(...classes);
+    return () => {
+      el.classList.remove(...classes);
+    };
+  };
+  const normalizedClassString = classString === true ? "" : classString || "";
+  return addClassesAndReturnUndo(missingClasses(normalizedClassString));
+}
+function setClassesFromObject(el, classObject) {
+  const split = (str) => str.split(" ").filter(Boolean);
+  const forAdd = Object.entries(classObject).flatMap(([classString, bool]) => bool ? split(classString) : []).filter(Boolean);
+  const forRemove = Object.entries(classObject).flatMap(([classString, bool]) => !bool ? split(classString) : []).filter(Boolean);
+  const added = [];
+  const removed = [];
+  forRemove.forEach((i) => {
+    if (el.classList.contains(i)) {
+      el.classList.remove(i);
+      removed.push(i);
+    }
+  });
+  forAdd.forEach((i) => {
+    if (!el.classList.contains(i)) {
+      el.classList.add(i);
+      added.push(i);
+    }
+  });
+  return () => {
+    removed.forEach((i) => el.classList.add(i));
+    added.forEach((i) => el.classList.remove(i));
+  };
+}
 function once(callback, fallback = () => {
 }) {
   let called = false;
@@ -3800,16 +3856,54 @@ function modifierValue(modifiers, key, fallback) {
 }
 attribute({
   name: "transition",
-  requirement: {
-    key: "denied",
-    value: "denied"
-  },
-  apply({ el, mods }) {
-    registerTransitionsFromHelper(el, mods);
+  requirement: "allowed",
+  apply({ el, key, value, mods, error: error2 }) {
+    const htmlEl = el;
+    if (key && value) {
+      registerTransitionsFromClassString(htmlEl, key, value);
+    } else if (!key && !value) {
+      registerTransitionsFromHelper(htmlEl, mods);
+    } else {
+      throw error2("InvalidTransition", {
+        message: 'Use either data-transition (helper mode) or data-transition:enter="classes" (class mode), not both',
+        key,
+        value
+      });
+    }
     return () => {
     };
   }
 });
+function registerTransitionsFromClassString(el, stage, classString) {
+  registerTransitionObject(el, setClasses, "");
+  const directiveStorageMap = {
+    enter: (classes) => {
+      el._ds_transition.enter.during = classes;
+    },
+    "enter-start": (classes) => {
+      el._ds_transition.enter.start = classes;
+    },
+    "enter-end": (classes) => {
+      el._ds_transition.enter.end = classes;
+    },
+    leave: (classes) => {
+      el._ds_transition.leave.during = classes;
+    },
+    "leave-start": (classes) => {
+      el._ds_transition.leave.start = classes;
+    },
+    "leave-end": (classes) => {
+      el._ds_transition.leave.end = classes;
+    }
+  };
+  if (directiveStorageMap[stage]) {
+    directiveStorageMap[stage](classString);
+  } else {
+    throw new Error(
+      `Invalid transition stage: "${stage}". Valid stages: ${Object.keys(directiveStorageMap).join(", ")}`
+    );
+  }
+}
 function registerTransitionsFromHelper(el, mods) {
   registerTransitionObject(el, setStyles);
   const doesntSpecify = !mods.has("in") && !mods.has("out");
@@ -3899,6 +3993,38 @@ function registerTransitionObject(el, setFunction, defaultValue = {}) {
     };
   }
 }
+const supportsViewTransitions = !!document.startViewTransition;
+attribute({
+  name: "view-transition",
+  requirement: {
+    key: "denied",
+    value: "must"
+  },
+  returnsValue: true,
+  apply({ el, rx }) {
+    const htmlEl = el;
+    let transitionName = rx();
+    if (transitionName === "auto") {
+      if (!htmlEl.id) {
+        console.warn(
+          '[data-view-transition="auto"] requires an id attribute on the element',
+          htmlEl
+        );
+        return () => {
+        };
+      }
+      transitionName = htmlEl.id;
+    }
+    if (supportsViewTransitions) {
+      htmlEl.style.viewTransitionName = transitionName;
+    }
+    return () => {
+      if (supportsViewTransitions) {
+        htmlEl.style.viewTransitionName = "";
+      }
+    };
+  }
+});
 const KEY_MAP = {
   // Special keys
   enter: "Enter",
@@ -4067,7 +4193,11 @@ function toggleWithTransition(el, shouldShow) {
   }
   if (shouldShow) {
     const enterConfig = el._ds_transition.enter;
-    const hasEnter = typeof enterConfig.during === "object" && Object.keys(enterConfig.during).length > 0 || typeof enterConfig.start === "object" && Object.keys(enterConfig.start).length > 0 || typeof enterConfig.end === "object" && Object.keys(enterConfig.end).length > 0;
+    const hasEnter = (
+      // Check for object (helper mode)
+      typeof enterConfig.during === "object" && Object.keys(enterConfig.during).length > 0 || typeof enterConfig.start === "object" && Object.keys(enterConfig.start).length > 0 || typeof enterConfig.end === "object" && Object.keys(enterConfig.end).length > 0 || // Check for string (class mode)
+      typeof enterConfig.during === "string" && enterConfig.during.length > 0 || typeof enterConfig.start === "string" && enterConfig.start.length > 0 || typeof enterConfig.end === "string" && enterConfig.end.length > 0
+    );
     if (hasEnter) {
       el._ds_transition.in(
         () => show(el),
@@ -4081,7 +4211,11 @@ function toggleWithTransition(el, shouldShow) {
     }
   } else {
     const leaveConfig = el._ds_transition.leave;
-    const hasLeave = typeof leaveConfig.during === "object" && Object.keys(leaveConfig.during).length > 0 || typeof leaveConfig.start === "object" && Object.keys(leaveConfig.start).length > 0 || typeof leaveConfig.end === "object" && Object.keys(leaveConfig.end).length > 0;
+    const hasLeave = (
+      // Check for object (helper mode)
+      typeof leaveConfig.during === "object" && Object.keys(leaveConfig.during).length > 0 || typeof leaveConfig.start === "object" && Object.keys(leaveConfig.start).length > 0 || typeof leaveConfig.end === "object" && Object.keys(leaveConfig.end).length > 0 || // Check for string (class mode)
+      typeof leaveConfig.during === "string" && leaveConfig.during.length > 0 || typeof leaveConfig.start === "string" && leaveConfig.start.length > 0 || typeof leaveConfig.end === "string" && leaveConfig.end.length > 0
+    );
     if (hasLeave) {
       el._ds_transition.out(
         () => {
