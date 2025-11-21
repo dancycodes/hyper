@@ -4078,7 +4078,9 @@ attribute({
   requirement: "allowed",
   apply({ el, key, value, mods, error: error2 }) {
     const htmlEl = el;
-    if (key && value) {
+    if (mods.has("collapse")) {
+      registerTransitionsFromCollapseHelper(htmlEl, mods);
+    } else if (key && value) {
       registerTransitionsFromClassString(htmlEl, key, value);
     } else if (!key && !value) {
       registerTransitionsFromHelper(htmlEl, mods);
@@ -4211,6 +4213,145 @@ function registerTransitionObject(el, setFunction, defaultValue = {}) {
       }
     };
   }
+}
+function registerTransitionsFromCollapseHelper(el, mods) {
+  const duration = modifierValue(mods, "duration", 250) / 1e3;
+  const floor = modifierValue(mods, "min", 0);
+  const fullyHide = !mods.has("min");
+  el._ds_collapse_floor = floor;
+  el._ds_collapse_fullyHide = fullyHide;
+  const easing = "cubic-bezier(0.4, 0.0, 0.2, 1)";
+  el._ds_transition = {
+    // Empty phases - collapse doesn't use standard phase system
+    enter: { during: {}, start: {}, end: {} },
+    leave: { during: {}, start: {}, end: {} },
+    /**
+     * Expand animation (show)
+     * Animates from current height (collapsed or partial) to full height
+     */
+    in(before = () => {
+    }, after = () => {
+    }) {
+      if (el._ds_transitioning) {
+        el._ds_transitioning.cancel();
+      }
+      el.hidden = false;
+      el.style.display = "";
+      const currentHeight = el.getBoundingClientRect().height;
+      const originalHeight = el.style.height;
+      el.style.height = "auto";
+      const fullHeight = el.getBoundingClientRect().height;
+      el.style.height = originalHeight || `${currentHeight}px`;
+      if (currentHeight >= fullHeight) {
+        el.style.height = "auto";
+        el.style.overflow = "";
+        before();
+        after();
+        return;
+      }
+      el.style.overflow = "hidden";
+      el.style.height = `${currentHeight}px`;
+      el._ds_transitioning = {
+        beforeCancels: [],
+        beforeCancel(callback) {
+          this.beforeCancels.push(callback);
+        },
+        cancel() {
+          while (this.beforeCancels.length) {
+            this.beforeCancels.shift()();
+          }
+          this.finish();
+        },
+        finish: () => {
+          el.style.overflow = "";
+          el.style.height = "auto";
+          el.style.transitionProperty = "";
+          el.style.transitionDuration = "";
+          el.style.transitionTimingFunction = "";
+          delete el._ds_transitioning;
+          after();
+        }
+      };
+      before();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.style.transitionProperty = "height";
+          el.style.transitionDuration = `${duration}s`;
+          el.style.transitionTimingFunction = easing;
+          el.style.height = `${fullHeight}px`;
+          setTimeout(() => {
+            if (el._ds_transitioning) {
+              el._ds_transitioning.finish();
+            }
+          }, duration * 1e3);
+        });
+      });
+    },
+    /**
+     * Collapse animation (hide)
+     * Animates from current height to floor (0 or min height)
+     */
+    out(before = () => {
+    }, after = () => {
+    }) {
+      if (el._ds_transitioning) {
+        el._ds_transitioning.cancel();
+      }
+      const currentHeight = el.getBoundingClientRect().height;
+      if (currentHeight <= floor) {
+        if (floor === 0 && fullyHide) {
+          el.style.display = "none";
+          el.hidden = true;
+        }
+        before();
+        after();
+        return;
+      }
+      el.style.overflow = "hidden";
+      el.style.height = `${currentHeight}px`;
+      el._ds_transitioning = {
+        beforeCancels: [],
+        beforeCancel(callback) {
+          this.beforeCancels.push(callback);
+        },
+        cancel() {
+          while (this.beforeCancels.length) {
+            this.beforeCancels.shift()();
+          }
+          this.finish();
+        },
+        finish: () => {
+          el.style.transitionProperty = "";
+          el.style.transitionDuration = "";
+          el.style.transitionTimingFunction = "";
+          if (floor === 0 && fullyHide) {
+            el.style.display = "none";
+            el.hidden = true;
+            el.style.overflow = "";
+            el.style.height = "";
+          } else {
+            el.style.height = `${floor}px`;
+          }
+          delete el._ds_transitioning;
+          after();
+        }
+      };
+      before();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.style.transitionProperty = "height";
+          el.style.transitionDuration = `${duration}s`;
+          el.style.transitionTimingFunction = easing;
+          el.style.height = `${floor}px`;
+          setTimeout(() => {
+            if (el._ds_transitioning) {
+              el._ds_transitioning.finish();
+            }
+          }, duration * 1e3);
+        });
+      });
+    }
+  };
 }
 const KEY_MAP = {
   // Special keys
@@ -4346,13 +4487,16 @@ attribute({
     const update2 = () => {
       observer.disconnect();
       const shouldShow = rx();
+      const hasMinHeight = htmlEl._ds_collapse_floor !== void 0 && htmlEl._ds_collapse_floor > 0;
       if (firstTime || shouldShow === oldValue) {
         if (shouldShow) {
           if (htmlEl.style.display === NONE) {
             htmlEl.style.removeProperty(DISPLAY);
           }
         } else {
-          htmlEl.style.setProperty(DISPLAY, NONE);
+          if (!hasMinHeight) {
+            htmlEl.style.setProperty(DISPLAY, NONE);
+          }
         }
       } else {
         toggleWithTransition(htmlEl, shouldShow);
@@ -4378,41 +4522,64 @@ function toggleWithTransition(el, shouldShow) {
     }
     return;
   }
+  const isCollapse = el._ds_collapse_floor !== void 0;
   if (shouldShow) {
-    const enterConfig = el._ds_transition.enter;
-    const hasEnter = (
-      // Check for object (helper mode)
-      typeof enterConfig.during === "object" && Object.keys(enterConfig.during).length > 0 || typeof enterConfig.start === "object" && Object.keys(enterConfig.start).length > 0 || typeof enterConfig.end === "object" && Object.keys(enterConfig.end).length > 0 || // Check for string (class mode)
-      typeof enterConfig.during === "string" && enterConfig.during.length > 0 || typeof enterConfig.start === "string" && enterConfig.start.length > 0 || typeof enterConfig.end === "string" && enterConfig.end.length > 0
-    );
-    if (hasEnter) {
+    if (isCollapse) {
       el._ds_transition.in(
-        () => show(el),
-        // before: make visible first
+        () => {
+        },
+        // before: collapse.in() handles visibility
         () => {
         }
         // after: transition complete
       );
     } else {
-      show(el);
+      const enterConfig = el._ds_transition.enter;
+      const hasEnter = (
+        // Check for object (helper mode)
+        typeof enterConfig.during === "object" && Object.keys(enterConfig.during).length > 0 || typeof enterConfig.start === "object" && Object.keys(enterConfig.start).length > 0 || typeof enterConfig.end === "object" && Object.keys(enterConfig.end).length > 0 || // Check for string (class mode)
+        typeof enterConfig.during === "string" && enterConfig.during.length > 0 || typeof enterConfig.start === "string" && enterConfig.start.length > 0 || typeof enterConfig.end === "string" && enterConfig.end.length > 0
+      );
+      if (hasEnter) {
+        el._ds_transition.in(
+          () => show(el),
+          // before: make visible first
+          () => {
+          }
+          // after: transition complete
+        );
+      } else {
+        show(el);
+      }
     }
   } else {
-    const leaveConfig = el._ds_transition.leave;
-    const hasLeave = (
-      // Check for object (helper mode)
-      typeof leaveConfig.during === "object" && Object.keys(leaveConfig.during).length > 0 || typeof leaveConfig.start === "object" && Object.keys(leaveConfig.start).length > 0 || typeof leaveConfig.end === "object" && Object.keys(leaveConfig.end).length > 0 || // Check for string (class mode)
-      typeof leaveConfig.during === "string" && leaveConfig.during.length > 0 || typeof leaveConfig.start === "string" && leaveConfig.start.length > 0 || typeof leaveConfig.end === "string" && leaveConfig.end.length > 0
-    );
-    if (hasLeave) {
+    if (isCollapse) {
       el._ds_transition.out(
         () => {
         },
-        // before: start hidden styles
-        () => hide(el)
-        // after: actually hide
+        // before: start collapse
+        () => {
+        }
+        // after: collapse.out() handles hiding
       );
     } else {
-      hide(el);
+      const leaveConfig = el._ds_transition.leave;
+      const hasLeave = (
+        // Check for object (helper mode)
+        typeof leaveConfig.during === "object" && Object.keys(leaveConfig.during).length > 0 || typeof leaveConfig.start === "object" && Object.keys(leaveConfig.start).length > 0 || typeof leaveConfig.end === "object" && Object.keys(leaveConfig.end).length > 0 || // Check for string (class mode)
+        typeof leaveConfig.during === "string" && leaveConfig.during.length > 0 || typeof leaveConfig.start === "string" && leaveConfig.start.length > 0 || typeof leaveConfig.end === "string" && leaveConfig.end.length > 0
+      );
+      if (hasLeave) {
+        el._ds_transition.out(
+          () => {
+          },
+          // before: start hidden styles
+          () => hide(el)
+          // after: actually hide
+        );
+      } else {
+        hide(el);
+      }
     }
   }
 }
