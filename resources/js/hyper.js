@@ -3783,6 +3783,59 @@ attribute({
     };
   }
 });
+let documentResizeObserver = null;
+const documentResizeCallbacks = /* @__PURE__ */ new Set();
+const dimensions = (entries) => {
+  for (const entry of entries) {
+    const { inlineSize, blockSize } = entry.borderBoxSize[0];
+    return [inlineSize, blockSize];
+  }
+  return [0, 0];
+};
+const onElResize = (el, callback) => {
+  const observer = new ResizeObserver((entries) => {
+    const [width, height] = dimensions(entries);
+    callback(width, height);
+  });
+  observer.observe(el);
+  return () => observer.disconnect();
+};
+const onDocumentResize = (callback) => {
+  documentResizeCallbacks.add(callback);
+  if (!documentResizeObserver) {
+    documentResizeObserver = new ResizeObserver((entries) => {
+      const [width, height] = dimensions(entries);
+      documentResizeCallbacks.forEach((cb) => cb(width, height));
+    });
+    documentResizeObserver.observe(document.documentElement);
+  }
+  return () => {
+    documentResizeCallbacks.delete(callback);
+    if (documentResizeCallbacks.size === 0 && documentResizeObserver) {
+      documentResizeObserver.disconnect();
+      documentResizeObserver = null;
+    }
+  };
+};
+attribute({
+  name: "resize",
+  requirement: {
+    key: "denied",
+    value: "must"
+  },
+  // Pass width and height as function arguments
+  argNames: ["width", "height"],
+  apply({ el, mods, rx }) {
+    let callback = (width, height) => {
+      beginBatch();
+      rx(width, height);
+      endBatch();
+    };
+    callback = modifyTiming(callback, mods);
+    const disconnect = mods.has("document") ? onDocumentResize(callback) : onElResize(el, callback);
+    return () => disconnect();
+  }
+});
 action({
   name: "nextTick",
   apply(_, callback) {
