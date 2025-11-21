@@ -3605,6 +3605,72 @@ function shouldInterceptFormSubmit(form) {
   }
   return true;
 }
+attribute({
+  name: "teleport",
+  requirement: {
+    key: "denied",
+    value: "must"
+  },
+  apply(ctx) {
+    const { el, value, mods, error: error2 } = ctx;
+    if (!(el instanceof HTMLTemplateElement)) {
+      throw error2("TeleportMustBeOnTemplate", {
+        message: "data-teleport must be used on <template> elements",
+        element: el.tagName
+      });
+    }
+    const target = document.querySelector(value);
+    if (!target) {
+      throw error2("TeleportTargetNotFound", {
+        selector: value,
+        message: `Cannot find element matching selector: "${value}"`
+      });
+    }
+    const templateContent = el.content.cloneNode(true);
+    const clone = templateContent.firstElementChild;
+    if (!clone) {
+      throw error2("TeleportEmptyTemplate", {
+        message: "Template must contain at least one element"
+      });
+    }
+    el.setAttribute("data-teleport-template", "true");
+    clone.setAttribute("data-teleport-target", "true");
+    el._teleport = clone;
+    clone._teleportBack = el;
+    setupEventForwarding(el, clone);
+    placeInDom(clone, target, mods);
+    apply(clone);
+    return () => {
+      clone.remove();
+    };
+  }
+});
+function placeInDom(clone, target, mods) {
+  if (mods.has("prepend")) {
+    target.parentNode?.insertBefore(clone, target);
+  } else if (mods.has("append")) {
+    target.parentNode?.insertBefore(clone, target.nextSibling);
+  } else {
+    target.appendChild(clone);
+  }
+}
+function setupEventForwarding(template, clone) {
+  const events = /* @__PURE__ */ new Set();
+  for (const key in template.dataset) {
+    const attrName = key.replace(/[A-Z]/g, "-$&").toLowerCase();
+    if (attrName.startsWith("on:") || attrName.startsWith("on-")) {
+      const eventName = attrName.slice(3).split("__")[0].replace(/-/g, "");
+      events.add(eventName);
+    }
+  }
+  for (const eventName of events) {
+    clone.addEventListener(eventName, (e) => {
+      e.stopPropagation();
+      const eventCopy = new e.constructor(e.type, e);
+      template.dispatchEvent(eventCopy);
+    });
+  }
+}
 action({
   name: "nextTick",
   apply(_, callback) {
