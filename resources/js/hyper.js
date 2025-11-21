@@ -1901,7 +1901,7 @@ attribute({
     };
   }
 });
-const once = /* @__PURE__ */ new WeakSet();
+const once$1 = /* @__PURE__ */ new WeakSet();
 attribute({
   name: "on-intersect",
   requirement: {
@@ -1927,7 +1927,7 @@ attribute({
         for (const entry of entries) {
           if (entry.isIntersecting) {
             callback();
-            if (observer && once.has(el)) {
+            if (observer && once$1.has(el)) {
               observer.disconnect();
             }
           }
@@ -1937,11 +1937,11 @@ attribute({
     );
     observer.observe(el);
     if (mods.has("once")) {
-      once.add(el);
+      once$1.add(el);
     }
     return () => {
       if (!mods.has("once")) {
-        once.delete(el);
+        once$1.delete(el);
       }
       if (observer) {
         observer.disconnect();
@@ -2043,8 +2043,8 @@ attribute({
     mergePaths([[signalName, el]]);
   }
 });
-const NONE = "none";
-const DISPLAY = "display";
+const NONE$1 = "none";
+const DISPLAY$1 = "display";
 attribute({
   name: "show",
   requirement: {
@@ -2057,9 +2057,9 @@ attribute({
       observer.disconnect();
       const shouldShow = rx();
       if (shouldShow) {
-        if (el.style.display === NONE) el.style.removeProperty(DISPLAY);
+        if (el.style.display === NONE$1) el.style.removeProperty(DISPLAY$1);
       } else {
-        el.style.setProperty(DISPLAY, NONE);
+        el.style.setProperty(DISPLAY$1, NONE$1);
       }
       observer.observe(el, { attributeFilter: ["style"] });
     };
@@ -3604,6 +3604,992 @@ function shouldInterceptFormSubmit(form) {
     return false;
   }
   return true;
+}
+attribute({
+  name: "teleport",
+  requirement: {
+    key: "denied",
+    value: "must"
+  },
+  apply(ctx) {
+    const { el, value, mods, error: error2 } = ctx;
+    if (!(el instanceof HTMLTemplateElement)) {
+      throw error2("TeleportMustBeOnTemplate", {
+        message: "data-teleport must be used on <template> elements",
+        element: el.tagName
+      });
+    }
+    const target = document.querySelector(value);
+    if (!target) {
+      throw error2("TeleportTargetNotFound", {
+        selector: value,
+        message: `Cannot find element matching selector: "${value}"`
+      });
+    }
+    const templateContent = el.content.cloneNode(true);
+    const clone = templateContent.firstElementChild;
+    if (!clone) {
+      throw error2("TeleportEmptyTemplate", {
+        message: "Template must contain at least one element"
+      });
+    }
+    el.setAttribute("data-teleport-template", "true");
+    clone.setAttribute("data-teleport-target", "true");
+    el._teleport = clone;
+    clone._teleportBack = el;
+    setupEventForwarding(el, clone);
+    placeInDom(clone, target, mods);
+    apply(clone);
+    return () => {
+      clone.remove();
+    };
+  }
+});
+function placeInDom(clone, target, mods) {
+  if (mods.has("prepend")) {
+    target.parentNode?.insertBefore(clone, target);
+  } else if (mods.has("append")) {
+    target.parentNode?.insertBefore(clone, target.nextSibling);
+  } else {
+    target.appendChild(clone);
+  }
+}
+function setupEventForwarding(template, clone) {
+  const events = /* @__PURE__ */ new Set();
+  for (const key in template.dataset) {
+    const attrName = key.replace(/[A-Z]/g, "-$&").toLowerCase();
+    if (attrName.startsWith("on:") || attrName.startsWith("on-")) {
+      const eventName = attrName.slice(3).split("__")[0].replace(/-/g, "");
+      events.add(eventName);
+    }
+  }
+  for (const eventName of events) {
+    clone.addEventListener(eventName, (e) => {
+      e.stopPropagation();
+      const eventCopy = new e.constructor(e.type, e);
+      template.dispatchEvent(eventCopy);
+    });
+  }
+}
+const STORAGE_PREFIX = "_x_";
+function getStorage(useSession) {
+  try {
+    const storage = useSession ? sessionStorage : localStorage;
+    const testKey = "__storage_test__";
+    storage.setItem(testKey, testKey);
+    storage.removeItem(testKey);
+    return storage;
+  } catch (e) {
+    console.warn(
+      "Alpine/Datastar: $persist is using temporary storage since browser storage is unavailable."
+    );
+    const memoryStore = /* @__PURE__ */ new Map();
+    return {
+      getItem: (key) => memoryStore.get(key) ?? null,
+      setItem: (key, value) => memoryStore.set(key, value),
+      removeItem: (key) => memoryStore.delete(key),
+      clear: () => memoryStore.clear(),
+      key: (index) => Array.from(memoryStore.keys())[index] ?? null,
+      get length() {
+        return memoryStore.size;
+      }
+    };
+  }
+}
+function storageHas(key, storage) {
+  return storage.getItem(key) !== null;
+}
+function storageGet(key, storage) {
+  const value = storage.getItem(key);
+  if (value === null) return void 0;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return void 0;
+  }
+}
+function storageSet(key, value, storage) {
+  try {
+    storage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    console.warn(`persist: Failed to save "${key}" to storage:`, e);
+  }
+}
+function getSignalValue(path) {
+  const parts = path.split(".");
+  let current = root;
+  for (const part of parts) {
+    if (current == null || typeof current !== "object") return void 0;
+    current = current[part];
+  }
+  return current;
+}
+function parseSignalNames(value) {
+  return value.split(",").map((s) => s.trim()).filter((s) => s.length > 0);
+}
+attribute({
+  name: "persist",
+  requirement: {
+    key: "denied",
+    value: "must"
+  },
+  apply(ctx) {
+    const { value, mods, error: error2 } = ctx;
+    const signalNames = parseSignalNames(value);
+    if (signalNames.length === 0) {
+      throw error2("PersistNoSignals", {
+        message: "data-persist requires at least one signal name",
+        value
+      });
+    }
+    const useSession = mods.has("session");
+    const storage = getStorage(useSession);
+    const asModifier = mods.get("as");
+    const customKey = asModifier ? Array.from(asModifier)[0] : null;
+    const prefixModifier = mods.get("prefix");
+    const prefix = prefixModifier ? Array.from(prefixModifier)[0] : "";
+    if (customKey && signalNames.length > 1) {
+      throw error2("PersistAsModifierMultipleSignals", {
+        message: "data-persist__as can only be used with a single signal",
+        signals: signalNames
+      });
+    }
+    const cleanups = [];
+    for (const signalName of signalNames) {
+      let storageKey;
+      if (customKey) {
+        storageKey = prefix ? `${STORAGE_PREFIX}${prefix}.${customKey}` : customKey.startsWith(STORAGE_PREFIX) ? customKey : `${STORAGE_PREFIX}${customKey}`;
+      } else {
+        storageKey = prefix ? `${STORAGE_PREFIX}${prefix}.${signalName}` : `${STORAGE_PREFIX}${signalName}`;
+      }
+      if (storageHas(storageKey, storage)) {
+        const storedValue = storageGet(storageKey, storage);
+        if (storedValue !== void 0) {
+          mergePaths([[signalName, storedValue]]);
+        }
+      }
+      const cleanup2 = effect(() => {
+        const currentValue = getSignalValue(signalName);
+        if (currentValue !== void 0) {
+          storageSet(storageKey, currentValue, storage);
+        }
+      });
+      cleanups.push(cleanup2);
+    }
+    return () => {
+      for (const cleanup2 of cleanups) {
+        cleanup2();
+      }
+    };
+  }
+});
+let documentResizeObserver = null;
+const documentResizeCallbacks = /* @__PURE__ */ new Set();
+const dimensions = (entries) => {
+  for (const entry of entries) {
+    const { inlineSize, blockSize } = entry.borderBoxSize[0];
+    return [inlineSize, blockSize];
+  }
+  return [0, 0];
+};
+const onElResize = (el, callback) => {
+  const observer = new ResizeObserver((entries) => {
+    const [width, height] = dimensions(entries);
+    callback(width, height);
+  });
+  observer.observe(el);
+  return () => observer.disconnect();
+};
+const onDocumentResize = (callback) => {
+  documentResizeCallbacks.add(callback);
+  if (!documentResizeObserver) {
+    documentResizeObserver = new ResizeObserver((entries) => {
+      const [width, height] = dimensions(entries);
+      documentResizeCallbacks.forEach((cb) => cb(width, height));
+    });
+    documentResizeObserver.observe(document.documentElement);
+  }
+  return () => {
+    documentResizeCallbacks.delete(callback);
+    if (documentResizeCallbacks.size === 0 && documentResizeObserver) {
+      documentResizeObserver.disconnect();
+      documentResizeObserver = null;
+    }
+  };
+};
+attribute({
+  name: "resize",
+  requirement: {
+    key: "denied",
+    value: "must"
+  },
+  // Pass width and height as function arguments
+  argNames: ["width", "height"],
+  apply({ el, mods, rx }) {
+    let callback = (width, height) => {
+      beginBatch();
+      rx(width, height);
+      endBatch();
+    };
+    callback = modifyTiming(callback, mods);
+    const disconnect = mods.has("document") ? onDocumentResize(callback) : onElResize(el, callback);
+    return () => disconnect();
+  }
+});
+action({
+  name: "nextTick",
+  apply(_, callback) {
+    setTimeout(() => {
+      try {
+        callback();
+      } catch (error2) {
+        console.error("Error in @nextTick callback:", error2);
+      }
+    }, 0);
+    return void 0;
+  }
+});
+attribute({
+  name: "cloak",
+  requirement: { key: "denied", value: "denied" },
+  apply({ el }) {
+    el.removeAttribute("data-cloak");
+    return void 0;
+  }
+});
+attribute({
+  name: "html",
+  requirement: { key: "denied", value: "must" },
+  returnsValue: true,
+  apply({ el, rx }) {
+    const update2 = () => {
+      el.innerHTML = `${rx()}`;
+      queueMicrotask(() => apply(el));
+    };
+    const cleanup2 = effect(update2);
+    return () => {
+      cleanup2();
+    };
+  }
+});
+function setStyles(el, value) {
+  if (typeof value === "object" && value !== null) {
+    return setStylesFromObject(el, value);
+  }
+  return setStylesFromString(el, value);
+}
+function setStylesFromObject(el, value) {
+  const previousStyles = {};
+  Object.entries(value).forEach(([key, value2]) => {
+    previousStyles[key] = el.style[key];
+    let propertyKey = key;
+    if (!key.startsWith("--")) {
+      propertyKey = kebabCase(key);
+    }
+    el.style.setProperty(propertyKey, value2);
+  });
+  setTimeout(() => {
+    if (el.style.length === 0) {
+      el.removeAttribute("style");
+    }
+  });
+  return () => {
+    setStyles(el, previousStyles);
+  };
+}
+function setStylesFromString(el, value) {
+  const cache = el.getAttribute("style") || "";
+  el.setAttribute("style", value);
+  return () => {
+    el.setAttribute("style", cache);
+  };
+}
+function kebabCase(subject) {
+  return subject.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
+}
+function setClasses(el, value) {
+  if (Array.isArray(value)) {
+    return setClassesFromString(el, value.join(" "));
+  } else if (typeof value === "object" && value !== null) {
+    return setClassesFromObject(el, value);
+  } else if (typeof value === "function") {
+    return setClasses(el, value());
+  }
+  return setClassesFromString(el, value);
+}
+function setClassesFromString(el, classString) {
+  const missingClasses = (str) => str.split(" ").filter((i) => !el.classList.contains(i)).filter(Boolean);
+  const addClassesAndReturnUndo = (classes) => {
+    el.classList.add(...classes);
+    return () => {
+      el.classList.remove(...classes);
+    };
+  };
+  const normalizedClassString = classString === true ? "" : classString || "";
+  return addClassesAndReturnUndo(missingClasses(normalizedClassString));
+}
+function setClassesFromObject(el, classObject) {
+  const split = (str) => str.split(" ").filter(Boolean);
+  const forAdd = Object.entries(classObject).flatMap(([classString, bool]) => bool ? split(classString) : []).filter(Boolean);
+  const forRemove = Object.entries(classObject).flatMap(([classString, bool]) => !bool ? split(classString) : []).filter(Boolean);
+  const added = [];
+  const removed = [];
+  forRemove.forEach((i) => {
+    if (el.classList.contains(i)) {
+      el.classList.remove(i);
+      removed.push(i);
+    }
+  });
+  forAdd.forEach((i) => {
+    if (!el.classList.contains(i)) {
+      el.classList.add(i);
+      added.push(i);
+    }
+  });
+  return () => {
+    removed.forEach((i) => el.classList.add(i));
+    added.forEach((i) => el.classList.remove(i));
+  };
+}
+function once(callback, fallback = () => {
+}) {
+  let called = false;
+  return function(...args) {
+    if (!called) {
+      called = true;
+      callback.apply(this, args);
+    } else {
+      fallback.apply(this, args);
+    }
+  };
+}
+function transition(el, setFunction, {
+  during,
+  start,
+  end
+} = { during: {}, start: {}, end: {} }, before = () => {
+}, after = () => {
+}) {
+  if (el._ds_transitioning) {
+    el._ds_transitioning.cancel();
+  }
+  if (Object.keys(during).length === 0 && Object.keys(start).length === 0 && Object.keys(end).length === 0) {
+    before();
+    after();
+    return;
+  }
+  let undoStart;
+  let undoDuring;
+  let undoEnd;
+  performTransition(el, {
+    start() {
+      undoStart = setFunction(el, start);
+    },
+    during() {
+      undoDuring = setFunction(el, during);
+    },
+    before,
+    end() {
+      if (undoStart) undoStart();
+      undoEnd = setFunction(el, end);
+    },
+    after,
+    cleanup() {
+      if (undoDuring) undoDuring();
+      if (undoEnd) undoEnd();
+    }
+  });
+}
+function performTransition(el, stages) {
+  let interrupted = false;
+  let reachedBefore = false;
+  let reachedEnd = false;
+  const finish = once(() => {
+    interrupted = true;
+    if (!reachedBefore) stages.before();
+    if (!reachedEnd) {
+      stages.end();
+    }
+    stages.after();
+    if (el.isConnected) {
+      stages.cleanup();
+    }
+    delete el._ds_transitioning;
+  });
+  el._ds_transitioning = {
+    beforeCancels: [],
+    beforeCancel(callback) {
+      this.beforeCancels.push(callback);
+    },
+    cancel: once(function() {
+      while (this.beforeCancels.length) {
+        this.beforeCancels.shift()();
+      }
+      finish();
+    }),
+    finish
+  };
+  stages.start();
+  stages.during();
+  requestAnimationFrame(() => {
+    if (interrupted) return;
+    let duration = Number(
+      getComputedStyle(el).transitionDuration.replace(/,.*/, "").replace("s", "")
+    ) * 1e3;
+    let delay2 = Number(
+      getComputedStyle(el).transitionDelay.replace(/,.*/, "").replace("s", "")
+    ) * 1e3;
+    if (duration === 0) {
+      duration = Number(getComputedStyle(el).animationDuration.replace("s", "")) * 1e3;
+    }
+    stages.before();
+    reachedBefore = true;
+    requestAnimationFrame(() => {
+      if (interrupted) return;
+      stages.end();
+      reachedEnd = true;
+      setTimeout(el._ds_transitioning.finish, duration + delay2);
+    });
+  });
+}
+function modifierValue(modifiers, key, fallback) {
+  const modArray = Array.from(modifiers.keys());
+  const keyIndex = modArray.indexOf(key);
+  if (keyIndex === -1) return fallback;
+  const rawValue = modArray[keyIndex + 1];
+  if (!rawValue) return fallback;
+  if (key === "scale") {
+    if (isNaN(Number(rawValue))) return fallback;
+  }
+  if (key === "duration" || key === "delay") {
+    const match = rawValue.match(/([0-9]+)ms/);
+    if (match) return Number(match[1]);
+  }
+  if (key === "origin") {
+    const nextValue = modArray[keyIndex + 2];
+    if (nextValue && ["top", "right", "left", "center", "bottom"].includes(nextValue)) {
+      return [rawValue, nextValue].join(" ");
+    }
+  }
+  return rawValue;
+}
+attribute({
+  name: "transition",
+  requirement: "allowed",
+  apply({ el, key, value, mods, error: error2 }) {
+    const htmlEl = el;
+    if (mods.has("collapse")) {
+      registerTransitionsFromCollapseHelper(htmlEl, mods);
+    } else if (key && value) {
+      registerTransitionsFromClassString(htmlEl, key, value);
+    } else if (!key && !value) {
+      registerTransitionsFromHelper(htmlEl, mods);
+    } else {
+      throw error2("InvalidTransition", {
+        message: 'Use either data-transition (helper mode) or data-transition:enter="classes" (class mode), not both',
+        key,
+        value
+      });
+    }
+    return () => {
+    };
+  }
+});
+function registerTransitionsFromClassString(el, stage, classString) {
+  registerTransitionObject(el, setClasses, "");
+  const directiveStorageMap = {
+    enter: (classes) => {
+      el._ds_transition.enter.during = classes;
+    },
+    "enter-start": (classes) => {
+      el._ds_transition.enter.start = classes;
+    },
+    "enter-end": (classes) => {
+      el._ds_transition.enter.end = classes;
+    },
+    leave: (classes) => {
+      el._ds_transition.leave.during = classes;
+    },
+    "leave-start": (classes) => {
+      el._ds_transition.leave.start = classes;
+    },
+    "leave-end": (classes) => {
+      el._ds_transition.leave.end = classes;
+    }
+  };
+  if (directiveStorageMap[stage]) {
+    directiveStorageMap[stage](classString);
+  } else {
+    throw new Error(
+      `Invalid transition stage: "${stage}". Valid stages: ${Object.keys(directiveStorageMap).join(", ")}`
+    );
+  }
+}
+function registerTransitionsFromHelper(el, mods) {
+  registerTransitionObject(el, setStyles);
+  const doesntSpecify = !mods.has("in") && !mods.has("out");
+  const transitioningIn = doesntSpecify || mods.has("in");
+  const transitioningOut = doesntSpecify || mods.has("out");
+  const wantsAll = !mods.has("opacity") && !mods.has("scale");
+  const wantsOpacity = wantsAll || mods.has("opacity");
+  const wantsScale = wantsAll || mods.has("scale");
+  const opacityValue = wantsOpacity ? 0 : 1;
+  const scaleValue = wantsScale ? modifierValue(mods, "scale", 95) / 100 : 1;
+  const delay2 = modifierValue(mods, "delay", 0) / 1e3;
+  const origin = modifierValue(mods, "origin", "center");
+  const property = "opacity, transform";
+  const durationIn = modifierValue(mods, "duration", 150) / 1e3;
+  const durationOut = modifierValue(mods, "duration", 75) / 1e3;
+  const easing = "cubic-bezier(0.4, 0.0, 0.2, 1)";
+  if (transitioningIn) {
+    el._ds_transition.enter.during = {
+      transformOrigin: origin,
+      transitionDelay: `${delay2}s`,
+      transitionProperty: property,
+      transitionDuration: `${durationIn}s`,
+      transitionTimingFunction: easing
+    };
+    el._ds_transition.enter.start = {
+      opacity: String(opacityValue),
+      transform: `scale(${scaleValue})`
+    };
+    el._ds_transition.enter.end = {
+      opacity: "1",
+      transform: "scale(1)"
+    };
+  }
+  if (transitioningOut) {
+    el._ds_transition.leave.during = {
+      transformOrigin: origin,
+      transitionDelay: `${delay2}s`,
+      transitionProperty: property,
+      transitionDuration: `${durationOut}s`,
+      transitionTimingFunction: easing
+    };
+    el._ds_transition.leave.start = {
+      opacity: "1",
+      transform: "scale(1)"
+    };
+    el._ds_transition.leave.end = {
+      opacity: String(opacityValue),
+      transform: `scale(${scaleValue})`
+    };
+  }
+}
+function registerTransitionObject(el, setFunction, defaultValue = {}) {
+  if (!el._ds_transition) {
+    el._ds_transition = {
+      enter: { during: defaultValue, start: defaultValue, end: defaultValue },
+      leave: { during: defaultValue, start: defaultValue, end: defaultValue },
+      in(before = () => {
+      }, after = () => {
+      }) {
+        transition(
+          el,
+          setFunction,
+          {
+            during: this.enter.during,
+            start: this.enter.start,
+            end: this.enter.end
+          },
+          before,
+          after
+        );
+      },
+      out(before = () => {
+      }, after = () => {
+      }) {
+        transition(
+          el,
+          setFunction,
+          {
+            during: this.leave.during,
+            start: this.leave.start,
+            end: this.leave.end
+          },
+          before,
+          after
+        );
+      }
+    };
+  }
+}
+function registerTransitionsFromCollapseHelper(el, mods) {
+  const duration = modifierValue(mods, "duration", 250) / 1e3;
+  const floor = modifierValue(mods, "min", 0);
+  const fullyHide = !mods.has("min");
+  el._ds_collapse_floor = floor;
+  el._ds_collapse_fullyHide = fullyHide;
+  const easing = "cubic-bezier(0.4, 0.0, 0.2, 1)";
+  el._ds_transition = {
+    // Empty phases - collapse doesn't use standard phase system
+    enter: { during: {}, start: {}, end: {} },
+    leave: { during: {}, start: {}, end: {} },
+    /**
+     * Expand animation (show)
+     * Animates from current height (collapsed or partial) to full height
+     */
+    in(before = () => {
+    }, after = () => {
+    }) {
+      if (el._ds_transitioning) {
+        el._ds_transitioning.cancel();
+      }
+      el.hidden = false;
+      el.style.display = "";
+      const currentHeight = el.getBoundingClientRect().height;
+      const originalHeight = el.style.height;
+      el.style.height = "auto";
+      const fullHeight = el.getBoundingClientRect().height;
+      el.style.height = originalHeight || `${currentHeight}px`;
+      if (currentHeight >= fullHeight) {
+        el.style.height = "auto";
+        el.style.overflow = "";
+        before();
+        after();
+        return;
+      }
+      el.style.overflow = "hidden";
+      el.style.height = `${currentHeight}px`;
+      el._ds_transitioning = {
+        beforeCancels: [],
+        beforeCancel(callback) {
+          this.beforeCancels.push(callback);
+        },
+        cancel() {
+          while (this.beforeCancels.length) {
+            this.beforeCancels.shift()();
+          }
+          this.finish();
+        },
+        finish: () => {
+          el.style.overflow = "";
+          el.style.height = "auto";
+          el.style.transitionProperty = "";
+          el.style.transitionDuration = "";
+          el.style.transitionTimingFunction = "";
+          delete el._ds_transitioning;
+          after();
+        }
+      };
+      before();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.style.transitionProperty = "height";
+          el.style.transitionDuration = `${duration}s`;
+          el.style.transitionTimingFunction = easing;
+          el.style.height = `${fullHeight}px`;
+          setTimeout(() => {
+            if (el._ds_transitioning) {
+              el._ds_transitioning.finish();
+            }
+          }, duration * 1e3);
+        });
+      });
+    },
+    /**
+     * Collapse animation (hide)
+     * Animates from current height to floor (0 or min height)
+     */
+    out(before = () => {
+    }, after = () => {
+    }) {
+      if (el._ds_transitioning) {
+        el._ds_transitioning.cancel();
+      }
+      const currentHeight = el.getBoundingClientRect().height;
+      if (currentHeight <= floor) {
+        if (floor === 0 && fullyHide) {
+          el.style.display = "none";
+          el.hidden = true;
+        }
+        before();
+        after();
+        return;
+      }
+      el.style.overflow = "hidden";
+      el.style.height = `${currentHeight}px`;
+      el._ds_transitioning = {
+        beforeCancels: [],
+        beforeCancel(callback) {
+          this.beforeCancels.push(callback);
+        },
+        cancel() {
+          while (this.beforeCancels.length) {
+            this.beforeCancels.shift()();
+          }
+          this.finish();
+        },
+        finish: () => {
+          el.style.transitionProperty = "";
+          el.style.transitionDuration = "";
+          el.style.transitionTimingFunction = "";
+          if (floor === 0 && fullyHide) {
+            el.style.display = "none";
+            el.hidden = true;
+            el.style.overflow = "";
+            el.style.height = "";
+          } else {
+            el.style.height = `${floor}px`;
+          }
+          delete el._ds_transitioning;
+          after();
+        }
+      };
+      before();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.style.transitionProperty = "height";
+          el.style.transitionDuration = `${duration}s`;
+          el.style.transitionTimingFunction = easing;
+          el.style.height = `${floor}px`;
+          setTimeout(() => {
+            if (el._ds_transitioning) {
+              el._ds_transitioning.finish();
+            }
+          }, duration * 1e3);
+        });
+      });
+    }
+  };
+}
+const KEY_MAP = {
+  // Special keys
+  enter: "Enter",
+  escape: "Escape",
+  esc: "Escape",
+  // Alias
+  space: " ",
+  tab: "Tab",
+  // Editing keys
+  delete: "Delete",
+  del: "Delete",
+  // Alias
+  backspace: "Backspace",
+  // Arrow keys
+  up: "ArrowUp",
+  down: "ArrowDown",
+  left: "ArrowLeft",
+  right: "ArrowRight",
+  // Navigation keys
+  home: "Home",
+  end: "End",
+  pageup: "PageUp",
+  pagedown: "PageDown"
+  // Letter keys (a-z) - handled dynamically
+  // Number keys (0-9) - handled dynamically
+};
+const SYSTEM_KEYS = ["ctrl", "shift", "alt", "meta", "cmd", "super"];
+const applyKeyModifiers = (callback, mods) => {
+  const keyMods = Array.from(mods.keys()).filter((k) => {
+    if (KEY_MAP[k.toLowerCase()]) return true;
+    if (k.length === 1 && /[a-z]/i.test(k)) return true;
+    if (k.length === 1 && /[0-9]/.test(k)) return true;
+    return false;
+  });
+  const systemMods = Array.from(mods.keys()).filter(
+    (k) => SYSTEM_KEYS.includes(k.toLowerCase())
+  );
+  if (keyMods.length === 0 && systemMods.length === 0) {
+    return callback;
+  }
+  return (evt) => {
+    if (!(evt instanceof KeyboardEvent)) return;
+    for (const keyMod of keyMods) {
+      const normalizedKey = keyMod.toLowerCase();
+      const expectedKey = KEY_MAP[normalizedKey] || keyMod;
+      const eventKey = evt.key?.toLowerCase() || "";
+      const eventCode = evt.code?.toLowerCase() || "";
+      const expected = expectedKey.toLowerCase();
+      const keyMatches = eventKey === expected;
+      const codeMatches = eventCode === expected;
+      const singleCharMatch = keyMod.length === 1 && eventKey === keyMod;
+      if (!keyMatches && !codeMatches && !singleCharMatch) {
+        return;
+      }
+    }
+    if (mods.has("ctrl") && !evt.ctrlKey) return;
+    if (mods.has("shift") && !evt.shiftKey) return;
+    if (mods.has("alt") && !evt.altKey) return;
+    if (mods.has("meta") && !evt.metaKey) return;
+    if (mods.has("cmd") && !evt.metaKey) return;
+    if (mods.has("super") && !evt.metaKey) return;
+    callback(evt);
+  };
+};
+attribute({
+  name: "on",
+  requirement: "must",
+  argNames: ["evt"],
+  apply({ el, key, mods, rx }) {
+    let target = el;
+    if (mods.has("window")) target = window;
+    let callback = (evt) => {
+      if (evt) {
+        if (mods.has("prevent")) {
+          evt.preventDefault();
+        }
+        if (mods.has("stop")) {
+          evt.stopPropagation();
+        }
+      }
+      beginBatch();
+      rx(evt);
+      endBatch();
+    };
+    callback = applyKeyModifiers(callback, mods);
+    callback = modifyViewTransition(callback, mods);
+    callback = modifyTiming(callback, mods);
+    const evtListOpts = {
+      capture: mods.has("capture"),
+      passive: mods.has("passive"),
+      once: mods.has("once")
+    };
+    if (mods.has("outside")) {
+      target = document;
+      const cb = callback;
+      callback = (evt) => {
+        if (!el.contains(evt?.target)) {
+          cb(evt);
+        }
+      };
+    }
+    const eventName = modifyCasing(key, mods, "kebab");
+    if (eventName === DATASTAR_FETCH_EVENT || eventName === DATASTAR_SIGNAL_PATCH_EVENT) {
+      target = document;
+    }
+    if (el instanceof HTMLFormElement && eventName === "submit") {
+      const cb = callback;
+      callback = (evt) => {
+        evt?.preventDefault();
+        cb(evt);
+      };
+    }
+    target.addEventListener(eventName, callback, evtListOpts);
+    return () => {
+      target.removeEventListener(eventName, callback);
+    };
+  }
+});
+const NONE = "none";
+const DISPLAY = "display";
+attribute({
+  name: "show",
+  requirement: {
+    key: "denied",
+    value: "must"
+  },
+  returnsValue: true,
+  apply({ el, rx }) {
+    const htmlEl = el;
+    let oldValue;
+    let firstTime = true;
+    const update2 = () => {
+      observer.disconnect();
+      const shouldShow = rx();
+      const hasMinHeight = htmlEl._ds_collapse_floor !== void 0 && htmlEl._ds_collapse_floor > 0;
+      if (firstTime || shouldShow === oldValue) {
+        if (shouldShow) {
+          if (htmlEl.style.display === NONE) {
+            htmlEl.style.removeProperty(DISPLAY);
+          }
+        } else {
+          if (!hasMinHeight) {
+            htmlEl.style.setProperty(DISPLAY, NONE);
+          }
+        }
+      } else {
+        toggleWithTransition(htmlEl, shouldShow);
+      }
+      oldValue = shouldShow;
+      firstTime = false;
+      observer.observe(el, { attributeFilter: ["style"] });
+    };
+    const observer = new MutationObserver(update2);
+    const cleanup2 = effect(update2);
+    return () => {
+      observer.disconnect();
+      cleanup2();
+    };
+  }
+});
+function toggleWithTransition(el, shouldShow) {
+  if (!el._ds_transition) {
+    if (shouldShow) {
+      show(el);
+    } else {
+      hide(el);
+    }
+    return;
+  }
+  const isCollapse = el._ds_collapse_floor !== void 0;
+  if (shouldShow) {
+    if (isCollapse) {
+      el._ds_transition.in(
+        () => {
+        },
+        // before: collapse.in() handles visibility
+        () => {
+        }
+        // after: transition complete
+      );
+    } else {
+      const enterConfig = el._ds_transition.enter;
+      const hasEnter = (
+        // Check for object (helper mode)
+        typeof enterConfig.during === "object" && Object.keys(enterConfig.during).length > 0 || typeof enterConfig.start === "object" && Object.keys(enterConfig.start).length > 0 || typeof enterConfig.end === "object" && Object.keys(enterConfig.end).length > 0 || // Check for string (class mode)
+        typeof enterConfig.during === "string" && enterConfig.during.length > 0 || typeof enterConfig.start === "string" && enterConfig.start.length > 0 || typeof enterConfig.end === "string" && enterConfig.end.length > 0
+      );
+      if (hasEnter) {
+        el._ds_transition.in(
+          () => show(el),
+          // before: make visible first
+          () => {
+          }
+          // after: transition complete
+        );
+      } else {
+        show(el);
+      }
+    }
+  } else {
+    if (isCollapse) {
+      el._ds_transition.out(
+        () => {
+        },
+        // before: start collapse
+        () => {
+        }
+        // after: collapse.out() handles hiding
+      );
+    } else {
+      const leaveConfig = el._ds_transition.leave;
+      const hasLeave = (
+        // Check for object (helper mode)
+        typeof leaveConfig.during === "object" && Object.keys(leaveConfig.during).length > 0 || typeof leaveConfig.start === "object" && Object.keys(leaveConfig.start).length > 0 || typeof leaveConfig.end === "object" && Object.keys(leaveConfig.end).length > 0 || // Check for string (class mode)
+        typeof leaveConfig.during === "string" && leaveConfig.during.length > 0 || typeof leaveConfig.start === "string" && leaveConfig.start.length > 0 || typeof leaveConfig.end === "string" && leaveConfig.end.length > 0
+      );
+      if (hasLeave) {
+        el._ds_transition.out(
+          () => {
+          },
+          // before: start hidden styles
+          () => hide(el)
+          // after: actually hide
+        );
+      } else {
+        hide(el);
+      }
+    }
+  }
+}
+function show(el) {
+  if (el.style.display === NONE) {
+    el.style.removeProperty(DISPLAY);
+  }
+}
+function hide(el) {
+  el.style.setProperty(DISPLAY, NONE);
 }
 function getCSRFToken() {
   const metaTag = document.querySelector('meta[name="csrf-token"]');
