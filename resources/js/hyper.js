@@ -3671,6 +3671,118 @@ function setupEventForwarding(template, clone) {
     });
   }
 }
+const STORAGE_PREFIX = "_x_";
+function getStorage(useSession) {
+  try {
+    const storage = useSession ? sessionStorage : localStorage;
+    const testKey = "__storage_test__";
+    storage.setItem(testKey, testKey);
+    storage.removeItem(testKey);
+    return storage;
+  } catch (e) {
+    console.warn(
+      "Alpine/Datastar: $persist is using temporary storage since browser storage is unavailable."
+    );
+    const memoryStore = /* @__PURE__ */ new Map();
+    return {
+      getItem: (key) => memoryStore.get(key) ?? null,
+      setItem: (key, value) => memoryStore.set(key, value),
+      removeItem: (key) => memoryStore.delete(key),
+      clear: () => memoryStore.clear(),
+      key: (index) => Array.from(memoryStore.keys())[index] ?? null,
+      get length() {
+        return memoryStore.size;
+      }
+    };
+  }
+}
+function storageHas(key, storage) {
+  return storage.getItem(key) !== null;
+}
+function storageGet(key, storage) {
+  const value = storage.getItem(key);
+  if (value === null) return void 0;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return void 0;
+  }
+}
+function storageSet(key, value, storage) {
+  try {
+    storage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    console.warn(`persist: Failed to save "${key}" to storage:`, e);
+  }
+}
+function getSignalValue(path) {
+  const parts = path.split(".");
+  let current = root;
+  for (const part of parts) {
+    if (current == null || typeof current !== "object") return void 0;
+    current = current[part];
+  }
+  return current;
+}
+function parseSignalNames(value) {
+  return value.split(",").map((s) => s.trim()).filter((s) => s.length > 0);
+}
+attribute({
+  name: "persist",
+  requirement: {
+    key: "denied",
+    value: "must"
+  },
+  apply(ctx) {
+    const { value, mods, error: error2 } = ctx;
+    const signalNames = parseSignalNames(value);
+    if (signalNames.length === 0) {
+      throw error2("PersistNoSignals", {
+        message: "data-persist requires at least one signal name",
+        value
+      });
+    }
+    const useSession = mods.has("session");
+    const storage = getStorage(useSession);
+    const asModifier = mods.get("as");
+    const customKey = asModifier ? Array.from(asModifier)[0] : null;
+    const prefixModifier = mods.get("prefix");
+    const prefix = prefixModifier ? Array.from(prefixModifier)[0] : "";
+    if (customKey && signalNames.length > 1) {
+      throw error2("PersistAsModifierMultipleSignals", {
+        message: "data-persist__as can only be used with a single signal",
+        signals: signalNames
+      });
+    }
+    const cleanups = [];
+    for (const signalName of signalNames) {
+      let storageKey;
+      if (customKey) {
+        storageKey = prefix ? `${STORAGE_PREFIX}${prefix}.${customKey}` : customKey.startsWith(STORAGE_PREFIX) ? customKey : `${STORAGE_PREFIX}${customKey}`;
+      } else {
+        storageKey = prefix ? `${STORAGE_PREFIX}${prefix}.${signalName}` : `${STORAGE_PREFIX}${signalName}`;
+      }
+      if (storageHas(storageKey, storage)) {
+        const storedValue = storageGet(storageKey, storage);
+        if (storedValue !== void 0) {
+          mergePaths([[signalName, storedValue]]);
+        }
+      }
+      const cleanup2 = effect(() => {
+        const currentValue = getSignalValue(signalName);
+        if (currentValue !== void 0) {
+          storageSet(storageKey, currentValue, storage);
+        }
+      });
+      cleanups.push(cleanup2);
+    }
+    return () => {
+      for (const cleanup2 of cleanups) {
+        cleanup2();
+      }
+    };
+  }
+});
 action({
   name: "nextTick",
   apply(_, callback) {
